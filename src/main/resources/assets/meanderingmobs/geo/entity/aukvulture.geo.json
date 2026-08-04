@@ -1,0 +1,144 @@
+{
+	"format_version": "1.12.0",
+	"minecraft:geometry": [
+		{
+			"description": {
+				"identifier": "geometry.unknown",
+				"texture_width": 256,
+				"texture_height": 256,
+				"visible_bounds_width": 5,
+				"visible_bounds_height": 4.5,
+				"visible_bounds_offset": [0, 1.75, 0]
+			},
+			"bones": [
+				{
+					"name": "bb_main",
+					"pivot": [0, 0, 0],
+					"cubes": [
+						{"origin": [-17, 0, -24], "size": [12, 0, 11], "uv": [34, 105]},
+						{"origin": [-9, 0, -13], "size": [0, 55, 26], "pivot": [-9, 0, -12], "rotation": [0, 0, -7.5], "uv": [0, 0]},
+						{"origin": [9, 0, -13], "size": [0, 30, 17], "pivot": [9, 0, -12], "rotation": [0, 0, -3.8], "uv": [104, 0]},
+						{"origin": [9, 0, -13], "size": [0, 55, 26], "pivot": [9, 0, -12], "rotation": [0, 0, 7.5], "uv": [52, 0]},
+						{"origin": [5, 0, -24], "size": [12, 0, 11], "uv": [34, 116]},
+						{"origin": [-9, 0, -13], "size": [0, 30, 17], "pivot": [-9, 0, -12], "rotation": [0, 0, 3.8], "uv": [0, 105]}
+					]
+				},
+				{
+					"name": "Aukvulture",
+					"pivot": [0, 30, -2]
+				},
+				{
+					"name": "head&neck",
+					"parent": "Aukvulture",
+					"pivot": [0, 32, -13],
+					"cubes": [
+						{"origin": [-4, 39, -16], "size": [8, 12, 8], "uv": [118, 119]},
+						{"origin": [-4, 23, -18], "size": [8, 16, 10], "uv": [104, 47]}
+					]
+				},
+				{
+					"name": "head",
+					"parent": "head&neck",
+					"pivot": [0, 49, -15],
+					"cubes": [
+						{"origin": [-1.5, 46, -25], "size": [3, 7, 8], "uv": [140, 62]},
+						{"origin": [-1.5, 43, -31], "size": [3, 7, 6], "uv": [150, 148]},
+						{"origin": [-3, 46, -20], "size": [6, 5, 5], "uv": [150, 129]}
+					]
+				},
+				{
+					"name": "lowerjaw",
+					"parent": "head",
+					"pivot": [0, 46, -16],
+					"cubes": [
+						{"origin": [-1.5, 42, -30], "size": [3, 4, 5], "uv": [80, 105]},
+						{"origin": [-1.5, 43, -25], "size": [3, 3, 6], "uv": [0, 152]},
+						{"origin": [-3, 42, -19], "size": [6, 4, 6], "uv": [150, 119]}
+					]
+				},
+				{
+					"name": "Body",
+					"parent": "Aukvulture",
+					"pivot": [0, 0, 0]
+				},
+				{
+					"name": "Rwing",
+					"parent": "Body",
+					"pivot": [-7, 28, -13],
+					"cubes": [
+						{"origin": [-10, 0, -19], "size": [5, 13, 7], "uv": [140, 42]},
+						{"origin": [-10, 13, -16], "size": [5, 17, 7], "uv": [138, 0]}
+					]
+				},
+				{
+					"name": "Lwing",
+					"parent": "Body",
+					"pivot": [7, 28, -13],
+					"cubes": [
+						{"origin": [5, 13, -16], "size": [5, 17, 7], "uv": [94, 135]},
+						{"origin": [5, 0, -19], "size": [5, 13, 7], "uv": [34, 147]}
+					]
+				},
+				{
+					"name": "Torso",
+					"parent": "Body",
+					"pivot": [0, 0, 0],
+					"cubes": [
+						{"origin": [-7, 17, -15], "size": [14, 16, 22], "uv": [96, 81]}
+					]
+				},
+				{
+					"name": "Rleg",
+					"parent": "Body",
+					"pivot": [0, -1, 0],
+					"cubes": [
+						{"origin": [-7, 7, -1], "size": [5, 10, 10], "uv": [64, 135]},
+						{"origin": [-6.5, 0, 4], "size": [4, 16, 4], "uv": [134, 148]}
+					]
+				},
+				{
+					"name": "Rfoot",
+					"parent": "Rleg",
+					"pivot": [-7, 0, 2],
+					"cubes": [
+						{"origin": [-12, 0, -1.5], "size": [9, 0, 9], "uv": [138, 33]}
+					]
+				},
+				{
+					"name": "Rfoot2",
+					"parent": "Rleg",
+					"pivot": [7, 0, 2],
+					"cubes": [
+						{"origin": [3, 0, -1.5], "size": [9, 0, 9], "uv": [118, 139]}
+					]
+				},
+				{
+					"name": "Lleg",
+					"parent": "Body",
+					"pivot": [0, -1, 0],
+					"cubes": [
+						{"origin": [2.5, 0, 4], "size": [4, 16, 4], "uv": [118, 148]},
+						{"origin": [2, 7, -1], "size": [5, 10, 10], "uv": [34, 127]}
+					]
+				},
+				{
+					"name": "Lfoot",
+					"parent": "Lleg",
+					"pivot": [7, 0, 2],
+					"cubes": [
+						{"origin": [3, 0, -1.5], "size": [9, 0, 9], "uv": [138, 24]}
+					]
+				},
+				{
+					"name": "Tail",
+					"parent": "Body",
+					"pivot": [0, 0, 0],
+					"cubes": [
+						{"origin": [-12, 29, 7], "size": [24, 0, 24], "uv": [0, 81]},
+						{"origin": [-4, 26, 7], "size": [8, 5, 11], "uv": [80, 119]}
+					]
+				}
+			]
+		}
+	]
+}
