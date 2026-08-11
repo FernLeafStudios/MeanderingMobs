@@ -2,12 +2,12 @@ package com.fernleaf.meanderingmobs;
 
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsEntityRegistry;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsItemRegistry;
-import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import org.slf4j.Logger;
 
 @Mod(MeanderingMobs.MODID)
 public class MeanderingMobs {
@@ -19,7 +19,7 @@ public class MeanderingMobs {
         MeanderingMobsEntityRegistry.register(modEventBus);
         MeanderingMobsItemRegistry.register(modEventBus);
 
-        LOGGER.info("Meandering Mobs initialized!");
+        LOGGER.info("Meandering Mobs initialized with FernFrame!");
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {
