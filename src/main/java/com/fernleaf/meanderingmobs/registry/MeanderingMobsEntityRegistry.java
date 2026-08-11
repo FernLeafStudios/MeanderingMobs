@@ -30,7 +30,7 @@ public class MeanderingMobsEntityRegistry {
 
     public static final DeferredHolder<EntityType<?>, EntityType<AukvultureEntity>> AUKVULTURE = ENTITIES.register("aukvulture",
             () -> EntityType.Builder.of(AukvultureEntity::new, MobCategory.CREATURE)
-                    .sized(1.5F, 3.0F)
+                    .sized(1.5F, 2.0F)
                     .build("aukvulture")
     );
 

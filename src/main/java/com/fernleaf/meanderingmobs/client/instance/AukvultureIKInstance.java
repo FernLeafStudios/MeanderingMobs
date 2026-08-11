@@ -43,9 +43,6 @@ public class AukvultureIKInstance {
 
     public float leftWingFlap;
     public float rightWingFlap;
-    public float wingPitchOffset;
-    public float wingSweep;
-    public final SpringState wingFlapSpring = new SpringState(0.0f, 0.0f);
 
     public float bodyPitch;
     public float targetBodyPitch;
@@ -77,15 +74,27 @@ public class AukvultureIKInstance {
             this.bodyRoll = 0.0f;
             this.leftWingFlap = 0.0f;
             this.rightWingFlap = 0.0f;
-            this.wingPitchOffset = 0.0f;
-            this.wingSweep = 0.0f;
         } else {
             this.currentLeftWingY = 0.0f;
             this.currentRightWingY = 0.0f;
 
             float motionY = (float) entity.getDeltaMovement().y;
-            this.targetBodyPitch = Mth.clamp(-motionY * 0.85f, -0.65f, 0.65f);
-            this.wingPitchOffset = Mth.clamp(motionY * 0.4f, -0.3f, 0.3f);
+
+            // Fetch rider pitch (or fall back to entity pitch) interpolated with partialTick
+            float rawPitch = entity.getXRot();
+            float prevPitch = entity.xRotO;
+            if (entity.getControllingPassenger() instanceof LivingEntity rider) {
+                rawPitch = rider.getXRot();
+                prevPitch = rider.xRotO;
+            }
+
+            float interpolatedPitch = Mth.lerp(partialTick, prevPitch, rawPitch);
+            float lookPitchRad = interpolatedPitch * Mth.DEG_TO_RAD;
+
+            // Reactive pitch blend: vertical momentum + direct look pitch (up to ~70° dynamic tilt)
+            float velocityPitch = -motionY * 1.1f;
+            float lookPitch = lookPitchRad * 0.75f;
+            this.targetBodyPitch = Mth.clamp(velocityPitch + lookPitch, -1.22f, 1.22f);
 
             if (entity instanceof AukvultureEntity auk) {
                 float currentRoll = Mth.lerp(partialTick, auk.prevRollAngle, auk.rollAngle);
@@ -96,20 +105,19 @@ public class AukvultureIKInstance {
                 this.bodyRoll = IKMathUtils.lerp(this.bodyRoll, targetBodyRoll, 0.12f);
             }
 
-            // Procedural wing flap cycle
+            // Flap cycle dynamics
             boolean isMovingFast = motionY > 0.02F || entity.getDeltaMovement().horizontalDistanceSqr() > 0.02F;
             float flapSpeed = isMovingFast ? 0.35f : 0.12f;
             float flapIntensity = isMovingFast ? 0.65f : 0.20f;
 
             float flapSin = Mth.sin(age * flapSpeed);
-            float flapCos = Mth.cos(age * flapSpeed);
 
             this.leftWingFlap = flapSin * flapIntensity;
             this.rightWingFlap = flapSin * flapIntensity;
-            this.wingSweep = flapCos * flapIntensity * 0.3f;
         }
 
-        this.bodyPitch = IKMathUtils.lerp(this.bodyPitch, this.targetBodyPitch, 0.15f);
+        // Smooth pitch response rate
+        this.bodyPitch = IKMathUtils.lerp(this.bodyPitch, this.targetBodyPitch, 0.22f);
 
         // State Overlays
         if (entity instanceof AukvultureEntity auk) {

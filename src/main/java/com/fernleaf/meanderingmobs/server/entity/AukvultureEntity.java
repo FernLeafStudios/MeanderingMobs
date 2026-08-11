@@ -1,5 +1,6 @@
 package com.fernleaf.meanderingmobs.server.entity;
 
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -17,6 +18,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -36,6 +38,10 @@ public class AukvultureEntity extends PathfinderMob {
     private int proceduralStartTick;
     private boolean clientFlapping;
     private boolean clientDiving;
+    private int crashCooldown = 0;
+
+    // Runway momentum and takeoff charge fields (0.0 to 1.0)
+    public float takeoffCharge = 0.0F;
 
     public float rollAngle;
     public float prevRollAngle;
@@ -73,46 +79,13 @@ public class AukvultureEntity extends PathfinderMob {
         return this.getFirstPassenger() instanceof LivingEntity living ? living : null;
     }
 
-    // Precise seat position transformed relative to Body pivot (Y=0.5D)
-    @Override
-    public Vec3 getPassengerRidingPosition(Entity passenger) {
-        double motionY = this.getDeltaMovement().y;
-        float bodyPitch = Mth.clamp((float)(-motionY * 0.85D), -0.65F, 0.65F);
-        float bodyRoll = this.rollAngle * Mth.DEG_TO_RAD;
-
-        // Saddle offset relative to Body pivot point
-        double pivotY = 0.5D;
-        double relY = 1.05D;
-        double relZ = -0.20D;
-        double relX = 0.0D;
-
-        // 1. Pitch transform
-        double y1 = relY * Mth.cos(bodyPitch) - relZ * Mth.sin(bodyPitch);
-        double z1 = relY * Mth.sin(bodyPitch) + relZ * Mth.cos(bodyPitch);
-
-        // 2. Roll transform
-        double x2 = relX * Mth.cos(bodyRoll) - y1 * Mth.sin(bodyRoll);
-        double y2 = relX * Mth.sin(bodyRoll) + y1 * Mth.cos(bodyRoll);
-
-        double localX = x2;
-        double localY = y2 + pivotY;
-        double localZ = z1;
-
-        // 3. Yaw transform
-        float yaw = -this.getYRot() * Mth.DEG_TO_RAD;
-        double finalX = localX * Mth.cos(yaw) - localZ * Mth.sin(yaw);
-        double finalZ = localX * Mth.sin(yaw) + localZ * Mth.cos(yaw);
-
-        return new Vec3(this.getX() + finalX, this.getY() + localY, this.getZ() + finalZ);
-    }
-
     public void handleClientInput(boolean flapping, boolean diving) {
         this.clientFlapping = flapping;
         this.clientDiving = diving;
     }
 
     @Override
-    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+    protected void defineSynchedData(SynchedEntityData.@NotNull Builder builder) {
         super.defineSynchedData(builder);
         builder.define(IS_FLYING, false);
         builder.define(DATA_IS_TAMED, false);
@@ -121,11 +94,27 @@ public class AukvultureEntity extends PathfinderMob {
     }
 
     @Override
-    public EntityDimensions getDefaultDimensions(Pose pose) {
-        if (this.isFlying()) {
-            return EntityDimensions.scalable(6.5F, 1.8F);
+    public void addAdditionalSaveData(@NotNull CompoundTag compound) {
+        super.addAdditionalSaveData(compound);
+        compound.putBoolean("IsTamed", this.isTamed());
+        UUID ownerUuid = this.getOwnerUUID();
+        if (ownerUuid != null) {
+            compound.putUUID("Owner", ownerUuid);
         }
-        return EntityDimensions.scalable(2.2F, 2.8F);
+    }
+
+    @Override
+    public void readAdditionalSaveData(@NotNull CompoundTag compound) {
+        super.readAdditionalSaveData(compound);
+        this.setTamed(compound.getBoolean("IsTamed"));
+        if (compound.hasUUID("Owner")) {
+            this.setOwnerUUID(compound.getUUID("Owner"));
+        }
+    }
+
+    @Override
+    public @NotNull EntityDimensions getDefaultDimensions(@NotNull Pose pose) {
+        return this.isFlying() ? EntityDimensions.scalable(2.0F, 2.0F) : EntityDimensions.scalable(1.6F, 2.0F);
     }
 
     public boolean isFlying() {
@@ -158,27 +147,12 @@ public class AukvultureEntity extends PathfinderMob {
         return entity != null && entity.getUUID().equals(this.getOwnerUUID());
     }
 
-    public int getProceduralStateId() {
-        return this.entityData.get(DATA_PROCEDURAL_STATE);
-    }
-
-    public int getProceduralStartTick() {
-        return this.proceduralStartTick;
-    }
-
-    public void triggerProceduralState(int stateId) {
-        if (!this.level().isClientSide()) {
-            this.entityData.set(DATA_PROCEDURAL_STATE, stateId);
-            this.proceduralStartTick = this.tickCount;
-        }
-    }
-
     @Override
-    public InteractionResult mobInteract(Player player, InteractionHand hand) {
+    public @NotNull InteractionResult mobInteract(Player player, @NotNull InteractionHand hand) {
         ItemStack itemstack = player.getItemInHand(hand);
 
         if (!this.isTamed() && (itemstack.is(Items.CHICKEN) || itemstack.is(Items.RABBIT))) {
-            if (!player.level().isClientSide()) {
+            if (!this.level().isClientSide()) {
                 itemstack.consume(1, player);
                 if (this.random.nextInt(3) == 0) {
                     this.setTamed(true);
@@ -200,89 +174,164 @@ public class AukvultureEntity extends PathfinderMob {
     }
 
     @Override
-    public boolean causeFallDamage(float fallDistance, float multiplier, net.minecraft.world.damagesource.DamageSource damageSource) {
+    public boolean causeFallDamage(float fallDistance, float multiplier, net.minecraft.world.damagesource.@NotNull DamageSource damageSource) {
         return false;
     }
 
     @Override
-    public void travel(Vec3 travelVector) {
+    public @NotNull Vec3 getPassengerRidingPosition(@NotNull Entity passenger) {
+        double yOffset = this.isFlying() ? 1.35D : 1.45D;
+        return new Vec3(this.getX(), this.getY() + yOffset, this.getZ());
+    }
+
+    @Override
+    public void travel(@NotNull Vec3 travelVector) {
         this.prevRollAngle = this.rollAngle;
+
+        if (this.crashCooldown > 0) {
+            this.crashCooldown--;
+        }
 
         if (this.isVehicle() && this.getControllingPassenger() instanceof Player player) {
             float strafe = player.xxa;
             float forward = player.zza;
-
             boolean isAscending = this.clientFlapping;
 
-            float targetYRot = player.getYRot() - (strafe * 20.0F);
-            float rotDiff = Mth.wrapDegrees(targetYRot - this.getYRot());
-
-            this.setYRot(Mth.rotLerp(0.25f, this.getYRot(), targetYRot));
-            this.yRotO = this.getYRot();
+            float targetYRot = player.getYRot();
+            this.setYRot(Mth.rotLerp(0.25F, this.getYRot(), targetYRot));
             this.setXRot(player.getXRot() * 0.75F);
             this.setRot(this.getYRot(), this.getXRot());
 
-            this.yBodyRot = Mth.rotLerp(0.25f, this.yBodyRot, this.getYRot());
+            this.yRotO = this.getYRot();
+            this.xRotO = this.getXRot();
+            this.yBodyRot = this.getYRot();
             this.yHeadRot = this.getYRot();
 
             if (this.isFlying()) {
-                float targetRoll = strafe * -25.0F + (rotDiff * -1.2F);
-                this.rollAngle = Mth.rotLerp(0.2f, this.rollAngle, targetRoll);
+                player.setYBodyRot(this.getYRot());
+
+                float rotDiff = Mth.wrapDegrees(targetYRot - this.getYRot());
+                float targetRoll = (strafe * -60.0F) + (rotDiff * -4.0F);
+                this.rollAngle = Mth.rotLerp(0.2F, this.rollAngle, targetRoll);
+                this.takeoffCharge = 1.0F; // fully charged in flight
             } else {
-                this.rollAngle = Mth.rotLerp(0.3f, this.rollAngle, 0.0F);
+                this.rollAngle = Mth.rotLerp(0.3F, this.rollAngle, 0.0F);
             }
 
-            if (this.onGround() && isAscending && !this.isFlying()) {
-                this.setFlying(true);
-                Vec3 currentMotion = this.getDeltaMovement();
-                this.setDeltaMovement(currentMotion.x, 0.85D, currentMotion.z);
-                this.hasImpulse = true;
-                this.triggerProceduralState(3);
+            // --- WALL CRASH COLLISION DETECTION ---
+            if (this.isFlying() && this.horizontalCollision && this.crashCooldown == 0 && this.getDeltaMovement().horizontalDistanceSqr() > 0.05D) {
+                this.hurt(this.damageSources().flyIntoWall(), 10.0F); // Deals 10 damage (1/3 of max health)
+                this.crashCooldown = 20; // 1-second cooldown between crash checks
+                this.setDeltaMovement(this.getDeltaMovement().scale(-0.4D)); // Bounce back effect
+                this.setFlying(false);
+                this.takeoffCharge = 0.0F;
+                return;
             }
 
-            if (this.isFlying()) {
-                Vec3 lookVec = player.getLookAngle();
-                Vec3 currentMotion = this.getDeltaMovement();
+            // --- WATER TAKE-OFF & TAXI LOGIC ---
+            if (this.isInWater()) {
+                this.moveRelative(0.015f, travelVector);
+                this.move(MoverType.SELF, this.getDeltaMovement());
 
-                double pitch = player.getXRot();
-                double vertAccel = ((-pitch / 90.0D) * 0.12D);
+                Vec3 motion = this.getDeltaMovement();
+                this.setDeltaMovement(motion.x * 0.88D, motion.y * 0.88D, motion.z * 0.88D);
 
-                if (isAscending) {
-                    vertAccel += 0.30D;
-                    if (this.getProceduralStateId() != 3 || (this.tickCount - this.getProceduralStartTick()) >= 14) {
-                        this.triggerProceduralState(3);
-                    }
-                } else if (this.clientDiving) {
-                    vertAccel -= 0.35D;
-                    if (this.getProceduralStateId() != 1 || (this.tickCount - this.getProceduralStartTick()) >= 24) {
-                        this.triggerProceduralState(1);
-                    }
-                } else {
-                    if (this.getProceduralStateId() != 0 && (this.tickCount - this.getProceduralStartTick()) >= 25) {
-                        this.triggerProceduralState(0);
-                    }
+                if (this.getFluidHeight(net.minecraft.tags.FluidTags.WATER) > 0.4D && !this.clientDiving) {
+                    this.setDeltaMovement(this.getDeltaMovement().add(0, 0.03D, 0));
                 }
 
-                double moveForward = Math.max(forward, 0.25F);
-                double speed = 0.45D * moveForward;
+                // Water requires a longer runway build-up (Takes ~3x longer than ground)
+                if (forward > 0 && isAscending) {
+                    this.takeoffCharge = Math.min(1.0F, this.takeoffCharge + 0.008F);
 
-                this.setDeltaMovement(
-                        currentMotion.x * 0.92D + (lookVec.x * speed),
-                        currentMotion.y * 0.90D + vertAccel,
-                        currentMotion.z * 0.92D + (lookVec.z * speed)
-                );
+                    // Spawn churning water spray particles while taxiing
+                    if (this.level().isClientSide() && this.random.nextInt(3) == 0) {
+                        this.level().addParticle(ParticleTypes.SPLASH, this.getX(), this.getY() + 0.2D, this.getZ(), 0, 0.1D, 0);
+                    }
+                } else {
+                    this.takeoffCharge = Math.max(0.0F, this.takeoffCharge - 0.02F);
+                }
 
-                super.travel(new Vec3(strafe * 0.25F, vertAccel, forward));
+                // Ready to lift off from water when charge is maxed
+                if (this.takeoffCharge >= 1.0F && isAscending) {
+                    this.setFlying(true);
+                    this.setDeltaMovement(this.getDeltaMovement().x, 0.55D, this.getDeltaMovement().z);
+                    this.hasImpulse = true;
+                }
 
-                if (this.onGround() && vertAccel <= 0.0D && !isAscending) {
+                this.calculateEntityAnimation(true);
+                return;
+            }
+
+            // --- GROUND RUNWAY TAKE-OFF LOGIC ---
+            if (this.onGround() && !this.isFlying()) {
+                if (forward > 0 && isAscending) {
+                    // Build ground momentum charge (~1.5 seconds of running forward)
+                    this.takeoffCharge = Math.min(1.0F, this.takeoffCharge + 0.025F);
+
+                    // Spawn wind / cloud particles under the feet as momentum builds
+                    if (this.level().isClientSide()) {
+                        this.level().addParticle(ParticleTypes.CLOUD, this.getX(), this.getY() + 0.1D, this.getZ(), 0.0D, 0.05D, 0.0D);
+                    }
+                } else {
+                    // Decay momentum quickly if player stops pushing forward
+                    this.takeoffCharge = Math.max(0.0F, this.takeoffCharge - 0.04F);
+                }
+
+                // Trigger flight only when runway charge is fully satisfied
+                if (this.takeoffCharge >= 1.0F && isAscending) {
+                    this.setFlying(true);
+                    Vec3 currentMotion = this.getDeltaMovement();
+                    this.setDeltaMovement(currentMotion.x, 0.65D, currentMotion.z);
+                    this.hasImpulse = true;
+                }
+            }
+
+            // --- FLIGHT MOVEMENT LOGIC ---
+            if (this.isFlying()) {
+                Vec3 lookVec = player.getLookAngle();
+                Vec3 motion = this.getDeltaMovement();
+
+                double motionY = motion.y;
+                double pitch = player.getXRot();
+
+                if (isAscending) {
+                    motionY = Math.min(motionY + 0.08D, 0.45D);
+                } else if (this.clientDiving) {
+                    motionY = Math.max(motionY - 0.12D, -1.1D);
+                } else {
+                    double pitchFactor = pitch / 90.0D;
+                    double targetGlidingY = -0.03D + (pitchFactor * -0.22D);
+                    motionY = Mth.lerp(0.12D, motionY, targetGlidingY);
+                }
+
+                double airDrag = 0.985D;
+                double forwardThrust = (forward > 0 ? 0.06D : 0.0D);
+
+                if (pitch > 0 && !isAscending) {
+                    forwardThrust += (pitch / 90.0D) * 0.04D;
+                }
+
+                double motionX = motion.x * airDrag + (lookVec.x * forwardThrust);
+                double motionZ = motion.z * airDrag + (lookVec.z * forwardThrust);
+
+                this.setDeltaMovement(motionX, motionY, motionZ);
+                this.move(MoverType.SELF, this.getDeltaMovement());
+
+                if (this.onGround() && motionY <= 0.0D && !isAscending) {
                     this.setFlying(false);
+                    this.takeoffCharge = 0.0F;
                 }
             } else {
                 this.setSpeed(0.25F);
-                super.travel(new Vec3(0, 0, forward));
+                super.travel(new Vec3(strafe * 0.2F, 0.0D, forward));
             }
         } else {
-            this.rollAngle = Mth.rotLerp(0.3f, this.rollAngle, 0.0F);
+            this.rollAngle = Mth.rotLerp(0.3F, this.rollAngle, 0.0F);
+            if (this.onGround() && this.isFlying()) {
+                this.setFlying(false);
+                this.takeoffCharge = 0.0F;
+            }
             super.travel(travelVector);
         }
     }
@@ -315,5 +364,24 @@ public class AukvultureEntity extends PathfinderMob {
                 this.idleAnimationState.startIfStopped(this.tickCount);
             }
         }
+    }
+
+    public int getProceduralStateId() {
+        return this.entityData.get(DATA_PROCEDURAL_STATE);
+    }
+
+    public int getProceduralStartTick() {
+        return this.proceduralStartTick;
+    }
+
+    public void triggerProceduralState(int stateId) {
+        if (!this.level().isClientSide()) {
+            this.entityData.set(DATA_PROCEDURAL_STATE, stateId);
+            this.proceduralStartTick = this.tickCount;
+        }
+    }
+
+    public boolean canLaunchFromWater() {
+        return this.isInWater() && this.takeoffCharge >= 1.0F;
     }
 }
