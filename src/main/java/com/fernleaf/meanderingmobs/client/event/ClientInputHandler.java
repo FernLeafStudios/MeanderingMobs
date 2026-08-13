@@ -25,15 +25,19 @@ public class ClientInputHandler {
             boolean isFlapping = MeanderingMobsKeybindsRegistry.FLAP_KEY.isDown();
             boolean isDiving = MeanderingMobsKeybindsRegistry.DIVE_KEY.isDown();
 
-            // 1. Update local client state immediately
+            // 1. Local update every tick
             aukvulture.handleClientInput(isFlapping, isDiving);
 
-            // 2. Send packet if inputs changed or while actively holding controls
-            if (isFlapping != lastFlapState || isDiving != lastDiveState || isFlapping || isDiving) {
+            // 2. Send network packet ONLY on state edge transition
+            if (isFlapping != lastFlapState || isDiving != lastDiveState) {
                 PacketDistributor.sendToServer(new AukvultureInputPacket(isFlapping, isDiving));
                 lastFlapState = isFlapping;
                 lastDiveState = isDiving;
             }
+        } else if (lastFlapState || lastDiveState) {
+            // Reset state memory if player dismounts
+            lastFlapState = false;
+            lastDiveState = false;
         }
     }
 }

@@ -32,10 +32,4 @@ public class RuffianLeaderEntity extends PathfinderMob {
         this.goalSelector.addGoal(3, new LookAtPlayerGoal(this, Player.class, 8.0F));
         this.goalSelector.addGoal(4, new RandomLookAroundGoal(this));
     }
-
-    @Override
-    public void aiStep() {
-        super.aiStep();
-        // Hook into your Umweltlite cognitive updates or velocity vector tracking here.
-    }
 }

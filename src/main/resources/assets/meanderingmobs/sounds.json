@@ -1,0 +1,21 @@
+{
+  "entity.whisp.ambient": {
+    "subtitle": "subtitles.meanderingmobs.whisp.ambient",
+    "sounds": [
+      "meanderingmobs:entity/whisp/whisp_ambient_one",
+      "meanderingmobs:entity/whisp/whisp_ambient_two"
+    ]
+  },
+  "entity.whisp.tag_start": {
+    "subtitle": "subtitles.meanderingmobs.whisp.tag_start",
+    "sounds": [
+      "meanderingmobs:entity/whisp/whisp_tag_start"
+    ]
+  },
+  "entity.whisp.tag_success": {
+    "subtitle": "subtitles.meanderingmobs.whisp.tag_success",
+    "sounds": [
+      "meanderingmobs:entity/whisp/whisp_tag_success"
+    ]
+  }
+}

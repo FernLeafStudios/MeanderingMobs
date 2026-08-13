@@ -1,10 +1,10 @@
 package com.fernleaf.meanderingmobs.client.instance;
 
+import com.fernleaf.meanderingmobs.server.entity.AukvultureEntity;
 import com.fernleaf.fernframe.proprio.util.DynamicsUtils;
 import com.fernleaf.fernframe.proprio.util.DynamicsUtils.SpringState;
 import com.fernleaf.fernframe.proprio.util.IKMathUtils;
 import com.fernleaf.fernframe.proprio.util.TerrainSamplingUtils;
-import com.fernleaf.meanderingmobs.server.entity.AukvultureEntity;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
@@ -63,84 +63,15 @@ public class AukvultureIKInstance {
         this.breathingOffset = DynamicsUtils.getSineWave(age, 0.08f, 0.03f);
 
         if (!isFlying) {
-            this.targetLeftWingY = Mth.clamp(TerrainSamplingUtils.sampleGroundHeight(entity, LEFT_WING_OFFSET, 1.5f, 1.5f), -0.5f, 0.5f);
-            this.targetRightWingY = Mth.clamp(TerrainSamplingUtils.sampleGroundHeight(entity, RIGHT_WING_OFFSET, 1.5f, 1.5f), -0.5f, 0.5f);
-
-            this.currentLeftWingY = IKMathUtils.lerpAsymmetric(this.currentLeftWingY, this.targetLeftWingY, 0.20f, 0.08f);
-            this.currentRightWingY = IKMathUtils.lerpAsymmetric(this.currentRightWingY, this.targetRightWingY, 0.20f, 0.08f);
-
-            float avgWingY = (this.currentLeftWingY + this.currentRightWingY) * 0.5f;
-            this.targetBodyPitch = Mth.clamp(-avgWingY * 0.35f, -0.35f, 0.35f);
-            this.bodyRoll = 0.0f;
-            this.leftWingFlap = 0.0f;
-            this.rightWingFlap = 0.0f;
+            updateGroundedIK(entity);
         } else {
-            this.currentLeftWingY = 0.0f;
-            this.currentRightWingY = 0.0f;
-
-            float motionY = (float) entity.getDeltaMovement().y;
-
-            // Fetch rider pitch (or fall back to entity pitch) interpolated with partialTick
-            float rawPitch = entity.getXRot();
-            float prevPitch = entity.xRotO;
-            if (entity.getControllingPassenger() instanceof LivingEntity rider) {
-                rawPitch = rider.getXRot();
-                prevPitch = rider.xRotO;
-            }
-
-            float interpolatedPitch = Mth.lerp(partialTick, prevPitch, rawPitch);
-            float lookPitchRad = interpolatedPitch * Mth.DEG_TO_RAD;
-
-            // Reactive pitch blend: vertical momentum + direct look pitch (up to ~70° dynamic tilt)
-            float velocityPitch = -motionY * 1.1f;
-            float lookPitch = lookPitchRad * 0.75f;
-            this.targetBodyPitch = Mth.clamp(velocityPitch + lookPitch, -1.22f, 1.22f);
-
-            if (entity instanceof AukvultureEntity auk) {
-                float currentRoll = Mth.lerp(partialTick, auk.prevRollAngle, auk.rollAngle);
-                this.bodyRoll = currentRoll * Mth.DEG_TO_RAD;
-            } else {
-                float yawDelta = entity.getYRot() - entity.yRotO;
-                float targetBodyRoll = Mth.clamp(-yawDelta * 0.22f, -0.85f, 0.85f);
-                this.bodyRoll = IKMathUtils.lerp(this.bodyRoll, targetBodyRoll, 0.12f);
-            }
-
-            // Flap cycle dynamics
-            boolean isMovingFast = motionY > 0.02F || entity.getDeltaMovement().horizontalDistanceSqr() > 0.02F;
-            float flapSpeed = isMovingFast ? 0.35f : 0.12f;
-            float flapIntensity = isMovingFast ? 0.65f : 0.20f;
-
-            float flapSin = Mth.sin(age * flapSpeed);
-
-            this.leftWingFlap = flapSin * flapIntensity;
-            this.rightWingFlap = flapSin * flapIntensity;
+            updateFlightIK(entity, age, partialTick);
         }
 
-        // Smooth pitch response rate
         this.bodyPitch = IKMathUtils.lerp(this.bodyPitch, this.targetBodyPitch, 0.22f);
 
-        // State Overlays
         if (entity instanceof AukvultureEntity auk) {
-            AukvultureProceduralState activeState = AukvultureProceduralState.fromId(auk.getProceduralStateId());
-            if (activeState != AukvultureProceduralState.NONE) {
-                float elapsedTicks = (entity.tickCount - auk.getProceduralStartTick()) + partialTick;
-                float progress = Mth.clamp(elapsedTicks / (float) activeState.duration, 0.0f, 1.0f);
-                float smoothProgress = -(Mth.cos(Mth.PI * progress) - 1.0f) / 2.0f;
-                float fadeOutWeight = 1.0f - Mth.clamp((progress - 0.85f) / 0.15f, 0.0f, 1.0f);
-
-                if (activeState == AukvultureProceduralState.DIVE_TUCK) {
-                    this.bodyPitch += Mth.sin(progress * Mth.PI) * 0.9f * fadeOutWeight;
-                    this.leftWingFlap -= 0.6f * fadeOutWeight;
-                    this.rightWingFlap -= 0.6f * fadeOutWeight;
-                } else if (activeState == AukvultureProceduralState.BARREL_ROLL) {
-                    this.bodyRoll += (smoothProgress * Mth.TWO_PI) * fadeOutWeight;
-                } else if (activeState == AukvultureProceduralState.HEAVY_FLAP_BURST) {
-                    float surge = Mth.sin(progress * Mth.PI);
-                    this.leftWingFlap += surge * 0.5f * fadeOutWeight;
-                    this.rightWingFlap += surge * 0.5f * fadeOutWeight;
-                    this.bodyPitch -= surge * 0.25f * fadeOutWeight;
-                }
-            }
+            applyProceduralState(auk, entity, partialTick);
         }
 
         float targetHeadY = this.bodyPitch * 0.45f;
@@ -151,5 +82,96 @@ public class AukvultureIKInstance {
 
         float targetFeatherTilt = Mth.cos(limbSwing * 0.6662f) * limbSwingAmount * 0.20f;
         DynamicsUtils.updateSpring(this.featherSpring, targetFeatherTilt, 5.0f, 2.5f, 0.05f);
+    }
+
+    private void updateGroundedIK(LivingEntity entity) {
+        this.targetLeftWingY = Mth.clamp(TerrainSamplingUtils.sampleGroundHeight(entity, LEFT_WING_OFFSET, 1.5f, 1.5f), -0.5f, 0.5f);
+        this.targetRightWingY = Mth.clamp(TerrainSamplingUtils.sampleGroundHeight(entity, RIGHT_WING_OFFSET, 1.5f, 1.5f), -0.5f, 0.5f);
+
+        this.currentLeftWingY = IKMathUtils.lerpAsymmetric(this.currentLeftWingY, this.targetLeftWingY, 0.20f, 0.08f);
+        this.currentRightWingY = IKMathUtils.lerpAsymmetric(this.currentRightWingY, this.targetRightWingY, 0.20f, 0.08f);
+
+        float avgWingY = (this.currentLeftWingY + this.currentRightWingY) * 0.5f;
+        this.targetBodyPitch = Mth.clamp(-avgWingY * 0.35f, -0.35f, 0.35f);
+        this.bodyRoll = 0.0f;
+        this.leftWingFlap = 0.0f;
+        this.rightWingFlap = 0.0f;
+    }
+
+    private void updateFlightIK(LivingEntity entity, float age, float partialTick) {
+        this.currentLeftWingY = 0.0f;
+        this.currentRightWingY = 0.0f;
+
+        Vec3 movement = entity.getDeltaMovement();
+        float motionY = (float) movement.y;
+        double horizontalSpeedSqr = movement.horizontalDistanceSqr();
+
+        float rawPitch = entity.getXRot();
+        float prevPitch = entity.xRotO;
+        if (entity.getControllingPassenger() instanceof LivingEntity rider) {
+            rawPitch = rider.getXRot();
+            prevPitch = rider.xRotO;
+        }
+
+        float interpolatedPitch = Mth.lerp(partialTick, prevPitch, rawPitch);
+        float lookPitchRad = interpolatedPitch * Mth.DEG_TO_RAD;
+
+        float velocityPitch = -motionY * 1.1f;
+        float lookPitch = lookPitchRad * 0.75f;
+        this.targetBodyPitch = Mth.clamp(velocityPitch + lookPitch, -1.22f, 1.22f);
+
+        if (horizontalSpeedSqr > 0.0004D) {
+            float moveHeading = (float) (Mth.atan2(movement.z, movement.x) * (180.0D / Math.PI)) - 90.0F;
+            float visualYaw = Mth.rotLerp(partialTick, entity.yRotO, entity.getYRot());
+            float yawDiff = Mth.wrapDegrees(visualYaw - moveHeading);
+
+            float maxRollRad = 45.0F * Mth.DEG_TO_RAD;
+            float targetRoll = Mth.clamp(yawDiff * 0.035f, -maxRollRad, maxRollRad);
+            this.bodyRoll = IKMathUtils.lerp(this.bodyRoll, targetRoll, 0.05f);
+        } else {
+            this.bodyRoll = IKMathUtils.lerp(this.bodyRoll, 0.0f, 0.05f);
+        }
+
+        boolean isAscending = motionY > 0.05F;
+        if (isAscending) {
+            float flapCycle = Mth.sin(age * 0.18f);
+            float heavyFlap = (flapCycle > 0) ? Mth.square(flapCycle) * 0.85f : -Math.abs(flapCycle) * 0.45f;
+
+            this.leftWingFlap = IKMathUtils.lerp(this.leftWingFlap, heavyFlap, 0.15f);
+            this.rightWingFlap = IKMathUtils.lerp(this.rightWingFlap, heavyFlap, 0.15f);
+        } else {
+            double horizontalSpeed = Math.sqrt(horizontalSpeedSqr);
+            float microWindSway = Mth.sin(age * 0.05f) * 0.03f;
+            float speedWingFlex = (float) Mth.clamp(horizontalSpeed * 0.2D, 0.0D, 0.15D);
+            float targetSoarWingPos = -speedWingFlex + microWindSway;
+
+            this.leftWingFlap = IKMathUtils.lerp(this.leftWingFlap, targetSoarWingPos, 0.06f);
+            this.rightWingFlap = IKMathUtils.lerp(this.rightWingFlap, targetSoarWingPos, 0.06f);
+        }
+    }
+
+    private void applyProceduralState(AukvultureEntity auk, LivingEntity entity, float partialTick) {
+        AukvultureProceduralState activeState = AukvultureProceduralState.fromId(auk.getProceduralStateId());
+        if (activeState == AukvultureProceduralState.NONE) return;
+
+        float elapsedTicks = (entity.tickCount - auk.getProceduralStartTick()) + partialTick;
+        float progress = Mth.clamp(elapsedTicks / (float) activeState.duration, 0.0f, 1.0f);
+        float smoothProgress = -(Mth.cos(Mth.PI * progress) - 1.0f) / 2.0f;
+        float fadeOutWeight = 1.0f - Mth.clamp((progress - 0.85f) / 0.15f, 0.0f, 1.0f);
+
+        switch (activeState) {
+            case DIVE_TUCK -> {
+                this.bodyPitch += Mth.sin(progress * Mth.PI) * 0.9f * fadeOutWeight;
+                this.leftWingFlap -= 0.6f * fadeOutWeight;
+                this.rightWingFlap -= 0.6f * fadeOutWeight;
+            }
+            case BARREL_ROLL -> this.bodyRoll += (smoothProgress * Mth.TWO_PI) * fadeOutWeight;
+            case HEAVY_FLAP_BURST -> {
+                float surge = Mth.sin(progress * Mth.PI);
+                this.leftWingFlap += surge * 0.75f * fadeOutWeight;
+                this.rightWingFlap += surge * 0.75f * fadeOutWeight;
+                this.bodyPitch -= surge * 0.25f * fadeOutWeight;
+            }
+        }
     }
 }

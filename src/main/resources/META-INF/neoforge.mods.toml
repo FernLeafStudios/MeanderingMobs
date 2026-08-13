@@ -1,0 +1,29 @@
+modLoader="javafml"
+loaderVersion="[1,)"
+license="All Rights Reserved"
+
+[[accessTransformers]]
+file="META-INF/accesstransformer.cfg"
+
+[[mods]]
+modId="meanderingmobs"
+version="1.0.0"
+displayName="Meandering Mobs"
+
+description='''
+These mobs are sure meandering.
+'''
+
+[[dependencies.meanderingmobs]]
+modId="neoforge"
+type="required"
+versionRange="[21.0.0,)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.meanderingmobs]]
+modId="minecraft"
+type="required"
+versionRange="[1.21,)"
+ordering="NONE"
+side="BOTH"

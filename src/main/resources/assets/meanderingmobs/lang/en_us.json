@@ -1,36 +1,19 @@
 {
-  "itemGroup.meanderingmobs.tab": "Meandering Mobs",
-
-  "entity.meanderingmobs.porcupine": "Porcupine",
-  "entity.meanderingmobs.parrotfish": "Parrotfish",
-  "entity.meanderingmobs.tegu": "Tegu",
   "entity.meanderingmobs.whisp": "Whisp",
-  "entity.meanderingmobs.soul_flare": "Soul Flare",
+  "message.meanderingmobs.whisp.tag_start": "The Whisp wants to play tag! Stay close!",
+  "message.meanderingmobs.whisp.tag_failed": "You wandered too far! The game ended.",
+  "message.meanderingmobs.whisp.tag_retry": "The Whisp giggles! Try tagging it again!",
+  "message.meanderingmobs.whisp.tag_success": "The Whisp bonded with you!",
+  "message.meanderingmobs.whisp.state_wander": "Whisp is now wandering.",
+  "message.meanderingmobs.whisp.state_sit": "Whisp is now staying.",
+  "message.meanderingmobs.whisp.state_follow": "Whisp is now following.",
+  "effect.meanderingmobs.whimsical": "Whimsical",
+
   "entity.meanderingmobs.aukvulture": "Aukvulture",
+  "message.meanderingmobs.aukvulture.state_wander": "Aukvulture is now wandering.",
+  "message.meanderingmobs.aukvulture.state_sit": "Aukvulture is now sitting.",
+  "message.meanderingmobs.aukvulture.state_follow": "Aukvulture is now following.",
 
-  "item.meanderingmobs.porcupine_spawn_egg": "Porcupine Spawn Egg",
-  "item.meanderingmobs.parrotfish_spawn_egg": "Parrotfish Spawn Egg",
-  "item.meanderingmobs.tegu_spawn_egg": "Tegu Spawn Egg",
-  "item.meanderingmobs.whisp_spawn_egg": "Whisp Spawn Egg",
-  "item.meanderingmobs.soul_flare_spawn_egg": "Soul Flare Spawn Egg",
-  "item.meanderingmobs.aukvulture_spawn_egg": "Aukvulture Spawn Egg",
-
-  "item.meanderingmobs.cosplay_kit": "Cosplay Kit",
-  "item.meanderingmobs.soul_powder": "Soul Powder",
-  "item.meanderingmobs.soul_rod": "Soul Rod",
-  "item.meanderingmobs.soulfire_charge": "Soulfire Charge",
-  "item.meanderingmobs.porcupine_quill": "Porcupine Quill",
-  "item.meanderingmobs.quill_arrow": "Quill Arrow",
-  "item.meanderingmobs.aukvulture_feather": "Aukvulture Feather",
-  "item.meanderingmobs.aukvulture_beak": "Aukvulture Beak",
-  "item.meanderingmobs.raw_parrotfish": "Raw Parrotfish",
-  "item.meanderingmobs.cooked_parrotfish": "Cooked Parrotfish",
-  "item.meanderingmobs.tegu_scales": "Tegu Scales",
-  "item.meanderingmobs.tegu_pouch": "Tegu Pouch",
-
-  "effect.meanderingmobs.quilled": "Quilled",
-  "effect.meanderingmobs.lulled": "Lulled",
-
-  "death.attack.cactus": "%1$s was pricked to death by embedded quills",
-  "death.attack.cactus.player": "%1$s was pricked to death by embedded quills while trying to escape %2$s"
+  "entity.meanderingmobs.parrotfish": "Bumphead Parrotfish",
+  "item.meanderingmobs.raw_parrotfish": "Raw Parrotfish"
 }

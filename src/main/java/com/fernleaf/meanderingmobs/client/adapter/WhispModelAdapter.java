@@ -2,46 +2,32 @@ package com.fernleaf.meanderingmobs.client.adapter;
 
 import com.fernleaf.fernframe.proprio.util.ModelPartUtils;
 import com.fernleaf.meanderingmobs.client.instance.WhispIKInstance;
-import com.fernleaf.meanderingmobs.client.model.WhispModel;
+import net.minecraft.client.model.HierarchicalModel;
+import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.world.entity.LivingEntity;
 
 public class WhispModelAdapter {
 
-    public static void applyToModel(LivingEntity entity, WhispModel<?> model, WhispIKInstance ik) {
-        // 1. Root Floating Y-Offset (1 block = 16 pixels)
-        ModelPartUtils.findChild(model.root(), "Whisp").ifPresent(whisp -> {
-            whisp.y += ik.floatYOffset * 16.0f;
-        });
+    private static final float LOWER_BASE_PITCH = 20.0f * (float) (Math.PI / 180.0);
 
-        // 2. Body & Waist Swing Pitch/Roll & Crescent Bend
-        ModelPartUtils.findChild(model.root(), "Whisp", "Waist").ifPresent(waist -> {
-            waist.xRot += ik.bodyPitch + ik.bodyBend;
-            waist.zRot += ik.bodyRoll;
-        });
+    public static void applyToModel(LivingEntity entity, HierarchicalModel<?> model, WhispIKInstance ik) {
+        ModelPart whisp = ModelPartUtils.findChild(model.root(), "Whisp").orElse(null);
+        if (whisp == null) return;
 
-        ModelPartUtils.findChild(model.root(), "Whisp", "Waist", "Body").ifPresent(body -> {
-            body.xRot += -ik.bodyBend * 0.5f;
-        });
+        whisp.y += ik.breathingOffset * 16.0f;
 
-        // 3. Head Pitch & Yaw Tracking
-        ModelPartUtils.findChild(model.root(), "Whisp", "Waist", "Head").ifPresent(head -> {
-            head.yRot += ik.headYaw;
-            head.xRot += ik.headPitch;
+        ModelPart waist = ModelPartUtils.findChild(whisp, "Waist").orElse(null);
+        if (waist != null) {
+            waist.xRot += ik.waistDragPitch;
 
-            // Counter-rotate head pitch slightly so eyes stay forward during heavy body swings
-            head.xRot -= ik.bodyPitch * 0.4f;
-        });
+            ModelPart lower = ModelPartUtils.findChild(waist, "Body", "Lower").orElse(null);
+            if (lower != null) {
+                lower.xRot += LOWER_BASE_PITCH + ik.lowerDragPitch + ik.lowerDangleOffset;
+            }
+        }
 
-        // 4. Hair Dynamic Spring Sway
-        ModelPartUtils.findChild(model.root(), "Whisp", "Waist", "Head", "Hair").ifPresent(hair -> {
-            hair.xRot += ik.hairPitchSpring.position;
-            hair.zRot += ik.hairRollSpring.position;
-        });
-
-        // 5. Secondary Lower Cloth/Tail Drag
-        ModelPartUtils.findChild(model.root(), "Whisp", "Lower").ifPresent(lower -> {
-            lower.xRot += ik.bodyPitch * 0.5f;
-            lower.zRot += ik.bodyRoll * 0.5f;
+        ModelPartUtils.findChild(whisp, "Head").ifPresent(head -> {
+            head.xRot += ik.headSpring.position;
         });
     }
 }

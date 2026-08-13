@@ -3,41 +3,45 @@ package com.fernleaf.meanderingmobs.client.adapter;
 import com.fernleaf.fernframe.proprio.util.ModelPartUtils;
 import com.fernleaf.meanderingmobs.client.instance.ParrotfishIKInstance;
 import com.fernleaf.meanderingmobs.client.model.ParrotfishModel;
+import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 
 public class ParrotfishModelAdapter {
 
     public static void applyToModel(LivingEntity entity, ParrotfishModel<?> model, ParrotfishIKInstance ik) {
-        // 1. Overall Body 3D Orientation (Pitch & Roll)
-        ModelPartUtils.findChild(model.root(), "Parrotfish").ifPresent(root -> {
-            root.xRot += ik.pitch;
-            root.zRot += ik.roll;
-        });
+        ModelPart root = ModelPartUtils.findChild(model.root(), "Parrotfish").orElse(null);
+        if (root == null) return;
 
-        // 2. Traveling Spine Wave
-        ModelPartUtils.findChild(model.root(), "Parrotfish", "body", "torso").ifPresent(torso -> {
-            torso.yRot += ik.torsoYaw;
+        root.xRot += ik.pitch;
+        root.zRot += ik.roll;
 
-            ModelPartUtils.findChild(torso, "back").ifPresent(back -> {
-                // Relative rotation to torso
-                back.yRot += (ik.backYaw - ik.torsoYaw);
+        ModelPart body = ModelPartUtils.findChild(root, "body").orElse(null);
+        if (body != null) {
+            ModelPart torso = ModelPartUtils.findChild(body, "torso").orElse(null);
+            if (torso != null) {
+                torso.yRot += ik.torsoYaw;
 
-                ModelPartUtils.findChild(back, "tail").ifPresent(tail -> {
-                    // Relative rotation to back (clamped to prevent whip-lash detach)
-                    float relativeTailYaw = Mth.clamp(ik.tailYaw - ik.backYaw, -0.25f, 0.25f);
-                    tail.yRot += relativeTailYaw;
-                });
-            });
-        });
+                ModelPart back = ModelPartUtils.findChild(torso, "back").orElse(null);
+                if (back != null) {
+                    back.yRot += (ik.backYaw - ik.torsoYaw);
 
-        // 3. Pectoral Fins (Lfin & Rfin) Steering Flutter
-        ModelPartUtils.findChild(model.root(), "Parrotfish", "body", "Lfin").ifPresent(fin -> {
-            fin.yRot += ik.pectoralFinFlap;
-        });
+                    ModelPart tail = ModelPartUtils.findChild(back, "tail").orElse(null);
+                    if (tail != null) {
+                        // Relaxed clamp threshold to allow full fluid tail tail-end motion
+                        float relativeTailYaw = Mth.clamp(ik.tailYaw - ik.backYaw, -0.50f, 0.50f);
+                        tail.yRot += relativeTailYaw;
+                    }
+                }
+            }
 
-        ModelPartUtils.findChild(model.root(), "Parrotfish", "body", "Rfin").ifPresent(fin -> {
-            fin.yRot -= ik.pectoralFinFlap;
-        });
+            ModelPartUtils.findChild(body, "Lfin").ifPresent(fin -> fin.yRot += ik.pectoralFinFlap);
+            ModelPartUtils.findChild(body, "Rfin").ifPresent(fin -> fin.yRot -= ik.pectoralFinFlap);
+        }
+
+        ModelPart head = ModelPartUtils.findChild(root, "head").orElse(null);
+        if (head != null) {
+            ModelPartUtils.findChild(head, "Lbeak").ifPresent(beak -> beak.xRot = ik.beakOpen);
+        }
     }
 }

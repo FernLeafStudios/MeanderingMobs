@@ -4,7 +4,8 @@ import com.fernleaf.meanderingmobs.MeanderingMobs;
 import com.fernleaf.meanderingmobs.client.model.AukvultureModel;
 import com.fernleaf.meanderingmobs.client.model.ParrotfishModel;
 import com.fernleaf.meanderingmobs.client.model.RuffianLeaderModel;
-import com.fernleaf.meanderingmobs.client.model.WhispModel;
+import com.fernleaf.meanderingmobs.client.model.whisp.CurlyHairWhispModel;
+import com.fernleaf.meanderingmobs.client.model.whisp.StraightHairWhispModel;
 import com.fernleaf.meanderingmobs.client.renderer.AukvultureRenderer;
 import com.fernleaf.meanderingmobs.client.renderer.ParrotfishRenderer;
 import com.fernleaf.meanderingmobs.client.renderer.RuffianLeaderRenderer;
@@ -45,14 +46,14 @@ public class MeanderingMobsEntityRegistry {
     public static final DeferredHolder<EntityType<?>, EntityType<ParrotfishEntity>> PARROT_FISH =
             ENTITIES.register("parrotfish", () ->
                     EntityType.Builder.of(ParrotfishEntity::new, MobCategory.WATER_CREATURE)
-                            .sized(1.5F, 1.5F)
+                            .sized(1.75F, 1.75F)
                             .clientTrackingRange(8)
                             .build("parrotfish")
             );
 
     public static final DeferredHolder<EntityType<?>, EntityType<WhispEntity>> WHISP =
             ENTITIES.register("whisp", () ->
-                    EntityType.Builder.of(WhispEntity::new, MobCategory.CREATURE)
+                    EntityType.Builder.of(WhispEntity::new, MobCategory.MONSTER)
                             .sized(0.6F, 1.8F)
                             .clientTrackingRange(8)
                             .build("whisp")
@@ -62,6 +63,7 @@ public class MeanderingMobsEntityRegistry {
         ENTITIES.register(eventBus);
     }
 
+    // Set bus = MOD so event callbacks fire during mod loading
     @EventBusSubscriber(modid = MeanderingMobs.MODID)
     public static class AttributesRegister {
         @SubscribeEvent
@@ -73,6 +75,7 @@ public class MeanderingMobsEntityRegistry {
         }
     }
 
+    // Set bus = MOD and value = Dist.CLIENT for client lifecycle events
     @EventBusSubscriber(modid = MeanderingMobs.MODID, value = Dist.CLIENT)
     public static class ClientRegister {
         @SubscribeEvent
@@ -88,7 +91,8 @@ public class MeanderingMobsEntityRegistry {
             event.registerLayerDefinition(AukvultureModel.LAYER_LOCATION, AukvultureModel::createBodyLayer);
             event.registerLayerDefinition(RuffianLeaderModel.LAYER_LOCATION, RuffianLeaderModel::createBodyLayer);
             event.registerLayerDefinition(ParrotfishModel.LAYER_LOCATION, ParrotfishModel::createBodyLayer);
-            event.registerLayerDefinition(WhispModel.LAYER_LOCATION, WhispModel::createBodyLayer);
+            event.registerLayerDefinition(StraightHairWhispModel.LAYER_LOCATION, StraightHairWhispModel::createBodyLayer);
+            event.registerLayerDefinition(CurlyHairWhispModel.LAYER_LOCATION, CurlyHairWhispModel::createBodyLayer);
         }
     }
 }

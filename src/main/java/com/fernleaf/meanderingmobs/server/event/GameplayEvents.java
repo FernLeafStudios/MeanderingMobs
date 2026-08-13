@@ -1,4 +1,4 @@
-package com.fernleaf.meanderingmobs.server.events;
+package com.fernleaf.meanderingmobs.server.event;
 
 import com.fernleaf.meanderingmobs.MeanderingMobs;
 import net.neoforged.bus.api.SubscribeEvent;
