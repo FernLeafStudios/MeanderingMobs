@@ -25,5 +25,12 @@ public class MeanderingMobsTagRegistry {
     public static class EntityTypes {
         public static final TagKey<EntityType<?>> WHISP_INFLICT_PACIFISM =
                 TagKey.create(Registries.ENTITY_TYPE, ResourceLocation.fromNamespaceAndPath(MeanderingMobs.MODID, "whisp_inflict_pacifism"));
+
+        public static final TagKey<EntityType<?>> SOUL_ORB_BLACKLISTED = TagKey.create(
+                Registries.ENTITY_TYPE,
+                ResourceLocation.fromNamespaceAndPath(MeanderingMobs.MODID, "soul_orb_blacklisted")
+        );
     }
+
+
 }

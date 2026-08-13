@@ -10,10 +10,15 @@
   "effect.meanderingmobs.whimsical": "Whimsical",
 
   "entity.meanderingmobs.aukvulture": "Aukvulture",
-  "message.meanderingmobs.aukvulture.state_wander": "Aukvulture is now wandering.",
-  "message.meanderingmobs.aukvulture.state_sit": "Aukvulture is now sitting.",
-  "message.meanderingmobs.aukvulture.state_follow": "Aukvulture is now following.",
+  "message.meanderingmobs.aukvulture.state.wander": "Aukvulture is now wandering.",
+  "message.meanderingmobs.aukvulture.state.sit": "Aukvulture is now sitting.",
+  "message.meanderingmobs.aukvulture.state.follow": "Aukvulture is now following.",
 
   "entity.meanderingmobs.parrotfish": "Bumphead Parrotfish",
-  "item.meanderingmobs.raw_parrotfish": "Raw Parrotfish"
+  "item.meanderingmobs.raw_parrotfish": "Raw Parrotfish",
+
+  "entity.meanderingmobs.soulflare": "Soul Flare",
+  "item.meanderingmobs.soul_orb": "Soul Orb",
+  "item.meanderingmobs.soul_orb_active": "Active Soul Orb",
+  "item.meanderingmobs.soul_rod": "Soul Rod"
 }
