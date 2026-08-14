@@ -1,5 +1,6 @@
 package com.fernleaf.meanderingmobs.server.entity.ai.aukvulture;
 
+import com.fernleaf.meanderingmobs.registry.MeanderingMobsSoundsRegistry;
 import com.fernleaf.meanderingmobs.server.entity.AukvultureEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.ai.goal.Goal;
@@ -40,6 +41,16 @@ public class AukvultureSoarGoal extends Goal {
             this.auk.setFlying(true);
             this.auk.setDeltaMovement(this.auk.getDeltaMovement().add(0, 0.4D, 0));
         }
+
+        // Trigger ambient soar sound when gliding goal starts
+        if (!this.auk.level().isClientSide()) {
+            this.auk.playSound(
+                    MeanderingMobsSoundsRegistry.AUKVULTURE_SOAR.get(),
+                    1.2F,
+                    0.9F + this.auk.getRandom().nextFloat() * 0.2F
+            );
+        }
+
         this.pickNewSoarTarget();
     }
 
@@ -69,6 +80,15 @@ public class AukvultureSoarGoal extends Goal {
             return;
         }
 
+        // Periodically loop the ambient soaring wind audio while maintaining flight path
+        if (this.flightTimer % 140 == 0 && !this.auk.level().isClientSide()) {
+            this.auk.playSound(
+                    MeanderingMobsSoundsRegistry.AUKVULTURE_SOAR.get(),
+                    1.0F,
+                    0.95F + this.auk.getRandom().nextFloat() * 0.15F
+            );
+        }
+
         if (this.targetPos == null || currentPos.distanceToSqr(this.targetPos) < 25.0D || this.flightTimer % 160 == 0) {
             this.pickNewSoarTarget();
         }
@@ -86,7 +106,6 @@ public class AukvultureSoarGoal extends Goal {
 
         BlockPos targetXZ = new BlockPos(rx, currentBlock.getY(), rz);
 
-        // Ensure target chunk is loaded before accessing heightmaps
         if (!this.auk.level().hasChunkAt(targetXZ)) {
             return;
         }

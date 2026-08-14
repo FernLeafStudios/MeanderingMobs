@@ -158,9 +158,4 @@ public class SoulFlareEntity extends Monster {
             }
         }
     }
-
-    @Override
-    protected ResourceKey<LootTable> getDefaultLootTable() {
-        return ResourceKey.create(Registries.LOOT_TABLE, ResourceLocation.fromNamespaceAndPath("meanderingmobs", "entities/soulflare"));
-    }
 }

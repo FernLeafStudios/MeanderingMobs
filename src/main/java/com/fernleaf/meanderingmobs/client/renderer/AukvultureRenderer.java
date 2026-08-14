@@ -28,13 +28,17 @@ public class AukvultureRenderer extends MobRenderer<AukvultureEntity, Aukvulture
     }
 
     /**
-     * Directly updates camera position using the transformer-unlocked double overload,
-     * avoiding reflection overhead and extra Vec3 heap allocations.
+     * Directly updates camera position and applies bank/roll transformations matching the aukvulture's movement.
      */
-    public static void moveCamera(Camera camera, float zoom, float dy, float dx) {
+    public static void moveCamera(Camera camera, float zoom, float dy, float dx, float rollAngle) {
         org.joml.Vector3f vector = new org.joml.Vector3f(dx, dy, -zoom).rotate(camera.rotation());
         Vec3 camPos = camera.getPosition();
         camera.setPosition(camPos.x() + vector.x(), camPos.y() + vector.y(), camPos.z() + vector.z());
+
+        // Apply roll rotation to match extreme banking views (up to ~90 degrees)
+        if (Math.abs(rollAngle) > 0.001f) {
+            camera.rotation().rotateZ(rollAngle);
+        }
     }
 
     @Override

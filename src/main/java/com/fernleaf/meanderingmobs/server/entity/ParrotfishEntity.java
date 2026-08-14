@@ -201,9 +201,4 @@ public class ParrotfishEntity extends WaterAnimal {
 
     @Override
     public boolean isPushedByFluid() { return false; }
-
-    @Override
-    protected ResourceKey<LootTable> getDefaultLootTable() {
-        return ResourceKey.create(Registries.LOOT_TABLE, ResourceLocation.fromNamespaceAndPath("meanderingmobs", "entities/parrotfish"));
-    }
 }

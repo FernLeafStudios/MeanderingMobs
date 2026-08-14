@@ -5,6 +5,7 @@ import com.fernleaf.meanderingmobs.client.model.AukvultureModel;
 import com.fernleaf.meanderingmobs.client.model.ParrotfishModel;
 import com.fernleaf.meanderingmobs.client.model.RuffianLeaderModel;
 import com.fernleaf.meanderingmobs.client.model.SoulFlareModel;
+import com.fernleaf.meanderingmobs.client.model.TeguModel;
 import com.fernleaf.meanderingmobs.client.model.whisp.CurlyHairWhispModel;
 import com.fernleaf.meanderingmobs.client.model.whisp.StraightHairWhispModel;
 import com.fernleaf.meanderingmobs.client.renderer.*;
@@ -15,7 +16,6 @@ import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
-import net.minecraft.client.renderer.entity.NoopRenderer;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -33,6 +33,13 @@ public class MeanderingMobsEntityRegistry {
             () -> EntityType.Builder.of(AukvultureEntity::new, MobCategory.CREATURE)
                     .sized(1.5F, 2.0F)
                     .build("aukvulture")
+    );
+
+    public static final DeferredHolder<EntityType<?>, EntityType<TeguEntity>> TEGU = ENTITIES.register("tegu",
+            () -> EntityType.Builder.of(TeguEntity::new, MobCategory.CREATURE)
+                    .sized(1.0F, 0.6F)
+                    .clientTrackingRange(8)
+                    .build("tegu")
     );
 
     public static final DeferredHolder<EntityType<?>, EntityType<RuffianLeaderEntity>> RUFFIAN_LEADER =
@@ -95,6 +102,7 @@ public class MeanderingMobsEntityRegistry {
         @SubscribeEvent
         public static void registerAttributes(EntityAttributeCreationEvent event) {
             event.put(AUKVULTURE.get(), AukvultureEntity.createAttributes().build());
+            event.put(TEGU.get(), TeguEntity.createAttributes().build());
             event.put(RUFFIAN_LEADER.get(), RuffianLeaderEntity.createAttributes().build());
             event.put(PARROT_FISH.get(), ParrotfishEntity.createAttributes().build());
             event.put(WHISP.get(), WhispEntity.createAttributes().build());
@@ -108,6 +116,7 @@ public class MeanderingMobsEntityRegistry {
         @SubscribeEvent
         public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
             event.registerEntityRenderer(AUKVULTURE.get(), AukvultureRenderer::new);
+            event.registerEntityRenderer(TEGU.get(), TeguRenderer::new);
             event.registerEntityRenderer(RUFFIAN_LEADER.get(), RuffianLeaderRenderer::new);
             event.registerEntityRenderer(PARROT_FISH.get(), ParrotfishRenderer::new);
             event.registerEntityRenderer(WHISP.get(), WhispRenderer::new);
@@ -119,6 +128,7 @@ public class MeanderingMobsEntityRegistry {
         @SubscribeEvent
         public static void registerLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
             event.registerLayerDefinition(AukvultureModel.LAYER_LOCATION, AukvultureModel::createBodyLayer);
+            event.registerLayerDefinition(TeguModel.LAYER_LOCATION, TeguModel::createBodyLayer);
             event.registerLayerDefinition(RuffianLeaderModel.LAYER_LOCATION, RuffianLeaderModel::createBodyLayer);
             event.registerLayerDefinition(ParrotfishModel.LAYER_LOCATION, ParrotfishModel::createBodyLayer);
             event.registerLayerDefinition(StraightHairWhispModel.LAYER_LOCATION, StraightHairWhispModel::createBodyLayer);

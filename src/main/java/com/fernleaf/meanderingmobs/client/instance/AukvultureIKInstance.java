@@ -1,5 +1,7 @@
 package com.fernleaf.meanderingmobs.client.instance;
 
+import com.fernleaf.meanderingmobs.client.sound.AukvultureSoarSoundInstance;
+import com.fernleaf.meanderingmobs.registry.MeanderingMobsSoundsRegistry;
 import com.fernleaf.meanderingmobs.server.entity.AukvultureEntity;
 import com.fernleaf.fernframe.proprio.util.DynamicsUtils;
 import com.fernleaf.fernframe.proprio.util.DynamicsUtils.SpringState;
@@ -10,6 +12,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 
 public class AukvultureIKInstance {
+    private AukvultureSoarSoundInstance activeSoarSound;
 
     public enum AukvultureProceduralState {
         NONE(0, 0),
@@ -43,6 +46,7 @@ public class AukvultureIKInstance {
 
     public float leftWingFlap;
     public float rightWingFlap;
+    private float prevLeftWingFlap; // Track previous frame flap angle for downstroke trough detection
 
     public float bodyPitch;
     public float targetBodyPitch;
@@ -54,6 +58,7 @@ public class AukvultureIKInstance {
     public final SpringState featherSpring = new SpringState(0.0f, 0.0f);
 
     public float breathingOffset;
+    private int soarSoundTimer = 0; // Cooldown timer for ambient soaring wind sound
 
     public void update(LivingEntity entity, float limbSwing, float limbSwingAmount, float headPitch, float partialTick) {
         float age = entity.tickCount + partialTick;
@@ -96,6 +101,8 @@ public class AukvultureIKInstance {
         this.bodyRoll = 0.0f;
         this.leftWingFlap = 0.0f;
         this.rightWingFlap = 0.0f;
+        this.prevLeftWingFlap = 0.0f;
+        this.soarSoundTimer = 0;
     }
 
     private void updateFlightIK(LivingEntity entity, float age, float partialTick) {
@@ -139,6 +146,21 @@ public class AukvultureIKInstance {
 
             this.leftWingFlap = IKMathUtils.lerp(this.leftWingFlap, heavyFlap, 0.15f);
             this.rightWingFlap = IKMathUtils.lerp(this.rightWingFlap, heavyFlap, 0.15f);
+
+            // AUDIO SYNC: Flap triggers at lowest point of wing stroke (trough transition)
+            if (entity.level().isClientSide() && this.prevLeftWingFlap <= -0.35f && this.leftWingFlap > -0.35f) {
+                entity.level().playLocalSound(
+                        entity.getX(), entity.getY(), entity.getZ(),
+                        MeanderingMobsSoundsRegistry.AUKVULTURE_FLAP.get(),
+                        entity.getSoundSource(),
+                        0.85F,
+                        0.9F + entity.getRandom().nextFloat() * 0.2F,
+                        false
+                );
+            }
+            this.soarSoundTimer = 0; // Reset soaring timer during continuous flapping
+            // Inside updateFlightIK(...) under the 'else' (gliding) block:
+
         } else {
             double horizontalSpeed = Math.sqrt(horizontalSpeedSqr);
             float microWindSway = Mth.sin(age * 0.05f) * 0.03f;
@@ -147,7 +169,17 @@ public class AukvultureIKInstance {
 
             this.leftWingFlap = IKMathUtils.lerp(this.leftWingFlap, targetSoarWingPos, 0.06f);
             this.rightWingFlap = IKMathUtils.lerp(this.rightWingFlap, targetSoarWingPos, 0.06f);
+
+            // Start tickable looping soar sound if not already playing
+            if (entity.level().isClientSide() && entity instanceof AukvultureEntity auk) {
+                if (this.activeSoarSound == null || this.activeSoarSound.isStopped()) {
+                    this.activeSoarSound = new AukvultureSoarSoundInstance(auk);
+                    net.minecraft.client.Minecraft.getInstance().getSoundManager().play(this.activeSoarSound);
+                }
+            }
         }
+
+        this.prevLeftWingFlap = this.leftWingFlap;
     }
 
     private void applyProceduralState(AukvultureEntity auk, LivingEntity entity, float partialTick) {
@@ -171,6 +203,17 @@ public class AukvultureIKInstance {
                 this.leftWingFlap += surge * 0.75f * fadeOutWeight;
                 this.rightWingFlap += surge * 0.75f * fadeOutWeight;
                 this.bodyPitch -= surge * 0.25f * fadeOutWeight;
+
+                if (entity.level().isClientSide() && elapsedTicks <= 1.0f) {
+                    entity.level().playLocalSound(
+                            entity.getX(), entity.getY(), entity.getZ(),
+                            MeanderingMobsSoundsRegistry.AUKVULTURE_FLAP.get(),
+                            entity.getSoundSource(),
+                            1.1F,
+                            0.85F + entity.getRandom().nextFloat() * 0.15F,
+                            false
+                    );
+                }
             }
         }
     }

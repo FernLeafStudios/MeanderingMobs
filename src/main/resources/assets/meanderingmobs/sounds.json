@@ -17,5 +17,67 @@
     "sounds": [
       "meanderingmobs:entity/whisp/whisp_tag_success"
     ]
+  },
+  "entity.whisp.tag_failure": {
+    "subtitle": "subtitles.meanderingmobs.whisp.tag_failure",
+    "sounds": [
+      "meanderingmobs:entity/whisp/whisp_tag_failure"
+    ]
+  },
+  "entity.whisp.hurt": {
+    "subtitle": "subtitles.meanderingmobs.whisp.hurt",
+    "sounds": [
+      "meanderingmobs:entity/whisp/whisp_hurt"
+    ]
+  },
+  "entity.whisp.death": {
+    "subtitle": "subtitles.meanderingmobs.whisp.death",
+    "sounds": [
+      "meanderingmobs:entity/whisp/whisp_death"
+    ]
+  },
+  "entity.aukvulture.ambient": {
+    "subtitle": "subtitles.meanderingmobs.aukvulture.ambient",
+    "sounds": [
+      "meanderingmobs:entity/aukvulture/aukvulture_ambient_one",
+      "meanderingmobs:entity/aukvulture/aukvulture_ambient_two"
+    ]
+  },
+  "entity.aukvulture.death": {
+    "subtitle": "subtitles.meanderingmobs.aukvulture.death",
+    "sounds": [
+      "meanderingmobs:entity/aukvulture/aukvulture_death"
+    ]
+  },
+  "entity.aukvulture.hurt": {
+    "subtitle": "subtitles.meanderingmobs.aukvulture.hurt",
+    "sounds": [
+      "meanderingmobs:entity/aukvulture/aukvulture_hurt"
+    ]
+  },
+  "entity.aukvulture.attack": {
+    "subtitle": "subtitles.meanderingmobs.aukvulture.attack",
+    "sounds": [
+      "meanderingmobs:entity/aukvulture/aukvulture_attack"
+    ]
+  },
+  "entity.aukvulture.soar": {
+    "subtitle": "subtitles.meanderingmobs.aukvulture.soar",
+    "sounds": [
+      "meanderingmobs:entity/aukvulture/aukvulture_soar_one"
+    ]
+  },
+  "entity.aukvulture.flap": {
+    "subtitle": "subtitles.meanderingmobs.aukvulture.flap",
+    "sounds": [
+      "meanderingmobs:entity/aukvulture/aukvulture_flap_one",
+      "meanderingmobs:entity/aukvulture/aukvulture_flap_two",
+      "meanderingmobs:entity/aukvulture/aukvulture_flap_three",
+      "meanderingmobs:entity/aukvulture/aukvulture_flap_four",
+      "meanderingmobs:entity/aukvulture/aukvulture_flap_five",
+      "meanderingmobs:entity/aukvulture/aukvulture_flap_six",
+      "meanderingmobs:entity/aukvulture/aukvulture_flap_seven",
+      "meanderingmobs:entity/aukvulture/aukvulture_flap_eight"
+    ]
   }
 }

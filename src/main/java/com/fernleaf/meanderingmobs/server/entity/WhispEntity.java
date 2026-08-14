@@ -15,6 +15,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -267,4 +268,24 @@ public class WhispEntity extends PathfinderMob {
 
     @Override
     public int getAmbientSoundInterval() { return 240; }
+
+    @Override
+    protected SoundEvent getHurtSound(@NotNull DamageSource damageSource) {
+        return MeanderingMobsSoundsRegistry.WHISP_HURT.get();
+    }
+
+    @Override
+    protected SoundEvent getDeathSound() {
+        return MeanderingMobsSoundsRegistry.WHISP_DEATH.get();
+    }
+
+    @Override
+    public boolean removeWhenFarAway(double distanceToClosestPlayer) {
+        return !this.isTamed() && super.removeWhenFarAway(distanceToClosestPlayer);
+    }
+
+    @Override
+    public boolean requiresCustomPersistence() {
+        return this.isTamed() || super.requiresCustomPersistence();
+    }
 }

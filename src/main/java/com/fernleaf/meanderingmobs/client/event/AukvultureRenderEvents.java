@@ -73,7 +73,26 @@ public class AukvultureRenderEvents {
                 // Directly call the access-transformed setPosition method on Camera!
                 camera.setPosition(birdPos.x + finalX, birdPos.y + y2, birdPos.z + finalZ);
             } else {
-                AukvultureRenderer.moveCamera(camera, -1.2F, 0.1F, 0.0F);
+                // 1. Get the bird's interpolated position
+                Vec3 birdPos = aukvulture.getPosition(partialTicks);
+
+                // 2. Center the target on the bird's torso (adjust Y offset as needed for height)
+                double targetX = birdPos.x;
+                double targetY = birdPos.y + (aukvulture.isFlying() ? 1.4D : 1.6D);
+                double targetZ = birdPos.z;
+
+                // 3. Compute camera angles & distance
+                float pitch = camera.getXRot() * Mth.DEG_TO_RAD;
+                float yaw = camera.getYRot() * Mth.DEG_TO_RAD;
+                double distance = 4.0D; // Adjust third-person distance behind the bird
+
+                // Calculate backward offset vector relative to camera view
+                double offsetX = -Mth.sin(yaw) * Mth.cos(pitch) * distance;
+                double offsetY = -Mth.sin(pitch) * distance;
+                double offsetZ = Mth.cos(yaw) * Mth.cos(pitch) * distance;
+
+                // 4. Force camera directly to the calculated center-focused position
+                camera.setPosition(targetX + offsetX, targetY + offsetY, targetZ + offsetZ);
             }
         }
     }

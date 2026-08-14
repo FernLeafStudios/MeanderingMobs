@@ -1,15 +1,18 @@
 package com.fernleaf.meanderingmobs.server.entity;
 
+import com.fernleaf.meanderingmobs.registry.MeanderingMobsSoundsRegistry;
 import com.fernleaf.meanderingmobs.server.entity.ai.aukvulture.*;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -355,6 +358,11 @@ public class AukvultureEntity extends PathfinderMob {
                 this.idleAnimationState.startIfStopped(this.tickCount);
             }
         }
+
+        // Stop attack animation when duration expires (1.25 seconds = ~25 ticks)
+        if (this.attackAnimationState.isStarted() && this.tickCount - this.attackAnimationState.getAccumulatedTime() > 25) {
+            this.attackAnimationState.stop();
+        }
     }
 
     public int getProceduralStateId() { return this.entityData.get(DATA_PROCEDURAL_STATE); }
@@ -396,5 +404,44 @@ public class AukvultureEntity extends PathfinderMob {
     @Override
     public boolean canDrownInFluidType(net.neoforged.neoforge.fluids.@NotNull FluidType type) {
         return type == net.neoforged.neoforge.common.NeoForgeMod.WATER_TYPE.value() || super.canDrownInFluidType(type);
+    }
+
+    @Override
+    protected SoundEvent getAmbientSound() {
+        return MeanderingMobsSoundsRegistry.AUKVULTURE_AMBIENT.get();
+    }
+
+    @Override
+    public int getAmbientSoundInterval() { return 240; }
+
+    @Override
+    protected SoundEvent getHurtSound(@NotNull DamageSource damageSource) {
+        return MeanderingMobsSoundsRegistry.AUKVULTURE_HURT.get();
+    }
+
+    @Override
+    protected SoundEvent getDeathSound() {
+        return MeanderingMobsSoundsRegistry.AUKVULTURE_DEATH.get();
+    }
+
+    public static final byte EVENT_ATTACK = 4;
+
+    @Override
+    public boolean doHurtTarget(net.minecraft.world.entity.Entity target) {
+        boolean hurt = super.doHurtTarget(target);
+        if (hurt) {
+            this.playSound(MeanderingMobsSoundsRegistry.AUKVULTURE_ATTACK.get(), 1.0F, 1.0F);
+            this.level().broadcastEntityEvent(this, EVENT_ATTACK);
+        }
+        return hurt;
+    }
+
+    @Override
+    public void handleEntityEvent(byte id) {
+        if (id == EVENT_ATTACK) {
+            this.attackAnimationState.start(this.tickCount);
+        } else {
+            super.handleEntityEvent(id);
+        }
     }
 }

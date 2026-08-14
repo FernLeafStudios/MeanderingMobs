@@ -42,6 +42,7 @@ public class WhispPlayTagGoal extends Goal {
         this.whisp.noPhysics = false;
         if (!this.whisp.isTamed() && this.whisp.getTagPlayer() != null) {
             this.whisp.getTagPlayer().displayClientMessage(Component.translatable("message.meanderingmobs.whisp.tag_failed"), true);
+            this.whisp.playSound(MeanderingMobsSoundsRegistry.WHISP_TAG_FAILURE.get(), 1.0F, 1.0F); // Plays sad/fail chime
         }
     }
 
