@@ -10,7 +10,9 @@ import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
+import org.jetbrains.annotations.NotNull;
 
+@SuppressWarnings("unused")
 public class CurlyHairWhispModel<T extends LivingEntity> extends HierarchicalModel<T> {
 
     public static final ModelLayerLocation LAYER_LOCATION =
@@ -58,7 +60,7 @@ public class CurlyHairWhispModel<T extends LivingEntity> extends HierarchicalMod
     }
 
     @Override
-    public ModelPart root() {
+    public @NotNull ModelPart root() {
         return this.root;
     }
 

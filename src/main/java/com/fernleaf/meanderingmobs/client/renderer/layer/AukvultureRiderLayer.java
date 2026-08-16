@@ -9,6 +9,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 
 public class AukvultureRiderLayer extends RenderLayer<AukvultureEntity, AukvultureModel<AukvultureEntity>> {
@@ -42,9 +43,12 @@ public class AukvultureRiderLayer extends RenderLayer<AukvultureEntity, Aukvultu
 
             EntityRenderDispatcher dispatcher = Minecraft.getInstance().getEntityRenderDispatcher();
 
-            // 4. Render player with natural rotations for free posing in 3rd person
+            // Interpolate the BIRD'S body yaw instead of the player's mouse yaw
+            float birdBodyYaw = Mth.rotLerp(partialTicks, entity.yBodyRotO, entity.yBodyRot);
+
+            // 4. Render player locked facing forward along the bird's spine
             AukvultureRenderer.IS_RENDERING_RIDER = true;
-            dispatcher.render(player, 0.0D, 0.0D, 0.0D, player.getYRot(), partialTicks, poseStack, buffer, packedLight);
+            dispatcher.render(player, 0.0D, 0.0D, 0.0D, birdBodyYaw, partialTicks, poseStack, buffer, packedLight);
             AukvultureRenderer.IS_RENDERING_RIDER = false;
 
             poseStack.popPose();

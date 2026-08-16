@@ -6,6 +6,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 
+@SuppressWarnings("unused")
 public class ParrotfishIKInstance {
 
     public float pitch;

@@ -3,6 +3,7 @@ package com.fernleaf.meanderingmobs.client.model;
 import com.fernleaf.meanderingmobs.MeanderingMobs;
 import com.fernleaf.meanderingmobs.client.animation.TeguAnimations;
 import com.fernleaf.meanderingmobs.server.entity.TeguEntity;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.HierarchicalModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
@@ -15,13 +16,23 @@ public class TeguModel<T extends TeguEntity> extends HierarchicalModel<T> {
             new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(MeanderingMobs.MODID, "tegu"), "main");
 
     private final ModelPart root;
-    private final ModelPart head;
+    public final ModelPart teguPart;
+    public final ModelPart headNeck;
+    public final ModelPart head;
 
     public TeguModel(ModelPart root) {
         this.root = root;
-        ModelPart tegu = root.getChild("tegu");
-        ModelPart headNeck = tegu.getChild("head_neck");
+        this.teguPart = root.getChild("tegu");
+        this.headNeck = teguPart.getChild("head_neck");
         this.head = headNeck.getChild("head");
+    }
+
+    // Helper method to apply transformations down to the mouth
+    public void translateToMouth(PoseStack poseStack) {
+        this.root().translateAndRotate(poseStack);
+        this.teguPart.translateAndRotate(poseStack);
+        this.headNeck.translateAndRotate(poseStack);
+        this.head.translateAndRotate(poseStack);
     }
 
     public static LayerDefinition createBodyLayer() {

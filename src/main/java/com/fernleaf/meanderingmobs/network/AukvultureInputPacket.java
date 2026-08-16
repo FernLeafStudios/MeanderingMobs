@@ -6,6 +6,7 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
+import org.jetbrains.annotations.NotNull;
 
 public record AukvultureInputPacket(boolean isFlapping, boolean isDiving) implements CustomPacketPayload {
 
@@ -19,7 +20,7 @@ public record AukvultureInputPacket(boolean isFlapping, boolean isDiving) implem
     );
 
     @Override
-    public Type<AukvultureInputPacket> type() {
+    public @NotNull Type<AukvultureInputPacket> type() {
         return TYPE;
     }
 }

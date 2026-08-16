@@ -2,11 +2,13 @@ package com.fernleaf.meanderingmobs.server.datagen;
 
 import com.fernleaf.meanderingmobs.MeanderingMobs;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsTagRegistry;
+import com.fernleaf.meanderingmobs.server.entity.TeguEntity;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.tags.ItemTagsProvider;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
+import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -28,5 +30,9 @@ public class MeanderingMobsItemTagProvider extends ItemTagsProvider {
     protected void addTags(HolderLookup.@NotNull Provider provider) {
         this.tag(MeanderingMobsTagRegistry.Items.AUKVULTURE_TAME_FOOD)
                 .add(Items.COD);
+        this.tag(TeguEntity.TEGU_TAMEABLE)
+                .add(Items.EGG, Items.TURTLE_EGG, Items.SNIFFER_EGG)
+                .addOptionalTag(Tags.Items.EGGS);
     }
+
 }

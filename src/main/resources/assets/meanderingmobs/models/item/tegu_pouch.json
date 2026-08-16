@@ -1,0 +1,14 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "meanderingmobs:item/tegu_pouch_open"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "filled": 0.0000001
+      },
+      "model": "meanderingmobs:item/tegu_pouch_full"
+    }
+  ]
+}

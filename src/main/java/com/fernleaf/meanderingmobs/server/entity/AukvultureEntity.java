@@ -2,14 +2,17 @@ package com.fernleaf.meanderingmobs.server.entity;
 
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsSoundsRegistry;
 import com.fernleaf.meanderingmobs.server.entity.ai.aukvulture.*;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
@@ -20,6 +23,9 @@ import net.minecraft.world.entity.ai.goal.*;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 
@@ -443,5 +449,30 @@ public class AukvultureEntity extends PathfinderMob {
         } else {
             super.handleEntityEvent(id);
         }
+    }
+
+    public static boolean checkAukvultureSpawnRules(
+            EntityType<AukvultureEntity> type,
+            ServerLevelAccessor level,
+            MobSpawnType spawnType,
+            BlockPos pos,
+            RandomSource random) {
+
+        // Ensure the block position itself is clear for a large 2x2 entity
+        if (!level.getBlockState(pos).isAir() || !level.getBlockState(pos.above()).isAir()) {
+            return false;
+        }
+
+        // Light level check (Daytime / Open Sky)
+        if (level.getRawBrightness(pos, 0) < 8) {
+            return false;
+        }
+
+        BlockState stateBelow = level.getBlockState(pos.below());
+        return stateBelow.is(BlockTags.DIRT)
+                || stateBelow.is(BlockTags.SAND)
+                || stateBelow.is(BlockTags.SNOW)
+                || stateBelow.is(Blocks.GRAVEL)
+                || stateBelow.is(Blocks.STONE);
     }
 }

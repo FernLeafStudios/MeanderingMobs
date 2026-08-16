@@ -1,4 +1,4 @@
-package com.fernleaf.meanderingmobs.server.entity.ai;
+package com.fernleaf.meanderingmobs.server.entity.ai.soulflare;
 
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsEntityRegistry;
 import com.fernleaf.meanderingmobs.server.entity.SoulFlareEntity;

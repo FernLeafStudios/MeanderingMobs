@@ -17,7 +17,6 @@ import net.neoforged.neoforge.client.event.ViewportEvent;
 @EventBusSubscriber(modid = MeanderingMobs.MODID, value = Dist.CLIENT)
 public class AukvultureRenderEvents {
 
-
     @SubscribeEvent
     public static void onRenderPlayerPre(RenderPlayerEvent.Pre event) {
         Player player = event.getEntity();
@@ -37,62 +36,31 @@ public class AukvultureRenderEvents {
             float partialTicks = (float) event.getPartialTick();
             float smoothedRoll = Mth.lerp(partialTicks, aukvulture.prevRollAngle, aukvulture.rollAngle);
 
-            event.setRoll(smoothedRoll);
-
             Camera camera = event.getCamera();
 
             if (mc.options.getCameraType().isFirstPerson()) {
-                Vec3 motion = aukvulture.getDeltaMovement();
-                float pitchDegrees = (aukvulture.isVehicle() && motion.y > 0)
-                        ? -5.0F
-                        : Mth.clamp((float)(-motion.y * 0.4D), -0.5F, 0.5F) * Mth.RAD_TO_DEG;
+                float dy = 1.45F;
+                float dz = 1.0F;
+                float rollRad = smoothedRoll * Mth.DEG_TO_RAD;
 
-                float pitch = pitchDegrees * Mth.DEG_TO_RAD;
-                float roll = smoothedRoll * Mth.DEG_TO_RAD;
-                float yaw = -aukvulture.getYRot() * Mth.DEG_TO_RAD;
-
-                float cosP = Mth.cos(pitch);
-                float sinP = Mth.sin(pitch);
-                float cosR = Mth.cos(roll);
-                float sinR = Mth.sin(roll);
-                float cosY = Mth.cos(yaw);
-                float sinY = Mth.sin(yaw);
-
-                // Local coordinate rotations (relX = 0)
-                double y1 = 1.45D * cosP - 1.0D * sinP;
-                double z1 = 1.45D * sinP + 1.0D * cosP;
-
-                double x2 = -y1 * sinR;
-                double y2 = y1 * cosR;
-
-                double finalX = x2 * cosY - z1 * sinY;
-                double finalZ = x2 * sinY + z1 * cosY;
-
-                Vec3 birdPos = aukvulture.getPosition(partialTicks);
-
-                // Directly call the access-transformed setPosition method on Camera!
-                camera.setPosition(birdPos.x + finalX, birdPos.y + y2, birdPos.z + finalZ);
+                AukvultureRenderer.moveCamera(camera, -dz, dy, 0.0F, rollRad);
             } else {
-                // 1. Get the bird's interpolated position
-                Vec3 birdPos = aukvulture.getPosition(partialTicks);
+                event.setRoll(smoothedRoll);
 
-                // 2. Center the target on the bird's torso (adjust Y offset as needed for height)
-                double targetX = birdPos.x;
-                double targetY = birdPos.y + (aukvulture.isFlying() ? 1.4D : 1.6D);
-                double targetZ = birdPos.z;
+                // 1. Get the Aukvulture's eye position instead of the player's
+                Vec3 birdEyePos = aukvulture.getEyePosition(partialTicks);
 
-                // 3. Compute camera angles & distance
+                // 2. Compute backward offset vector based on camera rotation
                 float pitch = camera.getXRot() * Mth.DEG_TO_RAD;
                 float yaw = camera.getYRot() * Mth.DEG_TO_RAD;
-                double distance = 4.0D; // Adjust third-person distance behind the bird
+                double distance = 5.0D;
 
-                // Calculate backward offset vector relative to camera view
                 double offsetX = -Mth.sin(yaw) * Mth.cos(pitch) * distance;
                 double offsetY = -Mth.sin(pitch) * distance;
                 double offsetZ = Mth.cos(yaw) * Mth.cos(pitch) * distance;
 
-                // 4. Force camera directly to the calculated center-focused position
-                camera.setPosition(targetX + offsetX, targetY + offsetY, targetZ + offsetZ);
+                // 3. Force the camera to anchor to the bird's eye level
+                camera.setPosition(birdEyePos.x + offsetX, birdEyePos.y + offsetY, birdEyePos.z + offsetZ);
             }
         }
     }

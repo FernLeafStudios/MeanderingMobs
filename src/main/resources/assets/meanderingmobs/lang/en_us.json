@@ -20,5 +20,13 @@
   "entity.meanderingmobs.soulflare": "Soul Flare",
   "item.meanderingmobs.soul_orb": "Soul Orb",
   "item.meanderingmobs.soul_orb_active": "Active Soul Orb",
-  "item.meanderingmobs.soul_rod": "Soul Rod"
+  "item.meanderingmobs.soul_rod": "Soul Rod",
+
+  "entity.meanderingmobs.tegu": "Tegu",
+  "item.meanderingmobs.tegu_scale": "Tegu Scale",
+  "item.meanderingmobs.tegu_pouch": "Tegu Pouch",
+  "item.meanderingmobs.tegu_pouch.fullness": "%s/%s",
+  "message.meanderingmobs.tegu.wander": "Tegu is now wandering",
+  "message.meanderingmobs.tegu.sit": "Tegu is now sitting",
+  "message.meanderingmobs.tegu.follow": "Tegu is now following"
 }

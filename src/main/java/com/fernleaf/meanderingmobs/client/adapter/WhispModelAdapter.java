@@ -6,6 +6,7 @@ import net.minecraft.client.model.HierarchicalModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.world.entity.LivingEntity;
 
+@SuppressWarnings("unused")
 public class WhispModelAdapter {
 
     private static final float LOWER_BASE_PITCH = 20.0f * (float) (Math.PI / 180.0);
@@ -20,14 +21,9 @@ public class WhispModelAdapter {
         if (waist != null) {
             waist.xRot += ik.waistDragPitch;
 
-            ModelPart lower = ModelPartUtils.findChild(waist, "Body", "Lower").orElse(null);
-            if (lower != null) {
-                lower.xRot += LOWER_BASE_PITCH + ik.lowerDragPitch + ik.lowerDangleOffset;
-            }
+            ModelPartUtils.findChild(waist, "Body", "Lower").ifPresent(lower -> lower.xRot += LOWER_BASE_PITCH + ik.lowerDragPitch + ik.lowerDangleOffset);
         }
 
-        ModelPartUtils.findChild(whisp, "Head").ifPresent(head -> {
-            head.xRot += ik.headSpring.position;
-        });
+        ModelPartUtils.findChild(whisp, "Head").ifPresent(head -> head.xRot += ik.headSpring.position);
     }
 }

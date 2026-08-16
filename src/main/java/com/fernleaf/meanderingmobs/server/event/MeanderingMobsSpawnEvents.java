@@ -35,14 +35,8 @@ public class MeanderingMobsSpawnEvents {
         event.register(
                 MeanderingMobsEntityRegistry.AUKVULTURE.get(),
                 SpawnPlacementTypes.ON_GROUND,
-                Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-                (EntityType<AukvultureEntity> type, ServerLevelAccessor level, MobSpawnType spawnType, BlockPos pos, RandomSource random) -> {
-                    BlockState stateBelow = level.getBlockState(pos.below());
-                    return stateBelow.is(BlockTags.DIRT)
-                            || stateBelow.is(BlockTags.SAND)
-                            || stateBelow.is(BlockTags.SNOW)
-                            || stateBelow.is(Blocks.GRAVEL);
-                },
+                Heightmap.Types.WORLD_SURFACE,
+                AukvultureEntity::checkAukvultureSpawnRules,
                 RegisterSpawnPlacementsEvent.Operation.REPLACE
         );
 

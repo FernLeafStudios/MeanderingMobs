@@ -8,6 +8,7 @@ import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 
+@SuppressWarnings("SpellCheckingInspection")
 public class AukvultureModelAdapter {
 
     public static void applyToModel(LivingEntity entity, AukvultureModel<?> model, AukvultureIKInstance ik) {

@@ -7,6 +7,7 @@ import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 
+@SuppressWarnings({"SpellCheckingInspection", "unused"})
 public class ParrotfishModelAdapter {
 
     public static void applyToModel(LivingEntity entity, ParrotfishModel<?> model, ParrotfishIKInstance ik) {
@@ -39,9 +40,6 @@ public class ParrotfishModelAdapter {
             ModelPartUtils.findChild(body, "Rfin").ifPresent(fin -> fin.yRot -= ik.pectoralFinFlap);
         }
 
-        ModelPart head = ModelPartUtils.findChild(root, "head").orElse(null);
-        if (head != null) {
-            ModelPartUtils.findChild(head, "Lbeak").ifPresent(beak -> beak.xRot = ik.beakOpen);
-        }
+        ModelPartUtils.findChild(root, "head").flatMap(head -> ModelPartUtils.findChild(head, "Lbeak")).ifPresent(beak -> beak.xRot = ik.beakOpen);
     }
 }

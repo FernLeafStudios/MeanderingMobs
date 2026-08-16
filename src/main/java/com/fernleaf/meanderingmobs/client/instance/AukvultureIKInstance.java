@@ -11,8 +11,17 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 
+@SuppressWarnings("unused")
 public class AukvultureIKInstance {
     private AukvultureSoarSoundInstance activeSoarSound;
+
+    public int getSoarSoundTimer() {
+        return soarSoundTimer;
+    }
+
+    public void setSoarSoundTimer(int soarSoundTimer) {
+        this.soarSoundTimer = soarSoundTimer;
+    }
 
     public enum AukvultureProceduralState {
         NONE(0, 0),
@@ -46,7 +55,7 @@ public class AukvultureIKInstance {
 
     public float leftWingFlap;
     public float rightWingFlap;
-    private float prevLeftWingFlap; // Track previous frame flap angle for downstroke trough detection
+    private float prevLeftWingFlap; // Track previous frame flap angle for down-stroke trough detection
 
     public float bodyPitch;
     public float targetBodyPitch;
@@ -147,7 +156,7 @@ public class AukvultureIKInstance {
             this.leftWingFlap = IKMathUtils.lerp(this.leftWingFlap, heavyFlap, 0.15f);
             this.rightWingFlap = IKMathUtils.lerp(this.rightWingFlap, heavyFlap, 0.15f);
 
-            // AUDIO SYNC: Flap triggers at lowest point of wing stroke (trough transition)
+            // AUDIO SYNC: Flap triggers at the lowest point of wing stroke (trough transition)
             if (entity.level().isClientSide() && this.prevLeftWingFlap <= -0.35f && this.leftWingFlap > -0.35f) {
                 entity.level().playLocalSound(
                         entity.getX(), entity.getY(), entity.getZ(),
