@@ -45,6 +45,10 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
     private static final EntityDataAccessor<Optional<UUID>> DATA_NAVIGATION_OWNER =
             SynchedEntityData.defineId(AukvultureEntity.class, EntityDataSerializers.OPTIONAL_UUID);
 
+    public static final byte EVENT_ATTACK = 4;
+    public static final byte EVENT_TAKEOFF = 5;
+    public static final byte EVENT_LANDING = 6;
+
     private boolean clientFlapping;
     private boolean clientDiving;
     private int crashCooldown = 0;
@@ -57,8 +61,9 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
     public final AnimationState walkAnimationState = new AnimationState();
     public final AnimationState flyAnimationState = new AnimationState();
     public final AnimationState attackAnimationState = new AnimationState();
-    public final AnimationState sitAnimationState = new AnimationState();
-    public final AnimationState launchAnimationState = new AnimationState();
+    public final AnimationState idle2AnimationState = new AnimationState();
+    public final AnimationState walk2FlyAnimationState = new AnimationState();
+    public final AnimationState landingAnimationState = new AnimationState();
 
     public AukvultureEntity(EntityType<? extends PathfinderMob> type, Level level) {
         super(type, level);
@@ -138,9 +143,18 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
     }
 
     public void setFlying(boolean flying) {
+        boolean wasFlying = this.isFlying();
         this.entityData.set(IS_FLYING, flying);
         this.setNoGravity(flying);
         this.refreshDimensions();
+
+        if (!this.level().isClientSide()) {
+            if (!wasFlying && flying) {
+                this.level().broadcastEntityEvent(this, EVENT_TAKEOFF);
+            } else if (wasFlying && !flying) {
+                this.level().broadcastEntityEvent(this, EVENT_LANDING);
+            }
+        }
     }
 
     @Override
@@ -176,9 +190,10 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
         return false;
     }
 
+    // In AukvultureEntity.java
     @Override
     public @NotNull Vec3 getPassengerRidingPosition(@NotNull Entity passenger) {
-        return new Vec3(this.getX(), this.getY() + (this.isFlying() ? 1.75D : 1.85D), this.getZ());
+        return new Vec3(this.getX(), this.getY(), this.getZ());
     }
 
     @Override
@@ -270,6 +285,7 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
                 return;
             }
 
+            // In AukvultureEntity.java - travel() method
             if (this.onGround()) {
                 if (forward > 0 && this.clientFlapping) {
                     this.takeoffCharge = Math.min(1.0F, this.takeoffCharge + 0.025F);
@@ -280,7 +296,13 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
                     this.takeoffCharge = Math.max(0.0F, this.takeoffCharge - 0.04F);
                 }
 
-                if (this.takeoffCharge >= 1.0F && this.clientFlapping) {
+                // Trigger takeoff animation event first
+                if (this.takeoffCharge >= 1.0F && !this.walk2FlyAnimationState.isStarted()) {
+                    this.level().broadcastEntityEvent(this, EVENT_TAKEOFF);
+                }
+
+                // Launch once the takeoff transition animation is near completion (e.g. ~15-20 ticks)
+                if (this.walk2FlyAnimationState.isStarted() && this.tickCount - this.walk2FlyAnimationState.getAccumulatedTime() >= 15) {
                     this.setFlying(true);
                     Vec3 currentMotion = this.getDeltaMovement();
                     this.setDeltaMovement(currentMotion.x, 0.65D, currentMotion.z);
@@ -308,8 +330,9 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
         super.tick();
 
         if (!this.level().isClientSide()) {
-            if (this.onGround() && this.isFlying() && !this.clientFlapping && this.takeoffCharge < 0.5F) {
+            if (this.onGround() && this.isFlying()) {
                 this.setFlying(false);
+                this.takeoffCharge = 0.0F;
             }
         } else {
             this.setupAnimationStates();
@@ -317,13 +340,25 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
     }
 
     private void setupAnimationStates() {
-        if (this.isFlying() || this.isInWater()) {
+        if (this.isFlying()) {
             this.idleAnimationState.stop();
             this.walkAnimationState.stop();
-            this.flyAnimationState.startIfStopped(this.tickCount);
+            this.landingAnimationState.stop();
+
+            // Play takeoff transition first if active, otherwise play main flight loop
+            if (this.walk2FlyAnimationState.isStarted()) {
+                this.flyAnimationState.stop();
+            } else {
+                this.flyAnimationState.startIfStopped(this.tickCount);
+            }
         } else {
             this.flyAnimationState.stop();
-            if (this.getDeltaMovement().horizontalDistanceSqr() > 1.0E-4D) {
+            this.walk2FlyAnimationState.stop();
+
+            if (this.landingAnimationState.isStarted()) {
+                this.idleAnimationState.stop();
+                this.walkAnimationState.stop();
+            } else if (this.getDeltaMovement().horizontalDistanceSqr() > 1.0E-4D) {
                 this.idleAnimationState.stop();
                 this.walkAnimationState.startIfStopped(this.tickCount);
             } else {
@@ -335,8 +370,13 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
         if (this.attackAnimationState.isStarted() && this.tickCount - this.attackAnimationState.getAccumulatedTime() > 25) {
             this.attackAnimationState.stop();
         }
+        if (this.walk2FlyAnimationState.isStarted() && this.tickCount - this.walk2FlyAnimationState.getAccumulatedTime() > 20) {
+            this.walk2FlyAnimationState.stop();
+        }
+        if (this.landingAnimationState.isStarted() && this.tickCount - this.landingAnimationState.getAccumulatedTime() > 20) {
+            this.landingAnimationState.stop();
+        }
     }
-
 
     public @Nullable SpawnGroupData finalizeSpawn(@NotNull ServerLevelAccessor level, @NotNull DifficultyInstance difficulty, @NotNull MobSpawnType spawnType, @Nullable SpawnGroupData data) {
         data = super.finalizeSpawn(level, difficulty, spawnType, data);
@@ -368,8 +408,6 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
     @Override
     protected SoundEvent getDeathSound() { return MeanderingMobsSoundsRegistry.AUKVULTURE_DEATH.get(); }
 
-    public static final byte EVENT_ATTACK = 4;
-
     @Override
     public boolean doHurtTarget(Entity target) {
         boolean hurt = super.doHurtTarget(target);
@@ -384,6 +422,10 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
     public void handleEntityEvent(byte id) {
         if (id == EVENT_ATTACK) {
             this.attackAnimationState.start(this.tickCount);
+        } else if (id == EVENT_TAKEOFF) {
+            this.walk2FlyAnimationState.start(this.tickCount);
+        } else if (id == EVENT_LANDING) {
+            this.landingAnimationState.start(this.tickCount);
         } else {
             super.handleEntityEvent(id);
         }

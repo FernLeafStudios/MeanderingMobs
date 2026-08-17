@@ -4,7 +4,7 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 
 public class MeanderingMobsConfig {
 
-    public static final ModConfigSpec SERVER_SPEC;
+    public static final ModConfigSpec COMMON_SPEC;
 
     // Whisp Configs
     public static final ModConfigSpec.DoubleValue WHISP_TAG_MAX_DISTANCE;
@@ -74,6 +74,6 @@ public class MeanderingMobsConfig {
                 .defineInRange("maxShedTicks", 12000, 2400, 144000);
         builder.pop();
 
-        SERVER_SPEC = builder.build();
+        COMMON_SPEC = builder.build();
     }
 }

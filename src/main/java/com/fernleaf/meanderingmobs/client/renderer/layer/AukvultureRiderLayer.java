@@ -23,8 +23,7 @@ public class AukvultureRiderLayer extends RenderLayer<AukvultureEntity, Aukvultu
                        AukvultureEntity entity, float limbSwing, float limbSwingAmount,
                        float partialTicks, float ageInTicks, float netHeadYaw, float headPitch) {
 
-        if (entity.isFlying() && entity.getFirstPassenger() instanceof Player player) {
-            // Hide rider model in first-person mode for the local player
+        if (entity.getFirstPassenger() instanceof Player player) {
             if (Minecraft.getInstance().options.getCameraType().isFirstPerson()
                     && player == Minecraft.getInstance().player) {
                 return;
@@ -32,23 +31,27 @@ public class AukvultureRiderLayer extends RenderLayer<AukvultureEntity, Aukvultu
 
             poseStack.pushPose();
 
-            // 1. Align matrix to PlayerAnchor bone
-            this.getParentModel().translateToPlayerAnchor(poseStack);
+            // 1. Follow exact bone transformations down to the anchor
+            this.getParentModel().root()
+                    .getChild("Body")
+                    .getChild("Torso")
+                    .getChild("player_anchor")
+                    .translateAndRotate(poseStack);
 
-            // 2. Rotate upright
+            // 2. Flip upright relative to model space
             poseStack.mulPose(Axis.XP.rotationDegrees(180.0F));
 
-            // 3. Offset seat position onto saddle
-            poseStack.translate(0.0D, -0.65D, 0.05D);
+            // 3. Counter-rotate the player's body yaw to prevent double spinning
+            float playerBodyYaw = Mth.rotLerp(partialTicks, player.yBodyRotO, player.yBodyRot);
+            poseStack.mulPose(Axis.YP.rotationDegrees(playerBodyYaw - 180.0F));
+
+            // 4. Fine-tune saddle position offset
+            poseStack.translate(0.0D, 0.0D, 0.0D);
 
             EntityRenderDispatcher dispatcher = Minecraft.getInstance().getEntityRenderDispatcher();
 
-            // Interpolate the BIRD'S body yaw instead of the player's mouse yaw
-            float birdBodyYaw = Mth.rotLerp(partialTicks, entity.yBodyRotO, entity.yBodyRot);
-
-            // 4. Render player locked facing forward along the bird's spine
             AukvultureRenderer.IS_RENDERING_RIDER = true;
-            dispatcher.render(player, 0.0D, 0.0D, 0.0D, birdBodyYaw, partialTicks, poseStack, buffer, packedLight);
+            dispatcher.render(player, 0.0D, 0.0D, 0.0D, 0.0F, partialTicks, poseStack, buffer, packedLight);
             AukvultureRenderer.IS_RENDERING_RIDER = false;
 
             poseStack.popPose();

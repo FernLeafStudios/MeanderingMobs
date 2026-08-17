@@ -14,8 +14,16 @@ public class QuilledEffect extends MobEffect {
 
     @Override
     public boolean applyEffectTick(@NotNull LivingEntity entity, int amplifier) {
-        double baseDamage = MeanderingMobsConfig.QUILLED_BASE_DAMAGE.get();
-        MeanderingMobsConfig.DamageScaling scaling = MeanderingMobsConfig.QUILLED_DAMAGE_SCALING.get();
+        // Check if the overall spec is loaded
+        boolean isLoaded = MeanderingMobsConfig.COMMON_SPEC.isLoaded();
+
+        double baseDamage = isLoaded
+                ? MeanderingMobsConfig.QUILLED_BASE_DAMAGE.get()
+                : 1.0;
+
+        MeanderingMobsConfig.DamageScaling scaling = isLoaded
+                ? MeanderingMobsConfig.QUILLED_DAMAGE_SCALING.get()
+                : MeanderingMobsConfig.DamageScaling.EXPONENTIAL;
 
         float damage = switch (scaling) {
             case LINEAR -> (float) (baseDamage * (amplifier + 1));
@@ -29,7 +37,11 @@ public class QuilledEffect extends MobEffect {
 
     @Override
     public boolean shouldApplyEffectTickThisTick(int duration, int amplifier) {
-        int baseInterval = MeanderingMobsConfig.QUILLED_BASE_INTERVAL_TICKS.get();
+        // Check if the overall spec is loaded
+        int baseInterval = MeanderingMobsConfig.COMMON_SPEC.isLoaded()
+                ? MeanderingMobsConfig.QUILLED_BASE_INTERVAL_TICKS.get()
+                : 40;
+
         int interval = baseInterval >> amplifier;
         return interval <= 0 || (duration % interval == 0);
     }

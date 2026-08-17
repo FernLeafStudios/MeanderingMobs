@@ -18,14 +18,14 @@ public class AukvultureMovementHandler {
             Vec3 dir = target.subtract(current);
             double distance = dir.length();
 
-            if (distance >= 2.0D) {
+            if (distance >= 1.0D) {
                 float targetYRot = (float) (Mth.atan2(dir.z, dir.x) * (180.0D / Math.PI)) - 90.0F;
                 float horizontalDist = (float) Math.sqrt(dir.x * dir.x + dir.z * dir.z);
                 float targetXRot = (float) (-(Mth.atan2(dir.y, horizontalDist) * (180.0D / Math.PI)));
 
-                float maxTurnRate = auk.isVehicle() ? 6.0F : 3.0F;
+                float maxTurnRate = auk.isVehicle() ? 6.0F : 4.5F;
                 float newY = Mth.approachDegrees(auk.getYRot(), targetYRot, maxTurnRate);
-                float newX = Mth.approachDegrees(auk.getXRot(), targetXRot, 2.0F);
+                float newX = Mth.approachDegrees(auk.getXRot(), targetXRot, 3.0F);
 
                 auk.setYRot(newY);
                 auk.setXRot(newX);
@@ -37,7 +37,8 @@ public class AukvultureMovementHandler {
                 double speedMult = moveControl.getSpeedModifier() * 0.35D;
                 Vec3 targetVel = forward.scale(speedMult);
 
-                currentMotion = currentMotion.lerp(targetVel, 0.08D);
+                // Smooth velocity interpolation to avoid pathing hiccups
+                currentMotion = currentMotion.lerp(targetVel, 0.12D);
             } else {
                 currentMotion = currentMotion.multiply(0.98D, 0.96D, 0.98D);
             }
@@ -45,13 +46,10 @@ public class AukvultureMovementHandler {
             currentMotion = currentMotion.multiply(0.98D, 0.96D, 0.98D);
         }
 
-        // Set movement vector and invoke move physics
         auk.setDeltaMovement(currentMotion);
         auk.move(MoverType.SELF, auk.getDeltaMovement());
 
-        // Apply drag/friction ONCE post-movement
         auk.setDeltaMovement(auk.getDeltaMovement().scale(0.98D));
-
         auk.rollAngle = Mth.rotLerp(0.1F, auk.rollAngle, 0.0F);
 
         if (auk.onGround() && auk.getDeltaMovement().y <= 0.0D) {

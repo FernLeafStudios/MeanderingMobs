@@ -42,7 +42,6 @@ public class AukvultureSoarGoal extends Goal {
             this.auk.setDeltaMovement(this.auk.getDeltaMovement().add(0, 0.4D, 0));
         }
 
-        // Trigger ambient soar sound when gliding goal starts
         if (!this.auk.level().isClientSide()) {
             this.auk.playSound(
                     MeanderingMobsSoundsRegistry.AUKVULTURE_SOAR.get(),
@@ -51,7 +50,11 @@ public class AukvultureSoarGoal extends Goal {
             );
         }
 
+        // Pick initial target immediately upon starting to avoid hesitation gaps
         this.pickNewSoarTarget();
+        if (this.targetPos != null) {
+            this.auk.getMoveControl().setWantedPosition(this.targetPos.x, this.targetPos.y, this.targetPos.z, 1.2D);
+        }
     }
 
     @Override
@@ -80,7 +83,6 @@ public class AukvultureSoarGoal extends Goal {
             return;
         }
 
-        // Periodically loop the ambient soaring wind audio while maintaining flight path
         if (this.flightTimer % 140 == 0 && !this.auk.level().isClientSide()) {
             this.auk.playSound(
                     MeanderingMobsSoundsRegistry.AUKVULTURE_SOAR.get(),
@@ -89,7 +91,8 @@ public class AukvultureSoarGoal extends Goal {
             );
         }
 
-        if (this.targetPos == null || currentPos.distanceToSqr(this.targetPos) < 25.0D || this.flightTimer % 160 == 0) {
+        // Check distance continuously and refresh smooth position
+        if (this.targetPos == null || currentPos.distanceToSqr(this.targetPos) < 36.0D || this.flightTimer % 120 == 0) {
             this.pickNewSoarTarget();
         }
 
