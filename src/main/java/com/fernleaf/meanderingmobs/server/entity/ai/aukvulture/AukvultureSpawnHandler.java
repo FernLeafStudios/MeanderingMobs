@@ -23,7 +23,8 @@ public class AukvultureSpawnHandler {
         List<AukvultureEntity> nearbyAuks = level.getEntitiesOfClass(
                 AukvultureEntity.class,
                 searchBox,
-                e -> e != auk && e.isAlive() && !e.isTame()
+                // Updated e.isTame() to e.isTamed()
+                e -> e != auk && e.isAlive() && !e.isTamed()
         );
 
         boolean isFlockMember = !nearbyAuks.isEmpty();

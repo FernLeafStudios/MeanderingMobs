@@ -1,11 +1,11 @@
 package com.fernleaf.meanderingmobs.server.entity;
 
+import com.fernleaf.meanderingmobs.server.entity.ai.TameableStateGoal;
 import com.fernleaf.meanderingmobs.server.entity.ai.tegu.TeguShedGoal;
-import com.fernleaf.meanderingmobs.server.entity.ai.tegu.TeguStateGoal;
 import com.fernleaf.meanderingmobs.server.entity.ai.tegu.TeguStealFromChestGoal;
+import com.fernleaf.meanderingmobs.server.entity.util.MeanderingMobsTameableEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -31,18 +31,12 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.Optional;
-import java.util.UUID;
-
-public class TeguEntity extends PathfinderMob {
+public class TeguEntity extends MeanderingMobsTameableEntity {
 
     public static final TagKey<Item> TEGU_TAMEABLE = TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath("meanderingmobs", "tegu_tame"));
 
     private static final EntityDataAccessor<ItemStack> DATA_MOUTH_ITEM = SynchedEntityData.defineId(TeguEntity.class, EntityDataSerializers.ITEM_STACK);
-    private static final EntityDataAccessor<Optional<UUID>> DATA_OWNER_UUID = SynchedEntityData.defineId(TeguEntity.class, EntityDataSerializers.OPTIONAL_UUID);
-    private static final EntityDataAccessor<Integer> DATA_AI_STATE = SynchedEntityData.defineId(TeguEntity.class, EntityDataSerializers.INT); // 0 = Wander, 1 = Sit, 2 = Follow
 
     public final AnimationState idleAnimationState = new AnimationState();
     public final AnimationState idle2AnimationState = new AnimationState();
@@ -71,15 +65,13 @@ public class TeguEntity extends PathfinderMob {
     protected void defineSynchedData(SynchedEntityData.@NotNull Builder builder) {
         super.defineSynchedData(builder);
         builder.define(DATA_MOUTH_ITEM, ItemStack.EMPTY);
-        builder.define(DATA_OWNER_UUID, Optional.empty());
-        builder.define(DATA_AI_STATE, 0);
     }
 
     @Override
     protected void registerGoals() {
         this.goalSelector.addGoal(0, new FloatGoal(this));
-        this.goalSelector.addGoal(1, new TeguShedGoal(this)); // Shedding goal
-        this.goalSelector.addGoal(1, new TeguStateGoal(this));
+        this.goalSelector.addGoal(1, new TeguShedGoal(this));
+        this.goalSelector.addGoal(1, new TameableStateGoal(this));
         this.goalSelector.addGoal(2, new MeleeAttackGoal(this, 1.2D, false));
         this.goalSelector.addGoal(3, new TeguStealFromChestGoal(this));
         this.goalSelector.addGoal(4, new WaterAvoidingRandomStrollGoal(this, 1.0D));
@@ -112,7 +104,7 @@ public class TeguEntity extends PathfinderMob {
     }
 
     private void setupAnimationStates() {
-        if (getAiState() == 1) {
+        if (getAiState() == CommandState.SIT.id) {
             this.idleAnimationState.stop();
             this.idle2AnimationState.stop();
             this.sittingAnimationState.startIfStopped(this.tickCount);
@@ -143,7 +135,7 @@ public class TeguEntity extends PathfinderMob {
     public @NotNull InteractionResult mobInteract(@NotNull Player player, @NotNull InteractionHand hand) {
         ItemStack heldStack = player.getItemInHand(hand);
 
-        // 1. Mouth Item Swap / Take (Shift + Right Click)
+        // 1. Mouth Item Swap / Take
         if (player.isShiftKeyDown()) {
             if (!this.level().isClientSide()) {
                 ItemStack currentMouthItem = getMouthItem();
@@ -179,43 +171,14 @@ public class TeguEntity extends PathfinderMob {
             return InteractionResult.sidedSuccess(this.level().isClientSide());
         }
 
-        // 3. Command / State Toggle (Cycles 0: Wander, 1: Sit, 2: Follow)
+        // 3. Command / State Toggle
         if (isTamed() && isOwner(player) && hand == InteractionHand.MAIN_HAND) {
-            if (!this.level().isClientSide()) {
-                int nextState = (getAiState() + 1) % 3;
-                setAiState(nextState);
-
-                String msgKey = switch (nextState) {
-                    case 1 -> "message.meanderingmobs.tegu.sit";
-                    case 2 -> "message.meanderingmobs.tegu.follow";
-                    default -> "message.meanderingmobs.tegu.wander";
-                };
-                player.displayClientMessage(Component.translatable(msgKey), true);
-            }
+            this.cycleAiState(player, "tegu");
             return InteractionResult.sidedSuccess(this.level().isClientSide());
         }
 
         return super.mobInteract(player, hand);
     }
-
-    public void tame(Player player) {
-        setOwnerUUID(player.getUUID());
-        setAiState(2);
-    }
-
-    public boolean isTamed() { return getOwnerUUID() != null; }
-    public boolean isOwner(Player player) { return player.getUUID().equals(getOwnerUUID()); }
-
-    public @Nullable Player getOwner() {
-        UUID ownerUUID = getOwnerUUID();
-        return ownerUUID == null ? null : this.level().getPlayerByUUID(ownerUUID);
-    }
-
-    public @Nullable UUID getOwnerUUID() { return this.entityData.get(DATA_OWNER_UUID).orElse(null); }
-    public void setOwnerUUID(@Nullable UUID uuid) { this.entityData.set(DATA_OWNER_UUID, Optional.ofNullable(uuid)); }
-
-    public void setAiState(int state) { this.entityData.set(DATA_AI_STATE, state); }
-    public int getAiState() { return this.entityData.get(DATA_AI_STATE); }
 
     public ItemStack getMouthItem() { return this.entityData.get(DATA_MOUTH_ITEM); }
     public void setMouthItem(ItemStack stack) { this.entityData.set(DATA_MOUTH_ITEM, stack); }
@@ -247,9 +210,6 @@ public class TeguEntity extends PathfinderMob {
     @Override
     public void addAdditionalSaveData(@NotNull CompoundTag tag) {
         super.addAdditionalSaveData(tag);
-        tag.putInt("AiState", getAiState());
-        UUID owner = getOwnerUUID();
-        if (owner != null) tag.putUUID("Owner", owner);
         if (!getMouthItem().isEmpty()) {
             tag.put("MouthItem", getMouthItem().save(this.registryAccess()));
         }
@@ -258,20 +218,8 @@ public class TeguEntity extends PathfinderMob {
     @Override
     public void readAdditionalSaveData(@NotNull CompoundTag tag) {
         super.readAdditionalSaveData(tag);
-        if (tag.contains("AiState")) setAiState(tag.getInt("AiState"));
-        if (tag.hasUUID("Owner")) setOwnerUUID(tag.getUUID("Owner"));
         if (tag.contains("MouthItem")) {
             setMouthItem(ItemStack.parse(this.registryAccess(), tag.getCompound("MouthItem")).orElse(ItemStack.EMPTY));
         }
-    }
-
-    @Override
-    public boolean removeWhenFarAway(double distanceToClosestPlayer) {
-        return !this.isTamed() && super.removeWhenFarAway(distanceToClosestPlayer);
-    }
-
-    @Override
-    public boolean requiresCustomPersistence() {
-        return this.isTamed() || super.requiresCustomPersistence();
     }
 }

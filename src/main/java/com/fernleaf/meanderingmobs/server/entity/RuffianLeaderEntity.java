@@ -1,5 +1,6 @@
 package com.fernleaf.meanderingmobs.server.entity;
 
+import com.fernleaf.meanderingmobs.server.entity.util.MeanderingMobsEntity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -11,7 +12,7 @@ import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
-public class RuffianLeaderEntity extends PathfinderMob {
+public class RuffianLeaderEntity extends MeanderingMobsEntity {
 
     public RuffianLeaderEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
         super(entityType, level);

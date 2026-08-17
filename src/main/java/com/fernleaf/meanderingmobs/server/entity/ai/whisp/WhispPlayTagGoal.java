@@ -1,5 +1,6 @@
 package com.fernleaf.meanderingmobs.server.entity.ai.whisp;
 
+import com.fernleaf.meanderingmobs.config.MeanderingMobsConfig;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsSoundsRegistry;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsTagRegistry;
 import com.fernleaf.meanderingmobs.server.entity.WhispEntity;
@@ -42,7 +43,7 @@ public class WhispPlayTagGoal extends Goal {
         this.whisp.noPhysics = false;
         if (!this.whisp.isTamed() && this.whisp.getTagPlayer() != null) {
             this.whisp.getTagPlayer().displayClientMessage(Component.translatable("message.meanderingmobs.whisp.tag_failed"), true);
-            this.whisp.playSound(MeanderingMobsSoundsRegistry.WHISP_TAG_FAILURE.get(), 1.0F, 1.0F); // Plays sad/fail chime
+            this.whisp.playSound(MeanderingMobsSoundsRegistry.WHISP_TAG_FAILURE.get(), 1.0F, 1.0F);
         }
     }
 
@@ -52,8 +53,10 @@ public class WhispPlayTagGoal extends Goal {
         if (player == null) return;
 
         double distSqr = this.whisp.distanceToSqr(player);
+        double maxDist = MeanderingMobsConfig.WHISP_TAG_MAX_DISTANCE.get();
+        double maxDistSqr = maxDist * maxDist;
 
-        if (distSqr > 256.0D) {
+        if (distSqr > maxDistSqr) {
             this.whisp.stopTagGame(false);
             return;
         }

@@ -32,5 +32,17 @@ public class MeanderingMobsEntityTypeTagProvider extends EntityTypeTagsProvider 
                 .add(EntityType.DROWNED)
                 .add(EntityType.STRAY)
                 .add(EntityType.PHANTOM);
+
+        this.tag(MeanderingMobsTagRegistry.EntityTypes.PORCUPINE_HATES)
+                .addTag(EntityTypeTags.SKELETONS)
+                .addTag(EntityTypeTags.RAIDERS)
+                .add(EntityType.ZOMBIE)
+                .add(EntityType.CREEPER)
+                .add(EntityType.SPIDER)
+                .add(EntityType.CAVE_SPIDER)
+                .add(EntityType.HUSK)
+                .add(EntityType.DROWNED)
+                .add(EntityType.STRAY)
+                .add(EntityType.PHANTOM);
     }
 }

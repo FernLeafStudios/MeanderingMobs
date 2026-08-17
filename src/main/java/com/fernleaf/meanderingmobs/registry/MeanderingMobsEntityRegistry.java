@@ -6,12 +6,17 @@ import com.fernleaf.meanderingmobs.client.model.ParrotfishModel;
 import com.fernleaf.meanderingmobs.client.model.RuffianLeaderModel;
 import com.fernleaf.meanderingmobs.client.model.SoulFlareModel;
 import com.fernleaf.meanderingmobs.client.model.TeguModel;
+import com.fernleaf.meanderingmobs.client.model.porcupine.ColdPorcupineModel;
+import com.fernleaf.meanderingmobs.client.model.porcupine.TemperatePorcupineModel;
+import com.fernleaf.meanderingmobs.client.model.porcupine.WarmPorcupineModel;
 import com.fernleaf.meanderingmobs.client.model.whisp.CurlyHairWhispModel;
 import com.fernleaf.meanderingmobs.client.model.whisp.StraightHairWhispModel;
 import com.fernleaf.meanderingmobs.client.renderer.*;
 import com.fernleaf.meanderingmobs.server.entity.*;
+import com.fernleaf.meanderingmobs.server.entity.projectile.QuillArrowEntity;
 import com.fernleaf.meanderingmobs.server.entity.projectile.SoulFireballEntity;
 import com.fernleaf.meanderingmobs.server.entity.projectile.SoulOrbEntity;
+import net.minecraft.client.renderer.entity.TippableArrowRenderer;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.EntityType;
@@ -58,6 +63,14 @@ public class MeanderingMobsEntityRegistry {
                             .build("parrotfish")
             );
 
+    public static final DeferredHolder<EntityType<?>, EntityType<PorcupineEntity>> PORCUPINE =
+            ENTITIES.register("porcupine", () ->
+                    EntityType.Builder.of(PorcupineEntity::new, MobCategory.CREATURE)
+                            .sized(0.7F, 0.6F)
+                            .clientTrackingRange(8)
+                            .build("porcupine")
+            );
+
     public static final DeferredHolder<EntityType<?>, EntityType<WhispEntity>> WHISP =
             ENTITIES.register("whisp", () ->
                     EntityType.Builder.of(WhispEntity::new, MobCategory.MONSTER)
@@ -92,11 +105,20 @@ public class MeanderingMobsEntityRegistry {
                             .build("soul_fireball")
             );
 
+    public static final DeferredHolder<EntityType<?>, EntityType<QuillArrowEntity>> QUILL_ARROW =
+            ENTITIES.register("quill_arrow", () ->
+                    EntityType.Builder.<QuillArrowEntity>of(QuillArrowEntity::new, MobCategory.MISC)
+                            .sized(0.5F, 0.5F)
+                            .clientTrackingRange(4)
+                            .updateInterval(20)
+                            .build("quill_arrow")
+            );
+
+
     public static void register(IEventBus eventBus) {
         ENTITIES.register(eventBus);
     }
 
-    // Set bus = MOD so event callbacks fire during mod loading
     @EventBusSubscriber(modid = MeanderingMobs.MODID)
     public static class AttributesRegister {
         @SubscribeEvent
@@ -105,12 +127,12 @@ public class MeanderingMobsEntityRegistry {
             event.put(TEGU.get(), TeguEntity.createAttributes().build());
             event.put(RUFFIAN_LEADER.get(), RuffianLeaderEntity.createAttributes().build());
             event.put(PARROT_FISH.get(), ParrotfishEntity.createAttributes().build());
+            event.put(PORCUPINE.get(), PorcupineEntity.createAttributes().build());
             event.put(WHISP.get(), WhispEntity.createAttributes().build());
             event.put(SOULFLARE.get(), SoulFlareEntity.createAttributes().build());
         }
     }
 
-    // Set bus = MOD and value = Dist.CLIENT for client lifecycle events
     @EventBusSubscriber(modid = MeanderingMobs.MODID, value = Dist.CLIENT)
     public static class ClientRegister {
         @SubscribeEvent
@@ -119,10 +141,12 @@ public class MeanderingMobsEntityRegistry {
             event.registerEntityRenderer(TEGU.get(), TeguRenderer::new);
             event.registerEntityRenderer(RUFFIAN_LEADER.get(), RuffianLeaderRenderer::new);
             event.registerEntityRenderer(PARROT_FISH.get(), ParrotfishRenderer::new);
+            event.registerEntityRenderer(PORCUPINE.get(), PorcupineRenderer::new);
             event.registerEntityRenderer(WHISP.get(), WhispRenderer::new);
             event.registerEntityRenderer(SOULFLARE.get(), SoulFlareRenderer::new);
             event.registerEntityRenderer(SOUL_ORB_PROJECTILE.get(), ThrownItemRenderer::new);
             event.registerEntityRenderer(SOUL_FIREBALL.get(), ThrownItemRenderer::new);
+            event.registerEntityRenderer(QUILL_ARROW.get(), QuillArrowRenderer::new);
         }
 
         @SubscribeEvent
@@ -131,6 +155,9 @@ public class MeanderingMobsEntityRegistry {
             event.registerLayerDefinition(TeguModel.LAYER_LOCATION, TeguModel::createBodyLayer);
             event.registerLayerDefinition(RuffianLeaderModel.LAYER_LOCATION, RuffianLeaderModel::createBodyLayer);
             event.registerLayerDefinition(ParrotfishModel.LAYER_LOCATION, ParrotfishModel::createBodyLayer);
+            event.registerLayerDefinition(ColdPorcupineModel.LAYER_LOCATION, ColdPorcupineModel::createBodyLayer);
+            event.registerLayerDefinition(TemperatePorcupineModel.LAYER_LOCATION, TemperatePorcupineModel::createBodyLayer);
+            event.registerLayerDefinition(WarmPorcupineModel.LAYER_LOCATION, WarmPorcupineModel::createBodyLayer);
             event.registerLayerDefinition(StraightHairWhispModel.LAYER_LOCATION, StraightHairWhispModel::createBodyLayer);
             event.registerLayerDefinition(CurlyHairWhispModel.LAYER_LOCATION, CurlyHairWhispModel::createBodyLayer);
             event.registerLayerDefinition(SoulFlareModel.LAYER_LOCATION, SoulFlareModel::createBodyLayer);

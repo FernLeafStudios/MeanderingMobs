@@ -1,7 +1,9 @@
 package com.fernleaf.meanderingmobs.server.entity;
 
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsSoundsRegistry;
+import com.fernleaf.meanderingmobs.server.entity.ai.TameableStateGoal;
 import com.fernleaf.meanderingmobs.server.entity.ai.aukvulture.*;
+import com.fernleaf.meanderingmobs.server.entity.util.MeanderingMobsTameableEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -13,6 +15,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
@@ -33,25 +36,15 @@ import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.UUID;
 
-@SuppressWarnings("unused")
-public class AukvultureEntity extends PathfinderMob {
+public class AukvultureEntity extends MeanderingMobsTameableEntity {
 
     private static final EntityDataAccessor<Boolean> IS_FLYING =
             SynchedEntityData.defineId(AukvultureEntity.class, EntityDataSerializers.BOOLEAN);
-    private static final EntityDataAccessor<Boolean> DATA_IS_TAMED =
-            SynchedEntityData.defineId(AukvultureEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> DATA_LONE_WANDERER =
             SynchedEntityData.defineId(AukvultureEntity.class, EntityDataSerializers.BOOLEAN);
-    private static final EntityDataAccessor<Integer> DATA_AI_STATE =
-            SynchedEntityData.defineId(AukvultureEntity.class, EntityDataSerializers.INT);
-    private static final EntityDataAccessor<Optional<UUID>> DATA_OWNER_UUID =
-            SynchedEntityData.defineId(AukvultureEntity.class, EntityDataSerializers.OPTIONAL_UUID);
     private static final EntityDataAccessor<Optional<UUID>> DATA_NAVIGATION_OWNER =
             SynchedEntityData.defineId(AukvultureEntity.class, EntityDataSerializers.OPTIONAL_UUID);
-    private static final EntityDataAccessor<Integer> DATA_PROCEDURAL_STATE =
-            SynchedEntityData.defineId(AukvultureEntity.class, EntityDataSerializers.INT);
 
-    private int proceduralStartTick;
     private boolean clientFlapping;
     private boolean clientDiving;
     private int crashCooldown = 0;
@@ -84,7 +77,7 @@ public class AukvultureEntity extends PathfinderMob {
     @Override
     protected void registerGoals() {
         this.goalSelector.addGoal(0, new FloatGoal(this));
-        this.goalSelector.addGoal(1, new AukvultureStateGoal(this));
+        this.goalSelector.addGoal(1, new TameableStateGoal(this));
         this.goalSelector.addGoal(2, new WaterAvoidingRandomStrollGoal(this, 1.0D) {
             @Override
             public boolean canUse() {
@@ -102,12 +95,8 @@ public class AukvultureEntity extends PathfinderMob {
     protected void defineSynchedData(SynchedEntityData.@NotNull Builder builder) {
         super.defineSynchedData(builder);
         builder.define(IS_FLYING, false);
-        builder.define(DATA_IS_TAMED, false);
         builder.define(DATA_LONE_WANDERER, true);
-        builder.define(DATA_AI_STATE, 0);
-        builder.define(DATA_OWNER_UUID, Optional.empty());
         builder.define(DATA_NAVIGATION_OWNER, Optional.empty());
-        builder.define(DATA_PROCEDURAL_STATE, 0);
     }
 
     @Override
@@ -123,13 +112,8 @@ public class AukvultureEntity extends PathfinderMob {
     @Override
     public void addAdditionalSaveData(@NotNull CompoundTag compound) {
         super.addAdditionalSaveData(compound);
-        compound.putBoolean("IsTamed", this.isTame());
         compound.putBoolean("LoneWanderer", this.isLoneWanderer());
-        compound.putInt("AiState", this.getAiState());
         compound.putBoolean("IsFlying", this.isFlying());
-
-        UUID ownerUuid = this.getOwnerUUID();
-        if (ownerUuid != null) compound.putUUID("Owner", ownerUuid);
 
         UUID navOwner = this.getNavigationOwner();
         if (navOwner != null) compound.putUUID("NavigationOwner", navOwner);
@@ -138,12 +122,9 @@ public class AukvultureEntity extends PathfinderMob {
     @Override
     public void readAdditionalSaveData(@NotNull CompoundTag compound) {
         super.readAdditionalSaveData(compound);
-        this.setTamed(compound.getBoolean("IsTamed"));
         this.setLoneWanderer(!compound.contains("LoneWanderer") || compound.getBoolean("LoneWanderer"));
-        this.setAiState(compound.getInt("AiState"));
         this.setFlying(compound.getBoolean("IsFlying"));
 
-        if (compound.hasUUID("Owner")) this.setOwnerUUID(compound.getUUID("Owner"));
         if (compound.hasUUID("NavigationOwner")) this.setNavigationOwner(compound.getUUID("NavigationOwner"));
     }
 
@@ -162,12 +143,9 @@ public class AukvultureEntity extends PathfinderMob {
         this.refreshDimensions();
     }
 
-    public boolean isTame() { return this.entityData.get(DATA_IS_TAMED); }
-    public void setTamed(boolean tamed) { this.entityData.set(DATA_IS_TAMED, tamed); }
-
+    @Override
     public void tame(Player player) {
-        this.setTamed(true);
-        this.setOwnerUUID(player.getUUID());
+        super.tame(player);
         this.setNavigationOwner(player.getUUID());
         this.navigation.stop();
     }
@@ -175,26 +153,15 @@ public class AukvultureEntity extends PathfinderMob {
     public boolean isLoneWanderer() { return this.entityData.get(DATA_LONE_WANDERER); }
     public void setLoneWanderer(boolean loneWanderer) { this.entityData.set(DATA_LONE_WANDERER, loneWanderer); }
 
-    public int getAiState() { return this.entityData.get(DATA_AI_STATE); }
-    public void setAiState(int state) { this.entityData.set(DATA_AI_STATE, state); }
-
-    @Nullable
-    public UUID getOwnerUUID() { return this.entityData.get(DATA_OWNER_UUID).orElse(null); }
-    public void setOwnerUUID(@Nullable UUID uuid) { this.entityData.set(DATA_OWNER_UUID, Optional.ofNullable(uuid)); }
-
     @Nullable
     public UUID getNavigationOwner() { return this.entityData.get(DATA_NAVIGATION_OWNER).orElse(null); }
     public void setNavigationOwner(@Nullable UUID uuid) { this.entityData.set(DATA_NAVIGATION_OWNER, Optional.ofNullable(uuid)); }
 
-    public boolean isOwnedBy(LivingEntity entity) {
-        return entity != null && entity.getUUID().equals(this.getOwnerUUID());
-    }
-
     @Override
     public @NotNull InteractionResult mobInteract(@NotNull Player player, @NotNull InteractionHand hand) {
-        if (!this.level().isClientSide() && this.isTame() && this.isOwnedBy(player)) {
+        if (!this.level().isClientSide() && this.isTamed() && this.isOwner(player)) {
             if (player.isShiftKeyDown()) {
-                this.setAiState((this.getAiState() + 1) % 3);
+                this.cycleAiState(player, "aukvulture");
                 return InteractionResult.SUCCESS;
             } else if (!this.isVehicle()) {
                 player.startRiding(this);
@@ -365,37 +332,16 @@ public class AukvultureEntity extends PathfinderMob {
             }
         }
 
-        // Stop attack animation when duration expires (1.25 seconds = ~25 ticks)
         if (this.attackAnimationState.isStarted() && this.tickCount - this.attackAnimationState.getAccumulatedTime() > 25) {
             this.attackAnimationState.stop();
         }
     }
 
-    public int getProceduralStateId() { return this.entityData.get(DATA_PROCEDURAL_STATE); }
-    public int getProceduralStartTick() { return this.proceduralStartTick; }
 
-    public void triggerProceduralState(int stateId) {
-        if (!this.level().isClientSide()) {
-            this.entityData.set(DATA_PROCEDURAL_STATE, stateId);
-            this.proceduralStartTick = this.tickCount;
-        }
-    }
-
-    @Override
-    public @Nullable SpawnGroupData finalizeSpawn(@NotNull net.minecraft.world.level.ServerLevelAccessor level, @NotNull net.minecraft.world.DifficultyInstance difficulty, @NotNull MobSpawnType spawnType, @Nullable SpawnGroupData data) {
+    public @Nullable SpawnGroupData finalizeSpawn(@NotNull ServerLevelAccessor level, @NotNull DifficultyInstance difficulty, @NotNull MobSpawnType spawnType, @Nullable SpawnGroupData data) {
         data = super.finalizeSpawn(level, difficulty, spawnType, data);
         AukvultureSpawnHandler.initializeAukvulture(this, level, spawnType);
         return data;
-    }
-
-    @Override
-    public boolean removeWhenFarAway(double distanceToClosestPlayer) {
-        return !this.isTame() && !this.isVehicle() && super.removeWhenFarAway(distanceToClosestPlayer);
-    }
-
-    @Override
-    public boolean requiresCustomPersistence() {
-        return this.isTame() || super.requiresCustomPersistence();
     }
 
     public boolean canLaunchFromWater() {
@@ -403,9 +349,7 @@ public class AukvultureEntity extends PathfinderMob {
     }
 
     @Override
-    public int getMaxAirSupply() {
-        return 300;
-    }
+    public int getMaxAirSupply() { return 300; }
 
     @Override
     public boolean canDrownInFluidType(net.neoforged.neoforge.fluids.@NotNull FluidType type) {
@@ -413,27 +357,21 @@ public class AukvultureEntity extends PathfinderMob {
     }
 
     @Override
-    protected SoundEvent getAmbientSound() {
-        return MeanderingMobsSoundsRegistry.AUKVULTURE_AMBIENT.get();
-    }
+    protected SoundEvent getAmbientSound() { return MeanderingMobsSoundsRegistry.AUKVULTURE_AMBIENT.get(); }
 
     @Override
     public int getAmbientSoundInterval() { return 240; }
 
     @Override
-    protected SoundEvent getHurtSound(@NotNull DamageSource damageSource) {
-        return MeanderingMobsSoundsRegistry.AUKVULTURE_HURT.get();
-    }
+    protected SoundEvent getHurtSound(@NotNull DamageSource damageSource) { return MeanderingMobsSoundsRegistry.AUKVULTURE_HURT.get(); }
 
     @Override
-    protected SoundEvent getDeathSound() {
-        return MeanderingMobsSoundsRegistry.AUKVULTURE_DEATH.get();
-    }
+    protected SoundEvent getDeathSound() { return MeanderingMobsSoundsRegistry.AUKVULTURE_DEATH.get(); }
 
     public static final byte EVENT_ATTACK = 4;
 
     @Override
-    public boolean doHurtTarget(net.minecraft.world.entity.Entity target) {
+    public boolean doHurtTarget(Entity target) {
         boolean hurt = super.doHurtTarget(target);
         if (hurt) {
             this.playSound(MeanderingMobsSoundsRegistry.AUKVULTURE_ATTACK.get(), 1.0F, 1.0F);
@@ -458,12 +396,10 @@ public class AukvultureEntity extends PathfinderMob {
             BlockPos pos,
             RandomSource random) {
 
-        // Ensure the block position itself is clear for a large 2x2 entity
         if (!level.getBlockState(pos).isAir() || !level.getBlockState(pos.above()).isAir()) {
             return false;
         }
 
-        // Light level check (Daytime / Open Sky)
         if (level.getRawBrightness(pos, 0) < 8) {
             return false;
         }

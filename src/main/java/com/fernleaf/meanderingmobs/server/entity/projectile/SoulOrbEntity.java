@@ -1,5 +1,6 @@
 package com.fernleaf.meanderingmobs.server.entity.projectile;
 
+import com.fernleaf.meanderingmobs.config.MeanderingMobsConfig;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsEntityRegistry;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsItemRegistry;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsTagRegistry;
@@ -22,6 +23,7 @@ import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
+import org.jetbrains.annotations.NotNull;
 
 public class SoulOrbEntity extends ThrowableItemProjectile {
 
@@ -35,12 +37,12 @@ public class SoulOrbEntity extends ThrowableItemProjectile {
     }
 
     @Override
-    protected Item getDefaultItem() {
+    protected @NotNull Item getDefaultItem() {
         return MeanderingMobsItemRegistry.SOUL_ORB.get();
     }
 
     @Override
-    protected void onHitEntity(EntityHitResult result) {
+    protected void onHitEntity(@NotNull EntityHitResult result) {
         super.onHitEntity(result);
 
         if (!this.level().isClientSide() && result.getEntity() instanceof LivingEntity target) {
@@ -54,43 +56,44 @@ public class SoulOrbEntity extends ThrowableItemProjectile {
             if (isEntityTamed(target)) {
                 // Instant Capture for Tamed Pets
                 captureSuccess(target, serverLevel);
-            } else {
-                // Struggle Roll for Wild Mobs
+            } else if (MeanderingMobsConfig.SOUL_ORB_ALLOW_WILD_CAPTURE.get()) {
+                // Config-driven struggle roll for wild mobs
                 float healthRatio = target.getHealth() / target.getMaxHealth();
-                float baseChance = 0.70f - (healthRatio * 0.50f); // 20% full HP -> 70% low HP
+                double baseChance = MeanderingMobsConfig.SOUL_ORB_BASE_SUCCESS_RATE.get();
+                double penalty = MeanderingMobsConfig.SOUL_ORB_HEALTH_PENALTY_WEIGHT.get();
+                double finalChance = Math.max(0.0, baseChance - (healthRatio * penalty));
 
-                // Emit Angry Villager struggle particles on target
+                // Struggle particles
                 serverLevel.sendParticles(
                         ParticleTypes.ANGRY_VILLAGER,
                         target.getX(), target.getY(1.0D), target.getZ(),
                         8, 0.3, 0.4, 0.3, 0.02
                 );
 
-                if (this.random.nextFloat() < baseChance) {
+                if (this.random.nextDouble() < finalChance) {
                     captureSuccess(target, serverLevel);
                 } else {
-                    // Failed attempt: Aggro and shatter
                     if (target instanceof Mob mob && this.getOwner() instanceof LivingEntity owner) {
                         mob.setTarget(owner);
                     }
                     shatter();
                 }
+            } else {
+                // Disallowed wild captures automatically shatter
+                shatter();
             }
         }
     }
 
     private boolean isEntityTamed(LivingEntity target) {
-        // 1. Standard Minecraft Tamable Animals
         if (target instanceof TamableAnimal tamable && tamable.isTame()) {
             return true;
         }
 
-        // 2. Custom Whisp Entity check
         if (target instanceof WhispEntity whisp && whisp.isTamed()) {
             return true;
         }
 
-        // 3. NBT Fallback check for any entity containing an Owner UUID tag
         CompoundTag nbt = new CompoundTag();
         target.saveWithoutId(nbt);
         return nbt.hasUUID("Owner") || nbt.hasUUID("OwnerUUID");
@@ -109,7 +112,6 @@ public class SoulOrbEntity extends ThrowableItemProjectile {
 
         target.spawnAtLocation(activeOrb);
 
-        // Success Gust particles & sound
         serverLevel.sendParticles(
                 ParticleTypes.GUST,
                 target.getX(), target.getY(0.5D), target.getZ(),
@@ -134,7 +136,7 @@ public class SoulOrbEntity extends ThrowableItemProjectile {
     }
 
     @Override
-    protected void onHit(HitResult result) {
+    protected void onHit(@NotNull HitResult result) {
         super.onHit(result);
         if (!this.level().isClientSide() && result.getType() == HitResult.Type.BLOCK) {
             shatter();

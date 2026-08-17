@@ -1,6 +1,7 @@
 package com.fernleaf.meanderingmobs.server.entity;
 
 import com.fernleaf.meanderingmobs.server.entity.ai.soulflare.SoulFlareAttackGoal;
+import com.fernleaf.meanderingmobs.server.entity.util.MeanderingMobsHostileEntity;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -21,7 +22,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 
-public class SoulFlareEntity extends Monster {
+public class SoulFlareEntity extends MeanderingMobsHostileEntity {
     private static final EntityDataAccessor<Boolean> DATA_IS_CHARGING =
             SynchedEntityData.defineId(SoulFlareEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> DATA_IS_SPINNING =
@@ -100,7 +101,7 @@ public class SoulFlareEntity extends Monster {
     }
 
     @Override
-    public boolean hurt(DamageSource source, float amount) {
+    public boolean hurt(@NotNull DamageSource source, float amount) {
         if (this.isSpinning() && !source.isDirect()) {
             amount *= 0.5F;
         }
@@ -139,7 +140,6 @@ public class SoulFlareEntity extends Monster {
                     this.cooldownTimer = 60;
                 }
             } else if (hasTarget && this.distanceToSqr(this.getTarget()) <= 9.0D) {
-                // Trigger melee spin ONLY when player gets within point-blank range (<= 3 blocks)
                 this.setSpinning(true);
                 this.spinTimer = 40;
             }

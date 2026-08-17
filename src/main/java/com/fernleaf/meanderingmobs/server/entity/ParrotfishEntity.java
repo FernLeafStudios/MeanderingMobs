@@ -2,14 +2,12 @@ package com.fernleaf.meanderingmobs.server.entity;
 
 import com.fernleaf.meanderingmobs.server.entity.ai.parrotfish.ParrotfishEatCoralGoal;
 import com.fernleaf.meanderingmobs.server.entity.ai.parrotfish.ParrotfishRamAttackGoal;
+import com.fernleaf.meanderingmobs.server.entity.util.MeanderingMobsAquaticEntity;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.FluidTags;
@@ -34,11 +32,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.pathfinder.PathType;
-import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 
-public class ParrotfishEntity extends WaterAnimal {
+public class ParrotfishEntity extends MeanderingMobsAquaticEntity {
 
     private static final EntityDataAccessor<Boolean> DATA_HAS_COCOON =
             SynchedEntityData.defineId(ParrotfishEntity.class, EntityDataSerializers.BOOLEAN);
@@ -103,11 +100,10 @@ public class ParrotfishEntity extends WaterAnimal {
 
         if (!this.isInWater() || !this.isEyeInFluid(FluidTags.WATER)) {
             if (!this.onGround()) {
-                this.setDeltaMovement(this.getDeltaMovement().add(0.0D, -0.05D, 0.0D)); // Downward pull
+                this.setDeltaMovement(this.getDeltaMovement().add(0.0D, -0.05D, 0.0D));
             }
         }
 
-        // Stun Logic
         if (this.isStunned()) {
             this.stunnedTicks--;
             if (this.level().isClientSide() && this.random.nextInt(3) == 0) {
@@ -118,7 +114,6 @@ public class ParrotfishEntity extends WaterAnimal {
             }
         }
 
-        // Night Cocoon Logic
         if (!this.level().isClientSide()) {
             boolean isNight = !this.level().isDay();
             if (isNight && !this.hasCocoon() && this.isInWater()) {
@@ -168,7 +163,6 @@ public class ParrotfishEntity extends WaterAnimal {
         }
     }
 
-    // Getters / Setters
     public boolean hasCocoon() { return this.entityData.get(DATA_HAS_COCOON); }
     public void setCocoon(boolean cocoon) { this.entityData.set(DATA_HAS_COCOON, cocoon); }
 
@@ -185,7 +179,7 @@ public class ParrotfishEntity extends WaterAnimal {
     public void setEating(boolean eating) { this.entityData.set(DATA_IS_EATING, eating); }
 
     public boolean canEatCoral() { return this.eatCoralCooldown <= 0; }
-    public void resetEatCoralCooldown() { this.eatCoralCooldown = 600; } // 30 seconds
+    public void resetEatCoralCooldown() { this.eatCoralCooldown = 600; }
 
     @Override
     public void addAdditionalSaveData(@NotNull CompoundTag compound) {

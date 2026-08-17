@@ -28,7 +28,7 @@ public class AukvultureTameEvents {
         ItemStack stack = event.getItemStack();
 
         // 1. Taming Logic
-        if (!auk.isTame() && stack.is(MeanderingMobsTagRegistry.Items.AUKVULTURE_TAME_FOOD)) {
+        if (!auk.isTamed() && stack.is(MeanderingMobsTagRegistry.Items.AUKVULTURE_TAME_FOOD)) {
             if (event.getLevel() instanceof ServerLevel serverLevel) {
                 if (auk.isLoneWanderer()) {
                     if (!player.getAbilities().instabuild) {
@@ -58,7 +58,7 @@ public class AukvultureTameEvents {
         }
 
         // 2. State-Switching Logic (Wander, Sit, Follow)
-        if (auk.isTame() && auk.isOwnedBy(player) && player.isCrouching()) {
+        if (auk.isTamed() && auk.isOwner(player) && player.isCrouching()) {
             int nextState = (auk.getAiState() + 1) % 3;
             auk.setAiState(nextState);
 

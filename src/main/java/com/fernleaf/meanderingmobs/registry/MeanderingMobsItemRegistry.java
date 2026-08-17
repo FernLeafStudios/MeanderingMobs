@@ -2,6 +2,7 @@ package com.fernleaf.meanderingmobs.registry;
 
 import com.fernleaf.meanderingmobs.MeanderingMobs;
 import com.fernleaf.meanderingmobs.server.item.ActiveSoulOrbItem;
+import com.fernleaf.meanderingmobs.server.item.PorcupineQuillItem;
 import com.fernleaf.meanderingmobs.server.item.SoulOrbItem;
 import com.fernleaf.meanderingmobs.server.item.TeguPouchItem;
 import net.minecraft.client.renderer.item.ItemProperties;
@@ -44,6 +45,11 @@ public class MeanderingMobsItemRegistry {
 
     public static final DeferredHolder<Item, Item> TEGU_POUCH = ITEMS.register("tegu_pouch",
             () -> new TeguPouchItem(new Item.Properties().stacksTo(1))
+    );
+
+    // --- UPDATED TO PorcupineQuillItem ---
+    public static final DeferredHolder<Item, Item> PORCUPINE_QUILL = ITEMS.register("porcupine_quill",
+            () -> new PorcupineQuillItem(new Item.Properties())
     );
 
     public static void register(IEventBus eventBus) {

@@ -3,11 +3,12 @@ package com.fernleaf.meanderingmobs.server.entity;
 import com.fernleaf.meanderingmobs.client.instance.WhispIKInstance.WhispProceduralState;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsSoundsRegistry;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsTagRegistry;
+import com.fernleaf.meanderingmobs.server.entity.ai.TameableStateGoal;
 import com.fernleaf.meanderingmobs.server.entity.ai.whisp.*;
+import com.fernleaf.meanderingmobs.server.entity.util.MeanderingMobsTameableEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -37,23 +38,15 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Optional;
 import java.util.UUID;
 
-public class WhispEntity extends PathfinderMob {
+public class WhispEntity extends MeanderingMobsTameableEntity {
 
-    private static final EntityDataAccessor<Integer> DATA_PROCEDURAL_STATE =
-            SynchedEntityData.defineId(WhispEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> DATA_COSPLAY =
             SynchedEntityData.defineId(WhispEntity.class, EntityDataSerializers.INT);
-    private static final EntityDataAccessor<Integer> DATA_AI_STATE =
-            SynchedEntityData.defineId(WhispEntity.class, EntityDataSerializers.INT);
-    private static final EntityDataAccessor<Optional<UUID>> DATA_OWNER_UUID =
-            SynchedEntityData.defineId(WhispEntity.class, EntityDataSerializers.OPTIONAL_UUID);
     private static final EntityDataAccessor<Boolean> DATA_TAGGING =
             SynchedEntityData.defineId(WhispEntity.class, EntityDataSerializers.BOOLEAN);
 
-    private int proceduralStartTick;
     private @Nullable UUID tagPlayerUUID;
 
     public WhispEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
@@ -73,10 +66,7 @@ public class WhispEntity extends PathfinderMob {
     @Override
     protected void defineSynchedData(SynchedEntityData.@NotNull Builder builder) {
         super.defineSynchedData(builder);
-        builder.define(DATA_PROCEDURAL_STATE, WhispProceduralState.NONE.id);
         builder.define(DATA_COSPLAY, 0);
-        builder.define(DATA_AI_STATE, 0);
-        builder.define(DATA_OWNER_UUID, Optional.empty());
         builder.define(DATA_TAGGING, false);
     }
 
@@ -101,7 +91,7 @@ public class WhispEntity extends PathfinderMob {
     protected void registerGoals() {
         this.goalSelector.addGoal(1, new FloatGoal(this));
         this.goalSelector.addGoal(2, new WhispPlayTagGoal(this));
-        this.goalSelector.addGoal(3, new WhispStateGoal(this));
+        this.goalSelector.addGoal(3, new TameableStateGoal(this));
         this.goalSelector.addGoal(4, new WhispPacifyGoal(this));
         this.goalSelector.addGoal(5, new WaterAvoidingRandomFlyingGoal(this, 1.0D));
         this.goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 8.0F));
@@ -125,23 +115,15 @@ public class WhispEntity extends PathfinderMob {
         if (itemStack.is(Items.BRUSH)) {
             if (!this.level().isClientSide()) {
                 setCosplay((getCosplay() + 1) % 16);
-                triggerProceduralState(WhispProceduralState.HAPPY_BOUNCE);
+                triggerProceduralState(WhispProceduralState.HAPPY_BOUNCE.id);
             }
             return InteractionResult.sidedSuccess(this.level().isClientSide());
         }
 
         if (isTamed() && isOwner(player) && hand == InteractionHand.MAIN_HAND && itemStack.isEmpty()) {
             if (!this.level().isClientSide()) {
-                int nextState = (getAiState() + 1) % 3;
-                setAiState(nextState);
-
-                String msgKey = switch (nextState) {
-                    case 1 -> "message.meanderingmobs.whisp.state_sit";
-                    case 2 -> "message.meanderingmobs.whisp.state_follow";
-                    default -> "message.meanderingmobs.whisp.state_wander";
-                };
-                player.displayClientMessage(Component.translatable(msgKey), true);
-                triggerProceduralState(WhispProceduralState.HAPPY_BOUNCE);
+                this.cycleAiState(player, "whisp");
+                triggerProceduralState(WhispProceduralState.HAPPY_BOUNCE.id);
             }
             return InteractionResult.sidedSuccess(this.level().isClientSide());
         }
@@ -172,7 +154,7 @@ public class WhispEntity extends PathfinderMob {
             if (currentStateId != WhispProceduralState.NONE.id) {
                 WhispProceduralState state = WhispProceduralState.fromId(currentStateId);
                 if ((this.tickCount - this.proceduralStartTick) >= state.duration) {
-                    triggerProceduralState(WhispProceduralState.NONE);
+                    triggerProceduralState(WhispProceduralState.NONE.id);
                 }
             }
         }
@@ -182,25 +164,6 @@ public class WhispEntity extends PathfinderMob {
             this.setDeltaMovement(movement.x, Math.max(movement.y, 0.05D), movement.z);
         }
     }
-
-    public void tame(Player player) {
-        setOwnerUUID(player.getUUID());
-        setAiState(2);
-    }
-
-    public boolean isTamed() { return getOwnerUUID() != null; }
-    public boolean isOwner(Player player) { return player.getUUID().equals(getOwnerUUID()); }
-
-    public @Nullable Player getOwner() {
-        UUID ownerUUID = getOwnerUUID();
-        return ownerUUID == null ? null : this.level().getPlayerByUUID(ownerUUID);
-    }
-
-    public @Nullable UUID getOwnerUUID() { return this.entityData.get(DATA_OWNER_UUID).orElse(null); }
-    public void setOwnerUUID(@Nullable UUID uuid) { this.entityData.set(DATA_OWNER_UUID, Optional.ofNullable(uuid)); }
-
-    public void setAiState(int state) { this.entityData.set(DATA_AI_STATE, state); }
-    public int getAiState() { return this.entityData.get(DATA_AI_STATE); }
 
     public void startTagGame(Player player) {
         this.entityData.set(DATA_TAGGING, true);
@@ -233,25 +196,13 @@ public class WhispEntity extends PathfinderMob {
     public void addAdditionalSaveData(@NotNull CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         tag.putInt("Cosplay", getCosplay());
-        tag.putInt("AiState", getAiState());
-        UUID owner = getOwnerUUID();
-        if (owner != null) tag.putUUID("Owner", owner);
     }
 
     @Override
     public void readAdditionalSaveData(@NotNull CompoundTag tag) {
         super.readAdditionalSaveData(tag);
         if (tag.contains("Cosplay")) setCosplay(tag.getInt("Cosplay"));
-        if (tag.contains("AiState")) setAiState(tag.getInt("AiState"));
-        if (tag.hasUUID("Owner")) setOwnerUUID(tag.getUUID("Owner"));
     }
-
-    public void triggerProceduralState(WhispProceduralState state) {
-        this.entityData.set(DATA_PROCEDURAL_STATE, state.id);
-        this.proceduralStartTick = this.tickCount;
-    }
-
-    public int getProceduralStateId() { return this.entityData.get(DATA_PROCEDURAL_STATE); }
 
     @Override
     public boolean causeFallDamage(float fallDistance, float multiplier, net.minecraft.world.damagesource.@NotNull DamageSource source) {
@@ -262,30 +213,14 @@ public class WhispEntity extends PathfinderMob {
     protected void checkFallDamage(double y, boolean onGround, @NotNull BlockState state, @NotNull BlockPos pos) {}
 
     @Override
-    protected SoundEvent getAmbientSound() {
-        return MeanderingMobsSoundsRegistry.WHISP_AMBIENT.get();
-    }
+    protected SoundEvent getAmbientSound() { return MeanderingMobsSoundsRegistry.WHISP_AMBIENT.get(); }
 
     @Override
     public int getAmbientSoundInterval() { return 240; }
 
     @Override
-    protected SoundEvent getHurtSound(@NotNull DamageSource damageSource) {
-        return MeanderingMobsSoundsRegistry.WHISP_HURT.get();
-    }
+    protected SoundEvent getHurtSound(@NotNull DamageSource damageSource) { return MeanderingMobsSoundsRegistry.WHISP_HURT.get(); }
 
     @Override
-    protected SoundEvent getDeathSound() {
-        return MeanderingMobsSoundsRegistry.WHISP_DEATH.get();
-    }
-
-    @Override
-    public boolean removeWhenFarAway(double distanceToClosestPlayer) {
-        return !this.isTamed() && super.removeWhenFarAway(distanceToClosestPlayer);
-    }
-
-    @Override
-    public boolean requiresCustomPersistence() {
-        return this.isTamed() || super.requiresCustomPersistence();
-    }
+    protected SoundEvent getDeathSound() { return MeanderingMobsSoundsRegistry.WHISP_DEATH.get(); }
 }
