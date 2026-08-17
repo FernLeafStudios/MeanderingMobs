@@ -141,23 +141,24 @@ public class AukvultureModel<T extends AukvultureEntity> extends HierarchicalMod
 		return this.aukvulture;
 	}
 
-	// In AukvultureModel.java
 	@Override
 	public void setupAnim(T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
 		this.root().getAllParts().forEach(ModelPart::resetPose);
 
 		float partialTicks = ageInTicks - (float) entity.tickCount;
 
-		boolean isAirborneOrTransitioning = entity.isFlying()
-				|| entity.walk2FlyAnimationState.isStarted()
-				|| entity.landingAnimationState.isStarted()
-				|| !entity.onGround();
-
-		if (!isAirborneOrTransitioning) {
-			this.animateWalk(AukvultureAnimations.walk, limbSwing, limbSwingAmount, 2.0f, 2.5f);
-			this.animate(entity.idleAnimationState, AukvultureAnimations.Idel, ageInTicks);
-			this.animate(entity.idle2AnimationState, AukvultureAnimations.Idle2, ageInTicks);
+		if (entity.onGround()) {
+			// Play landing pose until finished or player moves on ground
+			if (entity.landingAnimationState.isStarted() && limbSwingAmount < 0.05F) {
+				this.animate(entity.landingAnimationState, AukvultureAnimations.landing, ageInTicks);
+			} else {
+				// Prioritize walk animation as soon as movement input occurs
+				this.animateWalk(AukvultureAnimations.walk, limbSwing, limbSwingAmount, 2.0F, 2.5F);
+				this.animate(entity.idleAnimationState, AukvultureAnimations.Idel, ageInTicks);
+				this.animate(entity.idle2AnimationState, AukvultureAnimations.Idle2, ageInTicks);
+			}
 		} else {
+			// Airborne poses
 			this.animate(entity.flyAnimationState, AukvultureAnimations.fly, ageInTicks);
 			this.animate(entity.walk2FlyAnimationState, AukvultureAnimations.walk2fly, ageInTicks);
 			this.animate(entity.landingAnimationState, AukvultureAnimations.landing, ageInTicks);
@@ -165,8 +166,8 @@ public class AukvultureModel<T extends AukvultureEntity> extends HierarchicalMod
 
 		this.animate(entity.attackAnimationState, AukvultureAnimations.attack, ageInTicks);
 
-		// Apply IK only when strictly grounded
-		if (!isAirborneOrTransitioning) {
+		// Apply Inverse Kinematics (IK) for feet when grounded and not landing
+		if (entity.onGround() && !entity.landingAnimationState.isStarted()) {
 			this.ikInstance.tick(entity);
 			this.adapter.applyIK(entity, this.ikInstance, partialTicks);
 		}

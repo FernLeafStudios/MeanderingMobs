@@ -10,7 +10,6 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
-import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 
 public class AukvultureRenderer extends MobRenderer<AukvultureEntity, AukvultureModel<AukvultureEntity>> {
@@ -30,16 +29,15 @@ public class AukvultureRenderer extends MobRenderer<AukvultureEntity, Aukvulture
         float interpolatedBodyYaw = Mth.rotLerp(partialTicks, entity.yBodyRotO, entity.yBodyRot);
         super.setupRotations(entity, poseStack, ageInTicks, interpolatedBodyYaw, partialTicks, scale);
 
-        // Apply entity pitch/roll directly to the PoseStack when in flight
-        if (entity.isFlying()) {
-            Vec3 motion = entity.getDeltaMovement();
+        // Smoothly decay/apply pitch and roll without hard cutoff when airborne status ends
+        float interpolatedPitch = Mth.lerp(partialTicks, entity.xRotO, entity.getXRot());
+        float interpolatedRoll = Mth.lerp(partialTicks, entity.prevRollAngle, entity.rollAngle);
 
-            float pitchDegrees = (float) Mth.clamp(-motion.y * 45.0D, -60.0D, 60.0D);
-            float rollDegrees = Mth.lerp(partialTicks, entity.prevRollAngle, entity.rollAngle);
-            rollDegrees = Mth.clamp(rollDegrees, -45.0F, 45.0F);
-
-            poseStack.mulPose(Axis.ZP.rotationDegrees(rollDegrees));
-            poseStack.mulPose(Axis.XP.rotationDegrees(pitchDegrees));
+        if (Math.abs(interpolatedRoll) > 0.01F) {
+            poseStack.mulPose(Axis.ZP.rotationDegrees(Mth.clamp(interpolatedRoll, -45.0F, 45.0F)));
+        }
+        if (Math.abs(interpolatedPitch) > 0.01F) {
+            poseStack.mulPose(Axis.XP.rotationDegrees(Mth.clamp(interpolatedPitch, -60.0F, 60.0F)));
         }
     }
 

@@ -54,6 +54,7 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
     private int crashCooldown = 0;
 
     public float takeoffCharge = 0.0F;
+    public int takeoffTimer = 0;
     public float rollAngle;
     public float prevRollAngle;
 
@@ -149,7 +150,8 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
         this.refreshDimensions();
 
         if (!this.level().isClientSide()) {
-            if (!wasFlying && flying) {
+            // Prevent double broadcasting if takeoffTimer was already counting down
+            if (!wasFlying && flying && this.takeoffTimer == 0) {
                 this.level().broadcastEntityEvent(this, EVENT_TAKEOFF);
             } else if (wasFlying && !flying) {
                 this.level().broadcastEntityEvent(this, EVENT_LANDING);
@@ -190,10 +192,9 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
         return false;
     }
 
-    // In AukvultureEntity.java
     @Override
     public @NotNull Vec3 getPassengerRidingPosition(@NotNull Entity passenger) {
-        return new Vec3(this.getX(), this.getY(), this.getZ());
+        return new Vec3(this.getX(), this.getY() + 1.85D, this.getZ());
     }
 
     @Override
@@ -205,32 +206,49 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
             float strafe = player.xxa;
             float forward = player.zza;
             float targetYRot = player.getYRot();
+            float playerPitch = player.getXRot();
 
             this.yRotO = this.getYRot();
             this.xRotO = this.getXRot();
-            this.setYRot(Mth.rotLerp(0.2F, this.getYRot(), targetYRot));
-            this.setXRot(Mth.lerp(0.2F, this.getXRot(), player.getXRot() * 0.5F));
+
+            // Smooth Yaw rotation
+            this.setYRot(Mth.rotLerp(0.15F, this.getYRot(), targetYRot));
             this.yBodyRot = this.getYRot();
             this.yHeadRot = this.getYRot();
+            player.setYBodyRot(this.getYRot());
 
             if (this.isFlying()) {
-                player.setYBodyRot(this.getYRot());
+                // Calculate pitch during flight
+                float targetPitch = (float) Mth.clamp(-this.getDeltaMovement().y * 40.0D, -50.0D, 50.0D);
+                if (this.clientDiving) {
+                    targetPitch = 40.0F;
+                } else if (this.clientFlapping) {
+                    targetPitch = -30.0F;
+                }
+                this.setXRot(Mth.rotLerp(0.18F, this.getXRot(), targetPitch));
+
+                // Bank angle
                 float rotDiff = Mth.wrapDegrees(targetYRot - this.getYRot());
-                this.rollAngle = Mth.rotLerp(0.1F, this.rollAngle, (strafe * -30.0F) + (rotDiff * -2.0F));
+                this.rollAngle = Mth.rotLerp(0.15F, this.rollAngle, (strafe * -35.0F) + (rotDiff * -2.5F));
                 this.takeoffCharge = 1.0F;
             } else {
-                this.rollAngle = Mth.rotLerp(0.2F, this.rollAngle, 0.0F);
+                // Smoothly settle pitch and roll back to level ground state (0°)
+                this.setXRot(Mth.rotLerp(0.15F, this.getXRot(), 0.0F));
+                this.rollAngle = Mth.rotLerp(0.15F, this.rollAngle, 0.0F);
             }
 
+            // Wall crash check
             if (this.isFlying() && this.horizontalCollision && this.getDeltaMovement().horizontalDistanceSqr() > 0.05D) {
                 this.hurt(this.damageSources().flyIntoWall(), 10.0F);
                 this.setDeltaMovement(this.getDeltaMovement().scale(-0.4D));
                 this.setFlying(false);
                 this.takeoffCharge = 0.0F;
+                this.takeoffTimer = 0;
                 this.crashCooldown = 20;
                 return;
             }
 
+            // Water flight transition
             if (this.isInWater()) {
                 this.moveRelative(0.008F, travelVector);
                 this.move(MoverType.SELF, this.getDeltaMovement());
@@ -252,7 +270,7 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
 
                 if (this.takeoffCharge >= 1.0F && this.clientFlapping) {
                     this.setFlying(true);
-                    this.setDeltaMovement(this.getDeltaMovement().x, 0.55D, this.getDeltaMovement().z);
+                    this.setDeltaMovement(this.getDeltaMovement().x, 0.75D, this.getDeltaMovement().z);
                     this.hasImpulse = true;
                 }
 
@@ -260,32 +278,43 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
                 return;
             }
 
+            // Fast Soaring Flight Physics
             if (this.isFlying()) {
                 Vec3 lookVec = player.getLookAngle();
                 Vec3 motion = this.getDeltaMovement();
                 double motionY = motion.y;
-                double pitch = player.getXRot();
 
                 if (this.clientFlapping) {
-                    motionY = Math.min(motionY + 0.08D, 0.45D);
+                    motionY = Mth.lerp(0.2D, motionY, 0.45D);
                 } else if (this.clientDiving) {
-                    motionY = Math.max(motionY - 0.12D, -1.1D);
+                    motionY = Mth.lerp(0.2D, motionY, -0.95D);
                 } else {
-                    motionY = Mth.lerp(0.12D, motionY, -0.03D + ((pitch / 90.0D) * -0.22D));
+                    // Passive glide sink rate
+                    double glideY = -0.04D + ((playerPitch / 90.0D) * -0.25D);
+                    motionY = Mth.lerp(0.12D, motionY, glideY);
                 }
 
-                double forwardThrust = (forward > 0 ? 0.06D : 0.0D) + (pitch > 0 && !this.clientFlapping ? (pitch / 90.0D) * 0.04D : 0.0D);
-                this.setDeltaMovement(motion.x * 0.985D + (lookVec.x * forwardThrust), motionY, motion.z * 0.985D + (lookVec.z * forwardThrust));
+                // High-speed flight scaling (base thrust increased from 0.35D to 0.85D+)
+                double speedBonus = (playerPitch > 0 ? (playerPitch / 90.0D) * 0.45D : 0.0D);
+                double baseThrust = (forward > 0 ? 0.85D : 0.55D) + speedBonus;
+                if (this.clientDiving) {
+                    baseThrust += 0.4D; // Extra boost when diving down
+                }
+
+                Vec3 targetGlideMotion = new Vec3(lookVec.x * baseThrust, motionY, lookVec.z * baseThrust);
+
+                this.setDeltaMovement(Mth.lerp(0.2D, motion.x, targetGlideMotion.x), motionY, Mth.lerp(0.2D, motion.z, targetGlideMotion.z));
                 this.move(MoverType.SELF, this.getDeltaMovement());
 
-                if (this.onGround() && motionY <= 0.0D && !this.clientFlapping) {
+                if (this.onGround() && motionY <= 0.0D) {
                     this.setFlying(false);
                     this.takeoffCharge = 0.0F;
+                    this.takeoffTimer = 0;
                 }
                 return;
             }
 
-            // In AukvultureEntity.java - travel() method
+            // Ground / Takeoff charging
             if (this.onGround()) {
                 if (forward > 0 && this.clientFlapping) {
                     this.takeoffCharge = Math.min(1.0F, this.takeoffCharge + 0.025F);
@@ -296,18 +325,21 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
                     this.takeoffCharge = Math.max(0.0F, this.takeoffCharge - 0.04F);
                 }
 
-                // Trigger takeoff animation event first
-                if (this.takeoffCharge >= 1.0F && !this.walk2FlyAnimationState.isStarted()) {
-                    this.level().broadcastEntityEvent(this, EVENT_TAKEOFF);
+                if (this.takeoffCharge >= 1.0F && this.takeoffTimer == 0) {
+                    this.takeoffTimer = 15;
+                    if (!this.level().isClientSide()) {
+                        this.level().broadcastEntityEvent(this, EVENT_TAKEOFF);
+                    }
                 }
 
-                // Launch once the takeoff transition animation is near completion (e.g. ~15-20 ticks)
-                if (this.walk2FlyAnimationState.isStarted() && this.tickCount - this.walk2FlyAnimationState.getAccumulatedTime() >= 15) {
-                    this.setFlying(true);
-                    Vec3 currentMotion = this.getDeltaMovement();
-                    this.setDeltaMovement(currentMotion.x, 0.65D, currentMotion.z);
-                    this.hasImpulse = true;
-                    return;
+                if (this.takeoffTimer > 0) {
+                    this.takeoffTimer--;
+                    if (this.takeoffTimer == 0) {
+                        this.setFlying(true);
+                        this.setDeltaMovement(this.getDeltaMovement().x, 0.75D, this.getDeltaMovement().z);
+                        this.hasImpulse = true;
+                        return;
+                    }
                 }
 
                 this.setSpeed((float) this.getAttributeValue(Attributes.MOVEMENT_SPEED));
@@ -333,6 +365,7 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
             if (this.onGround() && this.isFlying()) {
                 this.setFlying(false);
                 this.takeoffCharge = 0.0F;
+                this.takeoffTimer = 0;
             }
         } else {
             this.setupAnimationStates();
@@ -340,41 +373,69 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
     }
 
     private void setupAnimationStates() {
-        if (this.isFlying()) {
+        boolean isTakingOff = this.takeoffTimer > 0 || this.walk2FlyAnimationState.isStarted();
+
+        // 1. Trigger landing state during descent when near ground
+        if (this.isFlying() && !isTakingOff) {
+            BlockPos currentPos = this.blockPosition();
+            boolean nearGround = !this.level().getBlockState(currentPos.below()).isAir()
+                    || !this.level().getBlockState(currentPos.below(2)).isAir();
+
+            if (nearGround && this.getDeltaMovement().y <= 0.05D) {
+                this.landingAnimationState.startIfStopped(this.tickCount);
+            } else {
+                this.landingAnimationState.stop();
+            }
+        }
+
+        // 2. Ground state handling & smooth transition back to walking/idle
+        if (this.onGround()) {
+            this.flyAnimationState.stop();
+            this.walk2FlyAnimationState.stop();
+
+            boolean isMovingOnGround = this.getDeltaMovement().horizontalDistanceSqr() > 1.0E-4D;
+
+            // Immediately cancel landing state if player starts walking on ground
+            if (isMovingOnGround) {
+                this.landingAnimationState.stop();
+            }
+
+            // Auto-stop landing state after ~15 ticks on ground so idle/walk takes over
+            if (this.landingAnimationState.isStarted() && this.tickCount - this.landingAnimationState.getAccumulatedTime() > 15) {
+                this.landingAnimationState.stop();
+            }
+
+            // Activate walk/idle when landing animation is complete or interrupted
+            if (!this.landingAnimationState.isStarted()) {
+                if (isMovingOnGround) {
+                    this.idleAnimationState.stop();
+                    this.walkAnimationState.startIfStopped(this.tickCount);
+                } else {
+                    this.walkAnimationState.stop();
+                    this.idleAnimationState.startIfStopped(this.tickCount);
+                }
+            } else {
+                this.walkAnimationState.stop();
+                this.idleAnimationState.stop();
+            }
+        } else if (this.isFlying() || isTakingOff) {
+            // Airborne animation handling
             this.idleAnimationState.stop();
             this.walkAnimationState.stop();
-            this.landingAnimationState.stop();
 
-            // Play takeoff transition first if active, otherwise play main flight loop
-            if (this.walk2FlyAnimationState.isStarted()) {
+            if (this.walk2FlyAnimationState.isStarted() || this.landingAnimationState.isStarted()) {
                 this.flyAnimationState.stop();
             } else {
                 this.flyAnimationState.startIfStopped(this.tickCount);
             }
-        } else {
-            this.flyAnimationState.stop();
-            this.walk2FlyAnimationState.stop();
-
-            if (this.landingAnimationState.isStarted()) {
-                this.idleAnimationState.stop();
-                this.walkAnimationState.stop();
-            } else if (this.getDeltaMovement().horizontalDistanceSqr() > 1.0E-4D) {
-                this.idleAnimationState.stop();
-                this.walkAnimationState.startIfStopped(this.tickCount);
-            } else {
-                this.walkAnimationState.stop();
-                this.idleAnimationState.startIfStopped(this.tickCount);
-            }
         }
 
+        // Animation timer cleanups
         if (this.attackAnimationState.isStarted() && this.tickCount - this.attackAnimationState.getAccumulatedTime() > 25) {
             this.attackAnimationState.stop();
         }
         if (this.walk2FlyAnimationState.isStarted() && this.tickCount - this.walk2FlyAnimationState.getAccumulatedTime() > 20) {
             this.walk2FlyAnimationState.stop();
-        }
-        if (this.landingAnimationState.isStarted() && this.tickCount - this.landingAnimationState.getAccumulatedTime() > 20) {
-            this.landingAnimationState.stop();
         }
     }
 

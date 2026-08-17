@@ -31,25 +31,20 @@ public class AukvultureRiderLayer extends RenderLayer<AukvultureEntity, Aukvultu
 
             poseStack.pushPose();
 
-            // 1. Follow exact bone transformations down to the anchor
             this.getParentModel().root()
                     .getChild("Body")
                     .getChild("Torso")
                     .getChild("player_anchor")
                     .translateAndRotate(poseStack);
 
-            // 2. Flip upright relative to model space
             poseStack.mulPose(Axis.XP.rotationDegrees(180.0F));
-
-            // 3. Counter-rotate the player's body yaw to prevent double spinning
             float playerBodyYaw = Mth.rotLerp(partialTicks, player.yBodyRotO, player.yBodyRot);
-            poseStack.mulPose(Axis.YP.rotationDegrees(playerBodyYaw - 180.0F));
+            poseStack.mulPose(Axis.YP.rotationDegrees(playerBodyYaw));
 
-            // 4. Fine-tune saddle position offset
-            poseStack.translate(0.0D, 0.0D, 0.0D);
+            // Lowered further onto the saddle bone
+            poseStack.translate(0.0D, -2.15D, 0.0D);
 
             EntityRenderDispatcher dispatcher = Minecraft.getInstance().getEntityRenderDispatcher();
-
             AukvultureRenderer.IS_RENDERING_RIDER = true;
             dispatcher.render(player, 0.0D, 0.0D, 0.0D, 0.0F, partialTicks, poseStack, buffer, packedLight);
             AukvultureRenderer.IS_RENDERING_RIDER = false;
