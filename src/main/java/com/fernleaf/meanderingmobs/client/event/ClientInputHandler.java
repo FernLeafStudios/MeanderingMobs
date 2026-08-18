@@ -10,6 +10,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 @EventBusSubscriber(modid = MeanderingMobs.MODID, value = Dist.CLIENT)
@@ -25,17 +26,27 @@ public class ClientInputHandler {
             boolean isFlapping = MeanderingMobsKeybindsRegistry.FLAP_KEY.isDown();
             boolean isDiving = MeanderingMobsKeybindsRegistry.DIVE_KEY.isDown();
 
-            // 1. Local update every tick
+            // 1. Update local client state immediately
             aukvulture.handleClientInput(isFlapping, isDiving);
 
-            // 2. Send network packet ONLY on state edge transition
+            // 2. Transmit to server ONLY on state edge transitions
             if (isFlapping != lastFlapState || isDiving != lastDiveState) {
                 PacketDistributor.sendToServer(new AukvultureInputPacket(isFlapping, isDiving));
                 lastFlapState = isFlapping;
                 lastDiveState = isDiving;
             }
-        } else if (lastFlapState || lastDiveState) {
-            // Reset state memory if player dismounts
+        } else {
+            resetInputMemory();
+        }
+    }
+
+    @SubscribeEvent
+    public static void onLoggingOut(ClientPlayerNetworkEvent.LoggingOut event) {
+        resetInputMemory();
+    }
+
+    private static void resetInputMemory() {
+        if (lastFlapState || lastDiveState) {
             lastFlapState = false;
             lastDiveState = false;
         }

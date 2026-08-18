@@ -1,18 +1,20 @@
 {
+  "itemGroup.meanderingmobs": "Meandering Mobs",
+
   "entity.meanderingmobs.whisp": "Whisp",
   "message.meanderingmobs.whisp.tag_start": "The Whisp wants to play tag! Stay close!",
   "message.meanderingmobs.whisp.tag_failed": "You wandered too far! The game ended.",
   "message.meanderingmobs.whisp.tag_retry": "The Whisp giggles! Try tagging it again!",
   "message.meanderingmobs.whisp.tag_success": "The Whisp bonded with you!",
-  "message.meanderingmobs.whisp.state_wander": "Whisp is now wandering.",
-  "message.meanderingmobs.whisp.state_sit": "Whisp is now staying.",
-  "message.meanderingmobs.whisp.state_follow": "Whisp is now following.",
+  "message.whisp.wander": "Whisp is now wandering",
+  "message.whisp.sit": "Whisp is now staying",
+  "message.whisp.follow": "Whisp is now following",
   "effect.meanderingmobs.whimsical": "Whimsical",
 
   "entity.meanderingmobs.aukvulture": "Aukvulture",
-  "message.meanderingmobs.aukvulture.state.wander": "Aukvulture is now wandering.",
-  "message.meanderingmobs.aukvulture.state.sit": "Aukvulture is now sitting.",
-  "message.meanderingmobs.aukvulture.state.follow": "Aukvulture is now following.",
+  "message.meanderingmobs.aukvulture.state.wander": "Aukvulture is now following",
+  "message.meanderingmobs.aukvulture.state.sit": "Aukvulture is now wandering",
+  "message.meanderingmobs.aukvulture.state.follow": "Aukvulture is now staying",
 
   "entity.meanderingmobs.parrotfish": "Bumphead Parrotfish",
   "item.meanderingmobs.raw_parrotfish": "Raw Parrotfish",
@@ -26,7 +28,15 @@
   "item.meanderingmobs.tegu_scale": "Tegu Scale",
   "item.meanderingmobs.tegu_pouch": "Tegu Pouch",
   "item.meanderingmobs.tegu_pouch.fullness": "%s/%s",
-  "message.meanderingmobs.tegu.wander": "Tegu is now wandering",
-  "message.meanderingmobs.tegu.sit": "Tegu is now sitting",
-  "message.meanderingmobs.tegu.follow": "Tegu is now following"
+  "message.tegu.wander": "Tegu is now wandering",
+  "message.tegu.sit": "Tegu is now sitting",
+  "message.tegu.follow": "Tegu is now following",
+
+  "entity.meanderingmobs.porcupine": "Porcupine",
+  "entity.meanderingmobs.quill_arrow": "Porcupine Quill Arrow",
+  "item.meanderingmobs.porcupine_quill": "Porcupine Quill",
+  "effect.meanderingmobs.quilled": "Quilled",
+  "message.porcupine.wander": "Tegu is now wandering",
+  "message.porcupine.sit": "Tegu is now sitting",
+  "message.porcupine.follow": "Tegu is now following"
 }

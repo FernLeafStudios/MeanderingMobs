@@ -3,6 +3,8 @@ package com.fernleaf.meanderingmobs.server.event;
 import com.fernleaf.meanderingmobs.MeanderingMobs;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsEntityRegistry;
 import com.fernleaf.meanderingmobs.server.entity.AukvultureEntity;
+import com.fernleaf.meanderingmobs.server.entity.PorcupineEntity;
+import com.fernleaf.meanderingmobs.server.entity.TeguEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.SpawnPlacementTypes;
 import net.minecraft.world.entity.animal.WaterAnimal;
@@ -44,7 +46,7 @@ public class MeanderingMobsSpawnEvents {
                 MeanderingMobsEntityRegistry.TEGU.get(),
                 SpawnPlacementTypes.ON_GROUND,
                 Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-                Mob::checkMobSpawnRules,
+                TeguEntity::checkTeguSpawnRules,
                 RegisterSpawnPlacementsEvent.Operation.REPLACE
         );
 
@@ -52,7 +54,7 @@ public class MeanderingMobsSpawnEvents {
                 MeanderingMobsEntityRegistry.PORCUPINE.get(),
                 SpawnPlacementTypes.ON_GROUND,
                 Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-                Mob::checkMobSpawnRules,
+                PorcupineEntity::checkPorcupineSpawnRules,
                 RegisterSpawnPlacementsEvent.Operation.REPLACE
         );
     }

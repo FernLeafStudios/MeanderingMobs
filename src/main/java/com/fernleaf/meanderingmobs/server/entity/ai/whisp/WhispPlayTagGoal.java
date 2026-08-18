@@ -53,7 +53,7 @@ public class WhispPlayTagGoal extends Goal {
         if (player == null) return;
 
         double distSqr = this.whisp.distanceToSqr(player);
-        double maxDist = MeanderingMobsConfig.WHISP_TAG_MAX_DISTANCE.get();
+        double maxDist = MeanderingMobsConfig.getSafe(MeanderingMobsConfig.WHISP_TAG_MAX_DISTANCE);
         double maxDistSqr = maxDist * maxDist;
 
         if (distSqr > maxDistSqr) {

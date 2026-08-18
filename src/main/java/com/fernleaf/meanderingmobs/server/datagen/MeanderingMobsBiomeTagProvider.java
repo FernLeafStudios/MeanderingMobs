@@ -26,10 +26,12 @@ public class MeanderingMobsBiomeTagProvider extends BiomeTagsProvider {
 
     @Override
     protected void addTags(HolderLookup.@NotNull Provider provider) {
+        // --- Porcupine Cold Tags ---
         this.tag(MeanderingMobsTagRegistry.Biomes.SPAWNS_COLD_PORCUPINES)
                 .addTag(BiomeTags.IS_HILL)
                 .add(Biomes.GROVE, Biomes.FROZEN_PEAKS, Biomes.JAGGED_PEAKS, Biomes.SNOWY_SLOPES, Biomes.SNOWY_PLAINS);
 
+        // --- Porcupine Warm Tags ---
         this.tag(MeanderingMobsTagRegistry.Biomes.SPAWNS_WARM_PORCUPINES)
                 .addTag(BiomeTags.IS_BADLANDS)
                 .addTag(BiomeTags.IS_SAVANNA)

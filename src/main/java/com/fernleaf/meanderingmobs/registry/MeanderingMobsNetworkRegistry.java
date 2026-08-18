@@ -19,14 +19,7 @@ public class MeanderingMobsNetworkRegistry {
         registrar.playToServer(
                 AukvultureInputPacket.TYPE,
                 AukvultureInputPacket.STREAM_CODEC,
-                (payload, context) -> context.enqueueWork(() -> {
-                    if (context.player() instanceof ServerPlayer serverPlayer) {
-                        // Changed auk.isOwnedBy(serverPlayer) to auk.isOwner(serverPlayer)
-                        if (serverPlayer.getVehicle() instanceof AukvultureEntity auk && auk.isOwner(serverPlayer)) {
-                            auk.handleClientInput(payload.isFlapping(), payload.isDiving());
-                        }
-                    }
-                })
+                AukvultureInputPacket::handleOnServer
         );
     }
 }

@@ -6,6 +6,7 @@ import net.minecraft.client.model.HierarchicalModel;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
 import net.minecraft.resources.ResourceLocation;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.EnumMap;
 import java.util.Map;
@@ -25,13 +26,13 @@ public class WhispRenderer extends MobRenderer<WhispEntity, HierarchicalModel<Wh
     }
 
     @Override
-    public ResourceLocation getTextureLocation(WhispEntity entity) {
+    public @NotNull ResourceLocation getTextureLocation(WhispEntity entity) {
         // Leverages pre-cached ResourceLocations on the WhispCosplay enum to avoid string allocations
         return WhispCosplay.byId(entity.getCosplay()).textureLocation;
     }
 
     @Override
-    public void render(WhispEntity entity, float entityYaw, float partialTicks, com.mojang.blaze3d.vertex.PoseStack poseStack, net.minecraft.client.renderer.MultiBufferSource buffer, int packedLight) {
+    public void render(WhispEntity entity, float entityYaw, float partialTicks, com.mojang.blaze3d.vertex.@NotNull PoseStack poseStack, net.minecraft.client.renderer.@NotNull MultiBufferSource buffer, int packedLight) {
         WhispCosplay cosplay = WhispCosplay.byId(entity.getCosplay());
 
         // Select pre-baked model variant based on entity cosplay type

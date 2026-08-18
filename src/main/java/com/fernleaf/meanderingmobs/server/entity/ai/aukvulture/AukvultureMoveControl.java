@@ -1,6 +1,8 @@
 package com.fernleaf.meanderingmobs.server.entity.ai.aukvulture;
 
 import com.fernleaf.meanderingmobs.server.entity.AukvultureEntity;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.ai.control.MoveControl;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.AABB;
@@ -11,6 +13,7 @@ import net.minecraft.world.phys.Vec3;
 public class AukvultureMoveControl extends MoveControl {
     private final AukvultureEntity auk;
     private int checkInterval = 0;
+    private int airborneTicks = 0;
 
     public AukvultureMoveControl(AukvultureEntity auk) {
         super(auk);
@@ -19,43 +22,120 @@ public class AukvultureMoveControl extends MoveControl {
 
     @Override
     public void tick() {
-        if (this.auk.getAiState() == 1 || !this.auk.isFlying()) {
+        if (!this.auk.isFlying()) {
+            this.airborneTicks = 0;
             super.tick();
             return;
         }
 
+        this.airborneTicks++;
+        Vec3 currentPos = this.auk.position();
+        Vec3 currentMotion = this.auk.getDeltaMovement();
+
         if (this.operation == Operation.MOVE_TO) {
-            Vec3 currentPos = this.auk.position();
             Vec3 target = new Vec3(this.wantedX, this.wantedY, this.wantedZ);
-
             Vec3 dir = target.subtract(currentPos);
-            if (dir.lengthSqr() > 0.01D) {
-                // Throttle ray casts to every 4 ticks to reduce engine overhead
-                if (++this.checkInterval % 4 == 0) {
-                    Vec3 normDir = dir.normalize();
-                    Vec3 lookAhead = currentPos.add(normDir.scale(4.0D));
 
-                    BlockHitResult hit = this.auk.level().clip(new ClipContext(
-                            currentPos,
-                            lookAhead,
-                            ClipContext.Block.COLLIDER,
-                            ClipContext.Fluid.NONE,
-                            this.auk
-                    ));
+            // 1. RADIAL CLEAR-AIR RAYCASTING AVOIDANCE
+            if (++this.checkInterval % 2 == 0) {
+                Vec3 forward = Vec3.directionFromRotation(this.auk.getXRot(), this.auk.getYRot()).normalize();
+                Vec3 lookAhead = currentPos.add(forward.scale(7.0D));
 
-                    AABB checkArea = this.auk.getBoundingBox().inflate(1.2D).move(normDir.scale(1.5D));
-                    boolean hasBlockAhead = !this.auk.level().noCollision(this.auk, checkArea);
+                BlockHitResult forwardHit = this.auk.level().clip(new ClipContext(
+                        currentPos, lookAhead, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this.auk
+                ));
 
-                    if (hit.getType() != HitResult.Type.MISS || hasBlockAhead) {
-                        Vec3 deflection = new Vec3(0, 3.5D, 0);
-                        Vec3 adjustedTarget = currentPos.add(deflection);
+                AABB inflatedBox = this.auk.getBoundingBox().inflate(1.5D).move(forward.scale(2.0D));
+                boolean boxColliding = !this.auk.level().noCollision(this.auk, inflatedBox);
 
-                        this.wantedX = adjustedTarget.x;
-                        this.wantedY = adjustedTarget.y;
-                        this.wantedZ = adjustedTarget.z;
+                if (forwardHit.getType() != HitResult.Type.MISS || boxColliding) {
+                    // Obstacle detected ahead - find the vector pointing to the most open air space
+                    Vec3 bestEscapeDir = findClearAirDirection(currentPos);
+
+                    if (bestEscapeDir != null) {
+                        // Redirect target toward open air and add upward lift to clear terrain
+                        Vec3 avoidanceTarget = currentPos.add(bestEscapeDir.scale(10.0D)).add(0, 3.0D, 0);
+                        this.wantedX = avoidanceTarget.x;
+                        this.wantedY = avoidanceTarget.y;
+                        this.wantedZ = avoidanceTarget.z;
+
+                        target = avoidanceTarget;
+                        dir = target.subtract(currentPos);
                     }
                 }
             }
+
+            double distance = dir.length();
+
+            // 2. SMOOTH ROTATION & BANKING
+            if (distance >= 0.8D) {
+                float targetYRot = (float) (Mth.atan2(dir.z, dir.x) * (180.0D / Math.PI)) - 90.0F;
+                float horizontalDist = (float) Math.sqrt(dir.x * dir.x + dir.z * dir.z);
+                float targetXRot = (float) (-(Mth.atan2(dir.y, horizontalDist) * (180.0D / Math.PI)));
+
+                // Smooth turn rates so banking looks natural
+                float oldYRot = this.auk.getYRot();
+                float newY = Mth.approachDegrees(oldYRot, targetYRot, 6.0F);
+                float newX = Mth.approachDegrees(this.auk.getXRot(), targetXRot, 4.0F);
+
+                this.auk.setYRot(newY);
+                this.auk.setXRot(newX);
+                this.auk.yBodyRot = Mth.approachDegrees(this.auk.yBodyRot, newY, 6.0F);
+                this.auk.yHeadRot = this.auk.yBodyRot;
+
+                // Visual Roll/Bank calculation
+                float yawDelta = Mth.wrapDegrees(newY - oldYRot);
+                float targetRoll = Mth.clamp(yawDelta * -8.0F, -45.0F, 45.0F);
+                this.auk.rollAngle = Mth.lerp(0.15F, this.auk.rollAngle, targetRoll);
+
+                Vec3 moveHeading = Vec3.directionFromRotation(newX, newY);
+                double speed = this.speedModifier * 0.4D;
+                Vec3 targetVel = moveHeading.scale(speed);
+
+                currentMotion = currentMotion.lerp(targetVel, 0.15D);
+            } else {
+                currentMotion = currentMotion.multiply(0.9D, 0.9D, 0.9D);
+                this.auk.rollAngle = Mth.lerp(0.1F, this.auk.rollAngle, 0.0F);
+            }
+        } else {
+            currentMotion = currentMotion.multiply(0.9D, 0.9D, 0.9D);
+            this.auk.rollAngle = Mth.lerp(0.1F, this.auk.rollAngle, 0.0F);
         }
+
+        this.auk.setDeltaMovement(currentMotion);
+        this.auk.move(MoverType.SELF, this.auk.getDeltaMovement());
+
+        // Ignore ground collision during takeoff
+        if (this.airborneTicks > 20 && this.auk.onGround() && this.auk.getDeltaMovement().y <= 0.0D) {
+            this.auk.setFlying(false);
+            this.auk.takeoffCharge = 0.0F;
+        }
+    }
+
+    /**
+     * Scans 8 horizontal directions to find the path with the longest uninterrupted air distance.
+     */
+    private Vec3 findClearAirDirection(Vec3 startPos) {
+        Vec3 bestDir = null;
+        double maxClearDistance = -1.0D;
+
+        for (int i = 0; i < 8; i++) {
+            double angle = Math.toRadians(i * 45);
+            Vec3 dir = new Vec3(Math.cos(angle), 0.1D, Math.sin(angle)).normalize();
+            Vec3 probeEnd = startPos.add(dir.scale(12.0D));
+
+            BlockHitResult hit = this.auk.level().clip(new ClipContext(
+                    startPos, probeEnd, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this.auk
+            ));
+
+            double distance = hit.getType() == HitResult.Type.MISS ? 12.0D : hit.getLocation().distanceTo(startPos);
+
+            if (distance > maxClearDistance) {
+                maxClearDistance = distance;
+                bestDir = dir;
+            }
+        }
+
+        return bestDir;
     }
 }

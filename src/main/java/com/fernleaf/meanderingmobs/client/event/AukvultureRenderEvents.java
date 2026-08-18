@@ -13,7 +13,6 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderPlayerEvent;
 import net.neoforged.neoforge.client.event.ViewportEvent;
-import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 @EventBusSubscriber(modid = MeanderingMobs.MODID, value = Dist.CLIENT)
@@ -39,18 +38,20 @@ public class AukvultureRenderEvents {
             float smoothedRoll = Mth.lerp(partialTicks, aukvulture.prevRollAngle, aukvulture.rollAngle);
             smoothedRoll = Mth.clamp(smoothedRoll, -90.0F, 90.0F);
 
+            // Dynamically apply camera roll angle to viewport across camera modes
+            event.setRoll(smoothedRoll);
+
             Camera camera = event.getCamera();
 
             if (mc.options.getCameraType().isFirstPerson()) {
-                float dy = 1.45F;
-                float dz = 1.0F;
-                float rollRad = smoothedRoll * Mth.DEG_TO_RAD;
-
-                moveCamera(camera, -dz, dy, 0.0F, rollRad);
+                // First-person eye offset relative to camera orientation
+                float dy = 0.25F;
+                float dz = 0.5F;
+                moveCamera(camera, dz, dy, 0.0F);
             } else {
-                event.setRoll(smoothedRoll);
-
-                Vec3 birdEyePos = aukvulture.getEyePosition(partialTicks);
+                // Third-person target centered on the rider's eye position rather than vulture ground pivot
+                Vec3 riderPos = aukvulture.getPassengerRidingPosition(player);
+                Vec3 riderEyePos = riderPos.add(0.0D, player.getEyeHeight(), 0.0D);
 
                 float pitch = camera.getXRot() * Mth.DEG_TO_RAD;
                 float yaw = camera.getYRot() * Mth.DEG_TO_RAD;
@@ -60,20 +61,14 @@ public class AukvultureRenderEvents {
                 double offsetY = -Mth.sin(pitch) * distance;
                 double offsetZ = Mth.cos(yaw) * Mth.cos(pitch) * distance;
 
-                camera.setPosition(birdEyePos.x + offsetX, birdEyePos.y + offsetY, birdEyePos.z + offsetZ);
+                camera.setPosition(riderEyePos.x + offsetX, riderEyePos.y + offsetY, riderEyePos.z + offsetZ);
             }
         }
     }
 
-    public static void moveCamera(Camera camera, float zoom, float dy, float dx, float rollAngle) {
+    public static void moveCamera(Camera camera, float zoom, float dy, float dx) {
         Vector3f offsetVector = new Vector3f(dx, dy, -zoom).rotate(camera.rotation());
         Vec3 camPos = camera.getPosition();
         camera.setPosition(camPos.x() + offsetVector.x(), camPos.y() + offsetVector.y(), camPos.z() + offsetVector.z());
-
-        if (Math.abs(rollAngle) > 0.001f) {
-            float clampedRollRad = Mth.clamp(rollAngle, -(float) Math.PI / 2.0f, (float) Math.PI / 2.0f);
-            Quaternionf rollRotation = new Quaternionf().rotationZ(clampedRollRad);
-            camera.rotation().mul(rollRotation);
-        }
     }
 }

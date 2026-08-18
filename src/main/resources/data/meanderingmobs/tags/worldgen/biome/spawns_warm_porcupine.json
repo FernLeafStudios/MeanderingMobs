@@ -3,7 +3,8 @@
   "values": [
     "#minecraft:is_badlands",
     "#minecraft:is_savanna",
-    "#minecraft:is_desert",
-    "minecraft:jungle"
+    "minecraft:desert",
+    "minecraft:jungle",
+    "minecraft:eroded_badlands"
   ]
 }

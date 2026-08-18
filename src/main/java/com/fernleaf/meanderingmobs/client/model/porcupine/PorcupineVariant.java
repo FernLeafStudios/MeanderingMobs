@@ -1,30 +1,40 @@
 package com.fernleaf.meanderingmobs.client.model.porcupine;
 
+import com.fernleaf.fernframe.proprio.model.IModelVariant;
+import com.fernleaf.fernframe.proprio.model.ModelVariantRegistry;
+import com.fernleaf.fernframe.proprio.model.TextureUtils;
 import com.fernleaf.meanderingmobs.MeanderingMobs;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.resources.ResourceLocation;
 
-public enum PorcupineVariant {
+import java.util.function.Function;
+
+public enum PorcupineVariant implements IModelVariant<PorcupineVariant.ModelType> {
     COLD(0, "cold", ColdPorcupineModel.LAYER_LOCATION, ModelType.COLD),
     TEMPERATE(1, "temperate", TemperatePorcupineModel.LAYER_LOCATION, ModelType.TEMPERATE),
     WARM(2, "warm", WarmPorcupineModel.LAYER_LOCATION, ModelType.WARM);
 
+    private static final Function<Integer, PorcupineVariant> LOOKUP =
+            ModelVariantRegistry.createLookup(values(), TEMPERATE);
+
     public final int id;
-    public final String name;
-    public final ModelLayerLocation layerLocation;
-    public final ModelType modelType;
-    public final ResourceLocation textureLocation;
+    private final String name;
+    private final ModelLayerLocation layerLocation;
+    private final ModelType modelType;
+    private final ResourceLocation textureLocation;
 
     PorcupineVariant(int id, String name, ModelLayerLocation layerLocation, ModelType modelType) {
         this.id = id;
         this.name = name;
         this.layerLocation = layerLocation;
         this.modelType = modelType;
-        this.textureLocation = ResourceLocation.fromNamespaceAndPath(
-                MeanderingMobs.MODID,
-                "textures/entity/porcupine/" + name + "_porcupine.png"
-        );
+        this.textureLocation = TextureUtils.buildEntityTexture(MeanderingMobs.MODID, "porcupine", name + "_porcupine");
     }
+
+    @Override public int getId() { return this.id; }
+    @Override public ModelLayerLocation getLayerLocation() { return this.layerLocation; }
+    @Override public ModelType getModelType() { return this.modelType; }
+    @Override public ResourceLocation getTextureLocation() { return this.textureLocation; }
 
     public enum ModelType {
         COLD,
@@ -33,10 +43,6 @@ public enum PorcupineVariant {
     }
 
     public static PorcupineVariant byId(int id) {
-        PorcupineVariant[] values = values();
-        if (id < 0 || id >= values.length) {
-            return TEMPERATE;
-        }
-        return values[id];
+        return LOOKUP.apply(id);
     }
 }

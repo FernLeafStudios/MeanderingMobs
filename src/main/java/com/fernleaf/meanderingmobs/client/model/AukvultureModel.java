@@ -1,9 +1,7 @@
 package com.fernleaf.meanderingmobs.client.model;
 
 import com.fernleaf.meanderingmobs.MeanderingMobs;
-import com.fernleaf.meanderingmobs.client.adapter.AukvultureModelAdapter;
 import com.fernleaf.meanderingmobs.client.animation.AukvultureAnimations;
-import com.fernleaf.meanderingmobs.client.instance.AukvultureIKInstance;
 import com.fernleaf.meanderingmobs.server.entity.AukvultureEntity;
 import net.minecraft.client.model.HierarchicalModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
@@ -38,9 +36,6 @@ public class AukvultureModel<T extends AukvultureEntity> extends HierarchicalMod
 	private final ModelPart rightfoot;
 	private final ModelPart tail;
 
-	private final AukvultureModelAdapter adapter;
-	private final AukvultureIKInstance ikInstance = new AukvultureIKInstance();
-
 	public AukvultureModel(ModelPart root) {
 		this.aukvulture = root.getChild("Aukvulture");
 		this.headAndNeck = this.aukvulture.getChild("head&neck");
@@ -50,17 +45,11 @@ public class AukvultureModel<T extends AukvultureEntity> extends HierarchicalMod
 		this.leftwing = this.body.getChild("leftwing");
 		this.leftfingers = this.leftwing.getChild("leftfingers");
 		this.leftfeather = this.leftwing.getChild("leftfeather");
-
-		// FIX: Change leftwing to leftfeather
 		this.leftfeather2 = this.leftfeather.getChild("leftfeather2");
-
 		this.rightwing = this.body.getChild("rightwing");
 		this.rightfingers = this.rightwing.getChild("rightfingers");
 		this.rightfeather = this.rightwing.getChild("rightfeather");
-
-		// FIX: Change rightwing to rightfeather
 		this.rightfeather2 = this.rightfeather.getChild("rightfeather2");
-
 		this.torso = this.body.getChild("Torso");
 		this.leg = this.body.getChild("Leg");
 		this.leftleg = this.leg.getChild("leftleg");
@@ -68,8 +57,6 @@ public class AukvultureModel<T extends AukvultureEntity> extends HierarchicalMod
 		this.rightleg = this.leg.getChild("rightleg");
 		this.rightfoot = this.rightleg.getChild("rightfoot");
 		this.tail = this.body.getChild("Tail");
-
-		this.adapter = new AukvultureModelAdapter(root);
 	}
 
 	public static LayerDefinition createBodyLayer() {
@@ -115,7 +102,6 @@ public class AukvultureModel<T extends AukvultureEntity> extends HierarchicalMod
 				.texOffs(108, 139).addBox(-4.0F, -42.0F, -6.0F, 8.0F, 4.0F, 0.0F, new CubeDeformation(0.0F))
 				.texOffs(104, 91).addBox(-6.0F, -38.0F, 5.0F, 12.0F, 3.0F, 3.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, 0.0F, 0.0F));
 
-		// Player Anchor for riding mounting layer
 		Torso.addOrReplaceChild("player_anchor", CubeListBuilder.create(), PartPose.offset(0.0F, -36.0F, -2.0F));
 
 		PartDefinition Leg = Body.addOrReplaceChild("Leg", CubeListBuilder.create(), PartPose.offset(0.0F, 1.0F, 0.0F));
@@ -143,37 +129,30 @@ public class AukvultureModel<T extends AukvultureEntity> extends HierarchicalMod
 
 	@Override
 	public void setupAnim(T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
+		// 1. Reset all model parts to default bind pose
 		this.root().getAllParts().forEach(ModelPart::resetPose);
 
-		float partialTicks = ageInTicks - (float) entity.tickCount;
-
-		if (entity.onGround()) {
-			// Play landing pose until finished or player moves on ground
-			if (entity.landingAnimationState.isStarted() && limbSwingAmount < 0.05F) {
-				this.animate(entity.landingAnimationState, AukvultureAnimations.landing, ageInTicks);
-			} else {
-				// Prioritize walk animation as soon as movement input occurs
-				this.animateWalk(AukvultureAnimations.walk, limbSwing, limbSwingAmount, 2.0F, 2.5F);
-				this.animate(entity.idleAnimationState, AukvultureAnimations.Idel, ageInTicks);
-				this.animate(entity.idle2AnimationState, AukvultureAnimations.Idle2, ageInTicks);
-			}
-		} else {
-			// Airborne poses
-			this.animate(entity.flyAnimationState, AukvultureAnimations.fly, ageInTicks);
-			this.animate(entity.walk2FlyAnimationState, AukvultureAnimations.walk2fly, ageInTicks);
-			this.animate(entity.landingAnimationState, AukvultureAnimations.landing, ageInTicks);
+		// 2. Exclusive State Evaluation
+		if (entity.attackAnimationState.isStarted()) {
+			this.animate(entity.attackAnimationState, AukvultureAnimations.attack, ageInTicks, 1.0f);
 		}
-
-		this.animate(entity.attackAnimationState, AukvultureAnimations.attack, ageInTicks);
-
-		// Apply Inverse Kinematics (IK) for feet when grounded and not landing
-		if (entity.onGround() && !entity.landingAnimationState.isStarted()) {
-			this.ikInstance.tick(entity);
-			this.adapter.applyIK(entity, this.ikInstance, partialTicks);
+		else if (entity.landingAnimationState.isStarted()) {
+			this.animate(entity.landingAnimationState, AukvultureAnimations.landing, ageInTicks, 1.0f);
 		}
-	}
-
-	public AukvultureIKInstance getIKInstance() {
-		return this.ikInstance;
+		else if (entity.walk2FlyAnimationState.isStarted()) {
+			this.animate(entity.walk2FlyAnimationState, AukvultureAnimations.walk2fly, ageInTicks, 1.0f);
+		}
+		else if (entity.flyAnimationState.isStarted()) {
+			this.animate(entity.flyAnimationState, AukvultureAnimations.fly, ageInTicks, 1.0f);
+		}
+		else if (entity.walkAnimationState.isStarted()) {
+			this.animate(entity.walkAnimationState, AukvultureAnimations.walk, ageInTicks, 1.0f);
+		}
+		else if (entity.idle2AnimationState.isStarted()) {
+			this.animate(entity.idle2AnimationState, AukvultureAnimations.Idle2, ageInTicks, 1.0f);
+		}
+		else if (entity.idleAnimationState.isStarted()) {
+			this.animate(entity.idleAnimationState, AukvultureAnimations.Idel, ageInTicks, 1.0f);
+		}
 	}
 }

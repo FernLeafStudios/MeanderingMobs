@@ -7,6 +7,7 @@ import com.fernleaf.meanderingmobs.registry.MeanderingMobsTagRegistry;
 import com.fernleaf.meanderingmobs.server.entity.ai.TameableStateGoal;
 import com.fernleaf.meanderingmobs.server.entity.ai.porcupine.PorcupineDefendGoal;
 import com.fernleaf.meanderingmobs.server.entity.util.MeanderingMobsTameableEntity;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -14,6 +15,8 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -28,10 +31,13 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+@SuppressWarnings("deprecation")
 public class PorcupineEntity extends MeanderingMobsTameableEntity {
 
     // --- ANIMATION STATES ---
@@ -83,7 +89,9 @@ public class PorcupineEntity extends MeanderingMobsTameableEntity {
         builder.define(DATA_SHEARED, false);
     }
 
-    public PorcupineVariant getVariant() { return PorcupineVariant.byId(this.entityData.get(DATA_VARIANT_ID)); }
+    public PorcupineVariant getVariant() {
+        return PorcupineVariant.byId(this.entityData.get(DATA_VARIANT_ID));
+    }
     public void setVariant(PorcupineVariant variant) { this.entityData.set(DATA_VARIANT_ID, variant.id); }
 
     public DefenseState getDefenseState() { return DefenseState.byId(this.entityData.get(DEFENSE_STATE)); }
@@ -199,7 +207,7 @@ public class PorcupineEntity extends MeanderingMobsTameableEntity {
     }
 
     @Override
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, @NotNull DifficultyInstance difficulty, @NotNull MobSpawnType spawnType, @Nullable SpawnGroupData spawnData) {
+    public SpawnGroupData finalizeSpawn(@NotNull ServerLevelAccessor level, @NotNull DifficultyInstance difficulty, @NotNull MobSpawnType spawnType, @Nullable SpawnGroupData spawnData) {
         Holder<Biome> biome = level.getBiome(this.blockPosition());
 
         if (biome.is(MeanderingMobsTagRegistry.Biomes.SPAWNS_COLD_PORCUPINES)) {
@@ -225,9 +233,7 @@ public class PorcupineEntity extends MeanderingMobsTameableEntity {
                         target -> target != this
                                 && !this.isOwner(target)
                                 && !target.isSpectator()
-                                && !target.isSteppingCarefully()).forEach(target -> {
-                    target.addEffect(new MobEffectInstance(MeanderingMobsEffectsRegistry.QUILLED, 600, 0));
-                });
+                                && !target.isSteppingCarefully()).forEach(target -> target.addEffect(new MobEffectInstance(MeanderingMobsEffectsRegistry.QUILLED, 600, 0)));
             }
         }
     }
@@ -288,5 +294,31 @@ public class PorcupineEntity extends MeanderingMobsTameableEntity {
         } else {
             this.exitingDefenseAnimationState.stop();
         }
+    }
+
+    public static boolean checkPorcupineSpawnRules(
+            EntityType<PorcupineEntity> ignoredType,
+            ServerLevelAccessor level,
+            MobSpawnType ignoredSpawnType,
+            BlockPos pos,
+            RandomSource ignoredRandom) {
+
+        // Ensure room to spawn
+        if (!level.getBlockState(pos).isAir() || !level.getBlockState(pos.above()).isAir()) {
+            return false;
+        }
+
+        // Require light level >= 8
+        if (level.getRawBrightness(pos, 0) < 8) {
+            return false;
+        }
+
+        // Valid blocks for cold, warm, and temperate variants
+        BlockState stateBelow = level.getBlockState(pos.below());
+        return stateBelow.is(BlockTags.DIRT)
+                || stateBelow.is(BlockTags.SAND)
+                || stateBelow.is(BlockTags.SNOW)
+                || stateBelow.is(Blocks.GRAVEL)
+                || stateBelow.is(Blocks.MOSS_BLOCK);
     }
 }

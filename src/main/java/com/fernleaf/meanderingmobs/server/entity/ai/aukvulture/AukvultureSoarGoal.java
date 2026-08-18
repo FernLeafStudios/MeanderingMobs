@@ -1,6 +1,5 @@
 package com.fernleaf.meanderingmobs.server.entity.ai.aukvulture;
 
-import com.fernleaf.meanderingmobs.registry.MeanderingMobsSoundsRegistry;
 import com.fernleaf.meanderingmobs.server.entity.AukvultureEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.ai.goal.Goal;
@@ -16,6 +15,7 @@ public class AukvultureSoarGoal extends Goal {
     private final AukvultureEntity auk;
     private Vec3 targetPos;
     private int flightTimer = 0;
+    private int cooldown = 0;
 
     public AukvultureSoarGoal(AukvultureEntity auk) {
         this.auk = auk;
@@ -24,9 +24,15 @@ public class AukvultureSoarGoal extends Goal {
 
     @Override
     public boolean canUse() {
-        if (this.auk.isVehicle()) return false;
+        if (this.auk.isVehicle() || this.cooldown > 0) {
+            if (this.cooldown > 0) this.cooldown--;
+            return false;
+        }
+
         if (this.auk.isFlying()) return true;
-        return this.auk.getRandom().nextInt(120) == 0;
+
+        // Ensure mob is on solid ground before trying to initiate takeoff
+        return this.auk.onGround() && this.auk.getRandom().nextInt(160) == 0;
     }
 
     @Override
@@ -39,21 +45,16 @@ public class AukvultureSoarGoal extends Goal {
         this.flightTimer = 0;
         if (!this.auk.isFlying()) {
             this.auk.setFlying(true);
-            this.auk.setDeltaMovement(this.auk.getDeltaMovement().add(0, 0.4D, 0));
+
+            // Push outward from looking direction and upward to clear cliffs cleanly
+            Vec3 forward = this.auk.getLookAngle();
+            this.auk.setDeltaMovement(new Vec3(forward.x * 0.4D, 0.45D, forward.z * 0.4D));
+            this.auk.hasImpulse = true;
         }
 
-        if (!this.auk.level().isClientSide()) {
-            this.auk.playSound(
-                    MeanderingMobsSoundsRegistry.AUKVULTURE_SOAR.get(),
-                    1.2F,
-                    0.9F + this.auk.getRandom().nextFloat() * 0.2F
-            );
-        }
-
-        // Pick initial target immediately upon starting to avoid hesitation gaps
         this.pickNewSoarTarget();
         if (this.targetPos != null) {
-            this.auk.getMoveControl().setWantedPosition(this.targetPos.x, this.targetPos.y, this.targetPos.z, 1.2D);
+            this.auk.getMoveControl().setWantedPosition(this.targetPos.x, this.targetPos.y, this.targetPos.z, 1.0D);
         }
     }
 
@@ -63,58 +64,68 @@ public class AukvultureSoarGoal extends Goal {
         Vec3 currentPos = this.auk.position();
 
         if (this.auk.isInWater()) {
-            this.auk.setFlying(false);
-            this.stop();
+            this.stopAndCooldown();
             return;
         }
 
-        Vec3 downRayEnd = currentPos.subtract(0, 16.0D, 0);
-        BlockHitResult groundHit = this.auk.level().clip(new ClipContext(
-                currentPos, downRayEnd, ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY, this.auk
-        ));
+        // Must remain airborne for at least 80 ticks (4s) before considering landing
+        if (this.flightTimer > 80) {
+            Vec3 downRayEnd = currentPos.subtract(0, 8.0D, 0);
+            BlockHitResult groundHit = this.auk.level().clip(new ClipContext(
+                    currentPos, downRayEnd, ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY, this.auk
+            ));
 
-        if (this.flightTimer > 600 && groundHit.getType() != HitResult.Type.MISS) {
-            Vec3 landingSpot = Vec3.atBottomCenterOf(groundHit.getBlockPos().above());
-            this.auk.getMoveControl().setWantedPosition(landingSpot.x, landingSpot.y, landingSpot.z, 0.8D);
-            if (this.auk.onGround()) {
-                this.auk.setFlying(false);
-                this.stop();
+            if (this.flightTimer > 400 && groundHit.getType() != HitResult.Type.MISS) {
+                Vec3 landingSpot = Vec3.atBottomCenterOf(groundHit.getBlockPos().above());
+                this.auk.getMoveControl().setWantedPosition(landingSpot.x, landingSpot.y, landingSpot.z, 0.8D);
+
+                if (this.auk.onGround()) {
+                    this.stopAndCooldown();
+                    return;
+                }
             }
-            return;
         }
 
-        if (this.flightTimer % 140 == 0 && !this.auk.level().isClientSide()) {
-            this.auk.playSound(
-                    MeanderingMobsSoundsRegistry.AUKVULTURE_SOAR.get(),
-                    1.0F,
-                    0.95F + this.auk.getRandom().nextFloat() * 0.15F
-            );
-        }
-
-        // Check distance continuously and refresh smooth position
-        if (this.targetPos == null || currentPos.distanceToSqr(this.targetPos) < 36.0D || this.flightTimer % 120 == 0) {
+        if (this.targetPos == null || currentPos.distanceToSqr(this.targetPos) < 49.0D || this.flightTimer % 140 == 0) {
             this.pickNewSoarTarget();
         }
 
         if (this.targetPos != null) {
-            this.auk.getMoveControl().setWantedPosition(this.targetPos.x, this.targetPos.y, this.targetPos.z, 1.2D);
+            this.auk.getMoveControl().setWantedPosition(this.targetPos.x, this.targetPos.y, this.targetPos.z, 1.0D);
         }
+    }
+
+    private void stopAndCooldown() {
+        this.auk.setFlying(false);
+        this.cooldown = 200 + this.auk.getRandom().nextInt(200); // 10-20 sec cooldown before next flight
+        this.stop();
     }
 
     private void pickNewSoarTarget() {
         BlockPos currentBlock = this.auk.blockPosition();
 
-        int rx = currentBlock.getX() + this.auk.getRandom().nextInt(160) - 80;
-        int rz = currentBlock.getZ() + this.auk.getRandom().nextInt(160) - 80;
+        for (int i = 0; i < 10; i++) {
+            int rx = currentBlock.getX() + this.auk.getRandom().nextInt(120) - 60;
+            int rz = currentBlock.getZ() + this.auk.getRandom().nextInt(120) - 60;
 
-        BlockPos targetXZ = new BlockPos(rx, currentBlock.getY(), rz);
+            BlockPos targetXZ = new BlockPos(rx, currentBlock.getY(), rz);
 
-        if (!this.auk.level().hasChunkAt(targetXZ)) {
-            return;
+            if (!this.auk.level().hasChunkAt(targetXZ)) {
+                continue;
+            }
+
+            int groundY = this.auk.level().getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, targetXZ).getY();
+            int targetY = groundY + 12 + this.auk.getRandom().nextInt(8);
+            Vec3 candidatePos = new Vec3(rx, targetY, rz);
+
+            BlockHitResult hit = this.auk.level().clip(new ClipContext(
+                    this.auk.position(), candidatePos, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this.auk
+            ));
+
+            if (hit.getType() == HitResult.Type.MISS) {
+                this.targetPos = candidatePos;
+                return;
+            }
         }
-
-        int groundY = this.auk.level().getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, targetXZ).getY();
-        int targetY = groundY + 18 + this.auk.getRandom().nextInt(14);
-        this.targetPos = new Vec3(rx, targetY, rz);
     }
 }

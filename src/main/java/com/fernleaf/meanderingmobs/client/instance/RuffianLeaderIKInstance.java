@@ -36,7 +36,7 @@ public class RuffianLeaderIKInstance {
     public final SpringState hairSeg3 = new SpringState(0.0f, 0.0f);
 
     public void update(LivingEntity entity, float limbSwing, float limbSwingAmount, float headPitch, float partialTick) {
-        float age = entity.tickCount + partialTick;
+        float age = IKMathUtils.getAge(entity, partialTick);
 
         // 1. Procedural Humanoid Gait Engine
         float walkFreq = 0.6662f;
@@ -69,8 +69,9 @@ public class RuffianLeaderIKInstance {
         this.breathingOffset = DynamicsUtils.getSineWave(age, 0.12f, 0.04f);
 
         // 4. Reversed Hair Target Radians & Tamed Spring Dynamics
-        float velocityY = (float) entity.getDeltaMovement().y();
-        float moveSpeed = (float) entity.getDeltaMovement().horizontalDistance();
+        Vec3 velocity = entity.getDeltaMovement();
+        float velocityY = (float) velocity.y();
+        float moveSpeed = IKMathUtils.getHorizontalSpeed(velocity);
 
         // Negated calculation so movement drags hair BACKWARDS rather than forward
         float hairLagTarget = -((velocityY * 0.6f) - (moveSpeed * 0.5f) - (limbSwingAmount * 0.2f));

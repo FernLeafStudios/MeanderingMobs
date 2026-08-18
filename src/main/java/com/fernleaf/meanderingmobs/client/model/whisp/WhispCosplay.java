@@ -1,55 +1,48 @@
 package com.fernleaf.meanderingmobs.client.model.whisp;
 
+import com.fernleaf.fernframe.proprio.model.IModelVariant;
+import com.fernleaf.fernframe.proprio.model.ModelVariantRegistry;
+import com.fernleaf.fernframe.proprio.model.TextureUtils;
 import com.fernleaf.meanderingmobs.MeanderingMobs;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.resources.ResourceLocation;
 
-public enum WhispCosplay {
-    // ID 0: Default - Straight Hair
+import java.util.function.Function;
+
+public enum WhispCosplay implements IModelVariant<WhispCosplay.WhispModelType> {
     STRAIGHT(0, "default", StraightHairWhispModel.LAYER_LOCATION, WhispModelType.STRAIGHT),
-
-    // ID 1: Norma Natividad / Curly Hair
     NORMA(1, "orange", CurlyHairWhispModel.LAYER_LOCATION, WhispModelType.CURLY),
-
-    // ID 2: Jane Willoughby / Straight Hair
     JANE(2, "red", StraightHairWhispModel.LAYER_LOCATION, WhispModelType.STRAIGHT),
-
-    // ID 3: Sandy Fishnets / Straight Hair
     SANDY(3, "light_blue", StraightHairWhispModel.LAYER_LOCATION, WhispModelType.STRAIGHT),
-
-    // ID 4: Ruby Gillman / Straight Hair
     RUBY(4, "blue", StraightHairWhispModel.LAYER_LOCATION, WhispModelType.STRAIGHT);
 
+    private static final Function<Integer, WhispCosplay> LOOKUP =
+            ModelVariantRegistry.createLookup(values(), STRAIGHT);
 
-    // Enum properties
-    public final int id;
-    public final String textureName;
-    public final ModelLayerLocation layerLocation;
+    private final int id;
+    private final ModelLayerLocation layerLocation;
     public final WhispModelType modelType;
-    public final ResourceLocation textureLocation; // Pre-calculated to prevent GC heap allocation every frame
+    public final ResourceLocation textureLocation;
 
     WhispCosplay(int id, String textureName, ModelLayerLocation layerLocation, WhispModelType modelType) {
         this.id = id;
-        this.textureName = textureName;
         this.layerLocation = layerLocation;
         this.modelType = modelType;
-        this.textureLocation = ResourceLocation.fromNamespaceAndPath(
-                MeanderingMobs.MODID,
-                "textures/entity/whisp/whisp_" + textureName + ".png"
-        );
+        this.textureLocation = TextureUtils.buildEntityTexture(MeanderingMobs.MODID, "whisp", "whisp_" + textureName);
     }
+
+    @Override public int getId() { return this.id; }
+    @Override public ModelLayerLocation getLayerLocation() { return this.layerLocation; }
+    @Override public WhispModelType getModelType() { return this.modelType; }
+    @Override public ResourceLocation getTextureLocation() { return this.textureLocation; }
 
     public enum WhispModelType {
         STRAIGHT,
         CURLY,
         PONYTAIL
-        // Add new base models here as you create them
     }
 
     public static WhispCosplay byId(int id) {
-        for (WhispCosplay cosplay : values()) {
-            if (cosplay.id == id) return cosplay;
-        }
-        return STRAIGHT; // Fallback default
+        return LOOKUP.apply(id);
     }
 }

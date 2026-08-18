@@ -30,6 +30,7 @@ public class QuillArrowEntity extends AbstractArrow {
     @Override
     protected void doPostHurtEffects(@NotNull LivingEntity target) {
         super.doPostHurtEffects(target);
+        // Apply Quilled effect for 30 seconds (600 ticks)
         target.addEffect(new MobEffectInstance(MeanderingMobsEffectsRegistry.QUILLED, 600, 0));
     }
 }

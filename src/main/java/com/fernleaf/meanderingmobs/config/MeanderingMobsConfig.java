@@ -76,4 +76,14 @@ public class MeanderingMobsConfig {
 
         COMMON_SPEC = builder.build();
     }
+
+    /**
+     * Safely reads a config value. If the config hasn't loaded yet, returns the default value.
+     */
+    public static <T> T getSafe(ModConfigSpec.ConfigValue<T> configValue) {
+        if (COMMON_SPEC.isLoaded()) {
+            return configValue.get();
+        }
+        return configValue.getDefault();
+    }
 }

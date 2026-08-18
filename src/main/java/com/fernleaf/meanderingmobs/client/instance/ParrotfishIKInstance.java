@@ -23,7 +23,6 @@ public class ParrotfishIKInstance {
 
     public void update(LivingEntity entity, float limbSwing, float limbSwingAmount, float headPitch, float partialTick) {
         Vec3 move = entity.getDeltaMovement();
-
         double horizontalSpeedSqr = move.horizontalDistanceSqr();
         double totalSpeedSqr = horizontalSpeedSqr + (move.y * move.y);
 
@@ -31,19 +30,19 @@ public class ParrotfishIKInstance {
         float targetRoll = 0.0f;
 
         if (totalSpeedSqr > 0.0004f) {
-            float horizontalSpeed = (float) Math.sqrt(horizontalSpeedSqr);
+            float horizontalSpeed = IKMathUtils.getHorizontalSpeed(move);
             targetPitch = (float) -Mth.atan2(move.y, horizontalSpeed);
 
             // Interpolate smooth yaw delta across frames to prevent micro-stuttering
             float currentYaw = Mth.rotLerp(partialTick, entity.yRotO, entity.getYRot());
             float prevYaw = entity.yRotO;
             float yawDelta = Mth.wrapDegrees(currentYaw - prevYaw);
-            targetRoll = Mth.clamp(yawDelta * 0.08f, -0.45f, 0.45f);
+            targetRoll = IKMathUtils.clampRadians(yawDelta * 0.08f, -0.45f, 0.45f);
         }
 
         // Eating beak transition
+        float age = IKMathUtils.getAge(entity, partialTick);
         if (entity instanceof ParrotfishEntity parrotfish && parrotfish.isEating()) {
-            float age = entity.tickCount + partialTick;
             this.beakOpen = (Mth.sin(age * 0.8f) + 1.0f) * 0.25f;
         } else {
             this.beakOpen = IKMathUtils.lerp(this.beakOpen, 0.0f, 0.2f);
@@ -54,7 +53,7 @@ public class ParrotfishIKInstance {
         this.roll = IKMathUtils.lerp(this.roll, targetRoll, 0.08f);
 
         // Accumulate wave phase rather than multiplying raw age by dynamic speed factor
-        float totalSpeed = (float) Math.sqrt(totalSpeedSqr);
+        float totalSpeed = IKMathUtils.getTotalSpeed(move);
         float speedFactor = Mth.clamp(totalSpeed * 4.0f, 0.2f, 1.5f);
         this.accumulatedWaveTime += 0.25f * speedFactor;
 
@@ -64,8 +63,7 @@ public class ParrotfishIKInstance {
         this.tailYaw = Mth.sin(this.accumulatedWaveTime - 1.2f) * 0.38f;
 
         // Pectoral fin flutter
-        float age = entity.tickCount + partialTick;
-        float horizontalSpeed = (float) Math.sqrt(horizontalSpeedSqr);
+        float horizontalSpeed = IKMathUtils.getHorizontalSpeed(move);
         this.pectoralFinFlap = Mth.cos(age * 0.2F) * 0.15f + (horizontalSpeed * 0.4f);
     }
 }

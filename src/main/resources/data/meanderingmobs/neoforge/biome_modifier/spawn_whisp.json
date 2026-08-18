@@ -1,6 +1,8 @@
 {
   "type": "neoforge:add_spawns",
-  "biomes": "#c:is_spooky",
+  "biomes": [
+    "minecraft:dark_forest"
+  ],
   "spawners": [
     {
       "type": "meanderingmobs:whisp",

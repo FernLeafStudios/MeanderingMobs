@@ -110,7 +110,8 @@ public class MeanderingMobsEntityRegistry {
                     EntityType.Builder.<QuillArrowEntity>of(QuillArrowEntity::new, MobCategory.MISC)
                             .sized(0.5F, 0.5F)
                             .clientTrackingRange(4)
-                            .updateInterval(20)
+                            .updateInterval(2) // <-- Change this to 2 (Vanilla arrow standard)
+                            .setTrackingRange(64) // <-- Add this to ensure it renders from afar
                             .build("quill_arrow")
             );
 

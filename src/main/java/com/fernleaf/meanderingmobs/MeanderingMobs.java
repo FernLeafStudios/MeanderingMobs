@@ -1,9 +1,8 @@
 package com.fernleaf.meanderingmobs;
 
-import com.fernleaf.meanderingmobs.registry.MeanderingMobsEffectsRegistry;
-import com.fernleaf.meanderingmobs.registry.MeanderingMobsEntityRegistry;
-import com.fernleaf.meanderingmobs.registry.MeanderingMobsItemRegistry;
-import com.fernleaf.meanderingmobs.registry.MeanderingMobsSoundsRegistry;
+import com.fernleaf.meanderingmobs.config.MeanderingMobsConfig;
+import com.fernleaf.meanderingmobs.registry.*;
+import com.fernleaf.meanderingmobs.server.datagen.MeanderingMobsBiomeTagProvider;
 import com.fernleaf.meanderingmobs.server.datagen.MeanderingMobsBlockTagProvider;
 import com.fernleaf.meanderingmobs.server.datagen.MeanderingMobsEntityTypeTagProvider;
 import com.fernleaf.meanderingmobs.server.datagen.MeanderingMobsItemTagProvider;
@@ -13,6 +12,7 @@ import net.minecraft.data.PackOutput;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
@@ -29,10 +29,14 @@ public class MeanderingMobs {
         modEventBus.addListener(this::commonSetup);
         modEventBus.addListener(this::gatherData);
 
+        modContainer.registerConfig(ModConfig.Type.COMMON, MeanderingMobsConfig.COMMON_SPEC);
+
+        // Register Registries
         MeanderingMobsEntityRegistry.register(modEventBus);
         MeanderingMobsItemRegistry.register(modEventBus);
         MeanderingMobsEffectsRegistry.register(modEventBus);
         MeanderingMobsSoundsRegistry.SOUND_EVENTS.register(modEventBus);
+        MeanderingMobsCreativeTabRegistry.register(modEventBus); // <-- Added here
 
         LOGGER.info("Meandering Mobs initialized with FernFrame!");
     }
@@ -51,6 +55,9 @@ public class MeanderingMobs {
 
         event.getGenerator().addProvider(event.includeServer(),
                 new MeanderingMobsEntityTypeTagProvider(packOutput, lookupProvider, existingFileHelper));
+
+        event.getGenerator().addProvider(event.includeServer(),
+                new MeanderingMobsBiomeTagProvider(packOutput, lookupProvider, existingFileHelper));
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {
