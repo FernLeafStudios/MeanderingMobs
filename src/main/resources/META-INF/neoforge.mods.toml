@@ -27,3 +27,10 @@ type="required"
 versionRange="[1.21,)"
 ordering="NONE"
 side="BOTH"
+
+[[dependencies.meanderingmobs]]
+modId = "fernframe"
+type = "required"
+versionRange = "[1.0.0,)"
+ordering = "NONE"
+side = "BOTH"

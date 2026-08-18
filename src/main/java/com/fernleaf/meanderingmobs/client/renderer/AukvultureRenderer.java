@@ -34,7 +34,7 @@ public class AukvultureRenderer extends MobRenderer<AukvultureEntity, Aukvulture
 
         if (entity.isFlying()) {
             float interpolatedPitch = Mth.rotLerp(partialTicks, entity.xRotO, entity.getXRot());
-            float interpolatedRoll = Mth.rotLerp(partialTicks, entity.prevRollAngle, entity.rollAngle);
+            float interpolatedRoll = Mth.rotLerp(partialTicks, entity.getPrevRollAngle(), entity.rollAngle);
 
             if (Math.abs(interpolatedRoll) > 0.01F) {
                 poseStack.mulPose(Axis.ZP.rotationDegrees(Mth.clamp(interpolatedRoll, -45.0F, 45.0F)));
