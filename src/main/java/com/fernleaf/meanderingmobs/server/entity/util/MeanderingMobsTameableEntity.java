@@ -94,6 +94,7 @@ public abstract class MeanderingMobsTameableEntity extends MeanderingMobsEntity 
 
     public void cycleAiState(Player player, String messageNamespace) {
         if (!this.level().isClientSide()) {
+            // Correct sequence: 0 (Wander) -> 1 (Sit) -> 2 (Follow) -> 0
             int nextState = (getAiState() + 1) % 3;
             setAiState(nextState);
 
@@ -103,7 +104,11 @@ public abstract class MeanderingMobsTameableEntity extends MeanderingMobsEntity 
                 default -> "wander";
             };
 
-            player.displayClientMessage(Component.translatable("message." + messageNamespace + "." + stateName), true);
+            // Formats strictly to: message.aukvulture.sit / follow / wander
+            player.displayClientMessage(
+                    Component.translatable("message." + messageNamespace + "." + stateName),
+                    true
+            );
         }
     }
 

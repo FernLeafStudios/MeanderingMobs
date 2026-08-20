@@ -2,6 +2,7 @@
   "itemGroup.meanderingmobs": "Meandering Mobs",
 
   "entity.meanderingmobs.whisp": "Whisp",
+  "item.meanderingmobs.whisp_spawn_egg": "Whisp Spawn Egg",
   "message.meanderingmobs.whisp.tag_start": "The Whisp wants to play tag! Stay close!",
   "message.meanderingmobs.whisp.tag_failed": "You wandered too far! The game ended.",
   "message.meanderingmobs.whisp.tag_retry": "The Whisp giggles! Try tagging it again!",
@@ -12,19 +13,23 @@
   "effect.meanderingmobs.whimsical": "Whimsical",
 
   "entity.meanderingmobs.aukvulture": "Aukvulture",
-  "message.meanderingmobs.aukvulture.state.wander": "Aukvulture is now following",
-  "message.meanderingmobs.aukvulture.state.sit": "Aukvulture is now wandering",
-  "message.meanderingmobs.aukvulture.state.follow": "Aukvulture is now staying",
+  "item.meanderingmobs.aukvulture_spawn_egg": "Aukvulture Spawn Egg",
+  "message.aukvulture.wander": "Aukvulture is now wandering",
+  "message.aukvulture.sit": "Aukvulture is now staying",
+  "message.aukvulture.follow": "Aukvulture is now following",
 
   "entity.meanderingmobs.parrotfish": "Bumphead Parrotfish",
+  "item.meanderingmobs.parrotfish_spawn_egg": "Bumphead Parrotfish Spawn Egg",
   "item.meanderingmobs.raw_parrotfish": "Raw Parrotfish",
 
-  "entity.meanderingmobs.soulflare": "Soul Flare",
+  "entity.meanderingmobs.soulflare": "Soulflare",
+  "item.meanderingmobs.soulflare_spawn_egg": "Soulflare Spawn Egg",
   "item.meanderingmobs.soul_orb": "Soul Orb",
   "item.meanderingmobs.soul_orb_active": "Active Soul Orb",
   "item.meanderingmobs.soul_rod": "Soul Rod",
 
   "entity.meanderingmobs.tegu": "Tegu",
+  "item.meanderingmobs.tegu_spawn_egg": "Tegu Spawn Egg",
   "item.meanderingmobs.tegu_scale": "Tegu Scale",
   "item.meanderingmobs.tegu_pouch": "Tegu Pouch",
   "item.meanderingmobs.tegu_pouch.fullness": "%s/%s",
@@ -33,10 +38,11 @@
   "message.tegu.follow": "Tegu is now following",
 
   "entity.meanderingmobs.porcupine": "Porcupine",
+  "item.meanderingmobs.porcupine_spawn_egg": "Porcupine Spawn Egg",
   "entity.meanderingmobs.quill_arrow": "Porcupine Quill Arrow",
   "item.meanderingmobs.porcupine_quill": "Porcupine Quill",
   "effect.meanderingmobs.quilled": "Quilled",
-  "message.porcupine.wander": "Tegu is now wandering",
-  "message.porcupine.sit": "Tegu is now sitting",
-  "message.porcupine.follow": "Tegu is now following"
+  "message.porcupine.wander": "Porcupine is now wandering",
+  "message.porcupine.sit": "Porcupine is now sitting",
+  "message.porcupine.follow": "Porcupine is now following"
 }

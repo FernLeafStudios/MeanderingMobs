@@ -2,6 +2,7 @@ package com.fernleaf.meanderingmobs.server.entity;
 
 import com.fernleaf.fernframe.umweltlite.goals.api.engine.EmotionAPI;
 import com.fernleaf.fernframe.umweltlite.goals.api.engine.UmweltAPI;
+import com.fernleaf.meanderingmobs.client.model.aukvulture.AukvultureVariant;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsSoundsRegistry;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsTagRegistry;
 import com.fernleaf.meanderingmobs.server.entity.ai.TameableStateGoal;
@@ -19,7 +20,6 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
@@ -52,7 +52,10 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
             SynchedEntityData.defineId(AukvultureEntity.class, EntityDataSerializers.OPTIONAL_UUID);
     private static final EntityDataAccessor<Boolean> IS_ATTACKING =
             SynchedEntityData.defineId(AukvultureEntity.class, EntityDataSerializers.BOOLEAN);
-
+    private static final EntityDataAccessor<Integer> DATA_VARIANT_ID =
+            SynchedEntityData.defineId(AukvultureEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Boolean> IS_SADDLED =
+            SynchedEntityData.defineId(AukvultureEntity.class, EntityDataSerializers.BOOLEAN);
     public static final byte EVENT_ATTACK = 4;
     public static final byte EVENT_TAKEOFF = 60;
     public static final byte EVENT_LANDING = 61;
@@ -113,6 +116,8 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
     @Override
     protected void defineSynchedData(SynchedEntityData.@NotNull Builder builder) {
         super.defineSynchedData(builder);
+        builder.define(DATA_VARIANT_ID, AukvultureVariant.DEFAULT.id);
+        builder.define(IS_SADDLED, false);
         builder.define(IS_FLYING, false);
         builder.define(DATA_LONE_WANDERER, true);
         builder.define(DATA_NAVIGATION_OWNER, Optional.empty());
@@ -134,6 +139,8 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
         super.addAdditionalSaveData(compound);
         compound.putBoolean("LoneWanderer", this.isLoneWanderer());
         compound.putBoolean("IsFlying", this.isFlying());
+        compound.putInt("Variant", this.getVariant().id);
+        compound.putBoolean("Saddled", this.isSaddled());
 
         UUID navOwner = this.getNavigationOwner();
         if (navOwner != null) compound.putUUID("NavigationOwner", navOwner);
@@ -144,6 +151,10 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
         super.readAdditionalSaveData(compound);
         this.setLoneWanderer(!compound.contains("LoneWanderer") || compound.getBoolean("LoneWanderer"));
         this.setFlying(compound.getBoolean("IsFlying"));
+        if (compound.contains("Variant")) {
+            this.setVariant(AukvultureVariant.byId(compound.getInt("Variant")));
+        }
+        this.setSaddled(compound.getBoolean("Saddled"));
 
         if (compound.hasUUID("NavigationOwner")) this.setNavigationOwner(compound.getUUID("NavigationOwner"));
     }
@@ -177,6 +188,14 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
     public void setAttacking(boolean attacking) {
         this.entityData.set(IS_ATTACKING, attacking);
     }
+
+    public AukvultureVariant getVariant() {
+        return AukvultureVariant.byId(this.entityData.get(DATA_VARIANT_ID));
+    }
+    public void setVariant(AukvultureVariant variant) { this.entityData.set(DATA_VARIANT_ID, variant.id); }
+
+    public boolean isSaddled() { return this.entityData.get(IS_SADDLED); }
+    public void setSaddled(boolean saddled) { this.entityData.set(IS_SADDLED, saddled); }
 
     private void triggerTakeoff() {
         if (this.level().isClientSide()) {
@@ -224,10 +243,6 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
 
     @Override
     public @NotNull InteractionResult mobInteract(@NotNull Player player, @NotNull InteractionHand hand) {
-        if (hand != InteractionHand.MAIN_HAND) {
-            return super.mobInteract(player, hand);
-        }
-
         ItemStack itemstack = player.getItemInHand(hand);
 
         // 1. Taming Logic
@@ -258,18 +273,29 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
             return InteractionResult.sidedSuccess(this.level().isClientSide());
         }
 
-        // 2. Command State Cycle & Mounting
-        if (this.isTamed() && this.isOwner(player)) {
-            if (player.isShiftKeyDown()) {
-                // Shift-right click toggles AI command state using unified framework key
-                this.cycleAiState(player, "aukvulture");
+        // 2. Tamed Interaction Logic (Owner only)
+        if (this.isTamed() && this.isOwner(player) && hand == InteractionHand.MAIN_HAND) {
+            // Saddling logic
+            if (!this.isSaddled() && itemstack.is(net.minecraft.world.item.Items.SADDLE)) {
+                if (!player.getAbilities().instabuild) {
+                    itemstack.shrink(1);
+                }
+                this.setSaddled(true);
+                this.playSound(net.minecraft.sounds.SoundEvents.HORSE_SADDLE, 1.0F, 1.0F);
                 return InteractionResult.sidedSuccess(this.level().isClientSide());
-            } else if (!this.isVehicle()) {
+            }
+
+            // Riding logic (requires saddle and non-sneaking player)
+            if (this.isSaddled() && !player.isShiftKeyDown() && !this.isVehicle()) {
                 if (!this.level().isClientSide()) {
                     player.startRiding(this);
                 }
                 return InteractionResult.sidedSuccess(this.level().isClientSide());
             }
+
+            // Command State Toggle (unsaddled OR sneaking while saddled)
+            this.cycleAiState(player, "aukvulture");
+            return InteractionResult.sidedSuccess(this.level().isClientSide());
         }
 
         return super.mobInteract(player, hand);
@@ -319,7 +345,6 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
     private void updateRotations() {
         if (this.isVehicle() && this.getControllingPassenger() instanceof Player player) {
             this.yRotO = this.getYRot();
-            this.xRotO = this.getXRot();
 
             this.setYRot(Mth.rotLerp(0.15F, this.getYRot(), player.getYRot()));
             this.yBodyRot = this.getYRot();
@@ -395,10 +420,17 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
     }
 
     private void handleRiderFlight(Player player) {
+        float playerPitch = Mth.clamp(player.getXRot(), -88.0F, 88.0F);
+        float playerYaw = player.getYRot();
+
+        this.setXRot(Mth.rotLerp(0.2F, this.getXRot(), playerPitch));
+        this.setYRot(Mth.rotLerp(0.2F, this.getYRot(), playerYaw));
+        this.yBodyRot = this.getYRot();
+        this.yHeadRot = this.getYRot();
+
         Vec3 lookVec = player.getLookAngle();
         Vec3 motion = this.getDeltaMovement();
         double motionY = motion.y;
-        float playerPitch = player.getXRot();
 
         if (this.clientFlapping) {
             motionY = Mth.lerp(0.2D, motionY, 0.45D);
@@ -535,10 +567,6 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
         }
     }
 
-    public @Nullable SpawnGroupData finalizeSpawn(@NotNull ServerLevelAccessor level, @NotNull DifficultyInstance difficulty, @NotNull MobSpawnType spawnType, @Nullable SpawnGroupData data) {
-        return super.finalizeSpawn(level, difficulty, spawnType, data);
-    }
-
     public boolean canLaunchFromWater() {
         return this.isInWater() && this.takeoffCharge >= 1.0F;
     }
@@ -609,5 +637,13 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
                 || stateBelow.is(BlockTags.SNOW)
                 || stateBelow.is(Blocks.GRAVEL)
                 || stateBelow.is(Blocks.STONE);
+    }
+
+    @Override
+    protected void dropCustomDeathLoot(@NotNull ServerLevel level, @NotNull DamageSource damageSource, boolean recentlyHit) {
+        super.dropCustomDeathLoot(level, damageSource, recentlyHit);
+        if (this.isSaddled()) {
+            this.spawnAtLocation(net.minecraft.world.item.Items.SADDLE);
+        }
     }
 }

@@ -34,10 +34,15 @@ public class ParrotfishEatCoralGoal extends AbstractBlockInteractionGoal<Parrotf
 
     @Override
     protected BlockPos findTargetBlock() {
+        // Broadened to include all coral tags (plants, wall corals, and coral blocks)
         Optional<BlockPos> coral = BlockPos.findClosestMatch(
                 this.entity.blockPosition(), 8, 4,
-                pos -> this.entity.level().getBlockState(pos).is(BlockTags.CORALS)
-                        || this.entity.level().getBlockState(pos).is(BlockTags.CORAL_PLANTS)
+                pos -> {
+                    BlockState state = this.entity.level().getBlockState(pos);
+                    return state.is(BlockTags.CORALS)
+                            || state.is(BlockTags.CORAL_PLANTS)
+                            || state.is(BlockTags.WALL_CORALS);
+                }
         );
         return coral.orElse(null);
     }
@@ -46,7 +51,11 @@ public class ParrotfishEatCoralGoal extends AbstractBlockInteractionGoal<Parrotf
     protected void onReachedBlock(BlockPos pos) {
         if (!this.entity.isEating()) {
             this.entity.setEating(true);
+            this.entity.getNavigation().stop(); // Stop active navigation pathing
         }
+
+        // Hover gently in place while biting
+        this.entity.setDeltaMovement(this.entity.getDeltaMovement().scale(0.2D));
 
         this.eatTimer++;
 

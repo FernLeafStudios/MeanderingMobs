@@ -1,7 +1,9 @@
 package com.fernleaf.meanderingmobs.server.entity;
 
+import com.fernleaf.meanderingmobs.server.entity.ai.parrotfish.ParrotfishCocoonGoal;
 import com.fernleaf.meanderingmobs.server.entity.ai.parrotfish.ParrotfishEatCoralGoal;
 import com.fernleaf.meanderingmobs.server.entity.ai.parrotfish.ParrotfishRamAttackGoal;
+import com.fernleaf.meanderingmobs.server.entity.ai.parrotfish.ParrotfishSwimGoal;
 import com.fernleaf.meanderingmobs.server.entity.util.MeanderingMobsAquaticEntity;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -10,7 +12,6 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.tags.FluidTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
@@ -21,9 +22,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.SmoothSwimmingLookControl;
 import net.minecraft.world.entity.ai.control.SmoothSwimmingMoveControl;
-import net.minecraft.world.entity.ai.goal.RandomSwimmingGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
-import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.ai.navigation.WaterBoundPathNavigation;
 import net.minecraft.world.entity.animal.WaterAnimal;
@@ -48,18 +47,20 @@ public class ParrotfishEntity extends MeanderingMobsAquaticEntity {
 
     private int stunnedTicks = 0;
     private int eatCoralCooldown = 0;
+    private int cocoonCooldown = 0;
 
     public ParrotfishEntity(EntityType<? extends WaterAnimal> entityType, Level level) {
         super(entityType, level);
         this.moveControl = new SmoothSwimmingMoveControl(this, 85, 10, 0.02F, 0.1F, true);
         this.lookControl = new SmoothSwimmingLookControl(this, 10);
         this.setPathfindingMalus(PathType.WATER, 0.0F);
+        this.setPathfindingMalus(PathType.WATER_BORDER, 16.0F);
     }
 
     public static AttributeSupplier.Builder createAttributes() {
         return Mob.createMobAttributes()
                 .add(Attributes.MAX_HEALTH, 30.0D)
-                .add(Attributes.MOVEMENT_SPEED, 0.7D)
+                .add(Attributes.MOVEMENT_SPEED, 0.35D)
                 .add(Attributes.ATTACK_DAMAGE, 5.0D)
                 .add(Attributes.KNOCKBACK_RESISTANCE, 0.6D)
                 .add(Attributes.FOLLOW_RANGE, 16.0D);
@@ -83,27 +84,34 @@ public class ParrotfishEntity extends MeanderingMobsAquaticEntity {
     protected void registerGoals() {
         super.registerGoals();
         this.goalSelector.addGoal(0, new ParrotfishRamAttackGoal(this));
-        this.goalSelector.addGoal(1, new ParrotfishEatCoralGoal(this));
-        this.goalSelector.addGoal(2, new RandomSwimmingGoal(this, 1.0D, 10));
+        this.goalSelector.addGoal(1, new ParrotfishCocoonGoal(this));
+        this.goalSelector.addGoal(2, new ParrotfishEatCoralGoal(this));
+        this.goalSelector.addGoal(3, new ParrotfishSwimGoal(this, 1.0D, 10));
 
         this.targetSelector.addGoal(1, new HurtByTargetGoal(this));
-        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
     }
 
     @Override
     public void aiStep() {
         super.aiStep();
 
-        if (this.eatCoralCooldown > 0) {
-            this.eatCoralCooldown--;
-        }
+        if (this.eatCoralCooldown > 0) this.eatCoralCooldown--;
+        if (this.cocoonCooldown > 0) this.cocoonCooldown--;
 
-        if (!this.isInWater() || !this.isEyeInFluid(FluidTags.WATER)) {
-            if (!this.onGround()) {
-                this.setDeltaMovement(this.getDeltaMovement().add(0.0D, -0.05D, 0.0D));
+        // Drop invalid targets
+        if (!this.level().isClientSide()) {
+            LivingEntity target = this.getTarget();
+            if (target != null && (!target.isAlive() || (target instanceof Player p && (p.isCreative() || p.isSpectator())))) {
+                this.setTarget(null);
             }
         }
 
+        // Out of water gravity
+        if (!this.isInWater() && !this.onGround()) {
+            this.setDeltaMovement(this.getDeltaMovement().add(0.0D, -0.05D, 0.0D));
+        }
+
+        // Stun state particles
         if (this.isStunned()) {
             this.stunnedTicks--;
             if (this.level().isClientSide() && this.random.nextInt(3) == 0) {
@@ -111,16 +119,6 @@ public class ParrotfishEntity extends MeanderingMobsAquaticEntity {
             }
             if (this.stunnedTicks <= 0 && !this.level().isClientSide()) {
                 this.setStunned(false);
-            }
-        }
-
-        if (!this.level().isClientSide()) {
-            boolean isNight = !this.level().isDay();
-            if (isNight && !this.hasCocoon() && this.isInWater()) {
-                this.getNavigation().stop();
-                this.setCocoon(true);
-            } else if (!isNight && this.hasCocoon()) {
-                this.setCocoon(false);
             }
         }
     }
@@ -133,9 +131,14 @@ public class ParrotfishEntity extends MeanderingMobsAquaticEntity {
             this.level().playSound(player, this, SoundEvents.GROWING_PLANT_CROP, SoundSource.NEUTRAL, 1.0F, 0.8F);
             if (!this.level().isClientSide()) {
                 this.setCocoon(false);
+                this.cocoonCooldown = 12000; // 10 minute cooldown before reforming cocoon
                 item.hurtAndBreak(1, player, LivingEntity.getSlotForHand(hand));
                 this.spawnAtLocation(new ItemStack(Items.SLIME_BALL, this.random.nextInt(3) + 1));
-                this.setTarget(player);
+
+                // Only aggro on survival/adventure players
+                if (!player.isCreative() && !player.isSpectator()) {
+                    this.setTarget(player);
+                }
             }
             return InteractionResult.sidedSuccess(this.level().isClientSide());
         }
@@ -152,12 +155,15 @@ public class ParrotfishEntity extends MeanderingMobsAquaticEntity {
         }
 
         if (this.isEffectiveAi() && this.isInWater()) {
-            this.moveRelative(0.015F, travelVector);
+            float swimAccel = (float) this.getAttributeValue(Attributes.MOVEMENT_SPEED) * 0.18F;
+            this.moveRelative(swimAccel, travelVector);
             this.move(MoverType.SELF, this.getDeltaMovement());
 
             Vec3 delta = this.getDeltaMovement();
+            double dampening = this.isCharging() ? 0.95D : 0.85D;
             double sink = (this.getTarget() == null) ? -0.002D : 0.0D;
-            this.setDeltaMovement(delta.x * 0.9D, (delta.y * 0.9D) + sink, delta.z * 0.9D);
+
+            this.setDeltaMovement(delta.x * dampening, (delta.y * dampening) + sink, delta.z * dampening);
         } else {
             super.travel(travelVector);
         }
@@ -178,6 +184,7 @@ public class ParrotfishEntity extends MeanderingMobsAquaticEntity {
     public boolean isEating() { return this.entityData.get(DATA_IS_EATING); }
     public void setEating(boolean eating) { this.entityData.set(DATA_IS_EATING, eating); }
 
+    public int getCocoonCooldown() { return this.cocoonCooldown; }
     public boolean canEatCoral() { return this.eatCoralCooldown <= 0; }
     public void resetEatCoralCooldown() { this.eatCoralCooldown = 600; }
 
@@ -185,12 +192,14 @@ public class ParrotfishEntity extends MeanderingMobsAquaticEntity {
     public void addAdditionalSaveData(@NotNull CompoundTag compound) {
         super.addAdditionalSaveData(compound);
         compound.putBoolean("HasCocoon", this.hasCocoon());
+        compound.putInt("CocoonCooldown", this.cocoonCooldown);
     }
 
     @Override
     public void readAdditionalSaveData(@NotNull CompoundTag compound) {
         super.readAdditionalSaveData(compound);
         this.setCocoon(compound.getBoolean("HasCocoon"));
+        this.cocoonCooldown = compound.getInt("CocoonCooldown");
     }
 
     @Override

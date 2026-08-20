@@ -1,11 +1,13 @@
 package com.fernleaf.meanderingmobs.server.entity;
 
 import com.fernleaf.meanderingmobs.client.instance.WhispIKInstance.WhispProceduralState;
+import com.fernleaf.meanderingmobs.client.sound.WhispSoundInstance;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsSoundsRegistry;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsTagRegistry;
 import com.fernleaf.meanderingmobs.server.entity.ai.TameableStateGoal;
 import com.fernleaf.meanderingmobs.server.entity.ai.whisp.*;
 import com.fernleaf.meanderingmobs.server.entity.util.MeanderingMobsTameableEntity;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -191,6 +193,16 @@ public class WhispEntity extends MeanderingMobsTameableEntity {
 
     public void setCosplay(int cosplay) { this.entityData.set(DATA_COSPLAY, cosplay); }
     public int getCosplay() { return this.entityData.get(DATA_COSPLAY); }
+
+    @Override
+    public void playAmbientSound() {
+        SoundEvent soundEvent = this.getAmbientSound();
+        if (soundEvent == null) return;
+
+        if (this.level().isClientSide()) {
+            Minecraft.getInstance().getSoundManager().play(new WhispSoundInstance(this, soundEvent));
+        }
+    }
 
     @Override
     public void addAdditionalSaveData(@NotNull CompoundTag tag) {

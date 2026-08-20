@@ -18,14 +18,12 @@ public enum PorcupineVariant implements IModelVariant<PorcupineVariant.ModelType
             ModelVariantRegistry.createLookup(values(), TEMPERATE);
 
     public final int id;
-    private final String name;
     private final ModelLayerLocation layerLocation;
     private final ModelType modelType;
     private final ResourceLocation textureLocation;
 
     PorcupineVariant(int id, String name, ModelLayerLocation layerLocation, ModelType modelType) {
         this.id = id;
-        this.name = name;
         this.layerLocation = layerLocation;
         this.modelType = modelType;
         this.textureLocation = TextureUtils.buildEntityTexture(MeanderingMobs.MODID, "porcupine", name + "_porcupine");

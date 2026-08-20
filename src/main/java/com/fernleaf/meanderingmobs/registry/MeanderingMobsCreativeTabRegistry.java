@@ -19,18 +19,24 @@ public class MeanderingMobsCreativeTabRegistry {
                     .title(Component.translatable("itemGroup.meanderingmobs"))
                     .icon(() -> new ItemStack(MeanderingMobsItemRegistry.PORCUPINE_QUILL.get()))
                     .displayItems((parameters, output) -> {
-                        // Add all mod items here
+                        // Materials & Food
                         output.accept(MeanderingMobsItemRegistry.PORCUPINE_QUILL.get());
                         output.accept(MeanderingMobsItemRegistry.TEGU_SCALE.get());
                         output.accept(MeanderingMobsItemRegistry.TEGU_POUCH.get());
                         output.accept(MeanderingMobsItemRegistry.RAW_PARROT_FISH.get());
+
+                        // Soul Tools
                         output.accept(MeanderingMobsItemRegistry.SOUL_ORB.get());
                         output.accept(MeanderingMobsItemRegistry.SOUL_ORB_ACTIVE.get());
                         output.accept(MeanderingMobsItemRegistry.SOUL_ROD.get());
 
-                        // Add Spawn Eggs here as well when you register them:
-                        // output.accept(MeanderingMobsItemRegistry.TEGU_SPAWN_EGG.get());
-                        // output.accept(MeanderingMobsItemRegistry.PORCUPINE_SPAWN_EGG.get());
+                        // Spawn Eggs
+                        output.accept(MeanderingMobsItemRegistry.AUKVULTURE_SPAWN_EGG.get());
+                        output.accept(MeanderingMobsItemRegistry.PORCUPINE_SPAWN_EGG.get());
+                        output.accept(MeanderingMobsItemRegistry.TEGU_SPAWN_EGG.get());
+                        output.accept(MeanderingMobsItemRegistry.WHISP_SPAWN_EGG.get());
+                        output.accept(MeanderingMobsItemRegistry.PARROTFISH_SPAWN_EGG.get());
+                        output.accept(MeanderingMobsItemRegistry.SOULFLARE_SPAWN_EGG.get());
                     })
                     .build());
 

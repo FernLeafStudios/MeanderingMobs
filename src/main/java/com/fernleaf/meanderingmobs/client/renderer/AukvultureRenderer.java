@@ -1,7 +1,6 @@
 package com.fernleaf.meanderingmobs.client.renderer;
 
-import com.fernleaf.meanderingmobs.MeanderingMobs;
-import com.fernleaf.meanderingmobs.client.model.AukvultureModel;
+import com.fernleaf.meanderingmobs.client.model.aukvulture.AukvultureModel;
 import com.fernleaf.meanderingmobs.client.renderer.layer.AukvultureRiderLayer;
 import com.fernleaf.meanderingmobs.server.entity.AukvultureEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -15,9 +14,6 @@ import org.jetbrains.annotations.NotNull;
 public class AukvultureRenderer extends MobRenderer<AukvultureEntity, AukvultureModel<AukvultureEntity>> {
 
     public static boolean IS_RENDERING_RIDER = false;
-
-    private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath(MeanderingMobs.MODID, "textures/entity/aukvulture/aukvulture.png");
 
     public AukvultureRenderer(EntityRendererProvider.Context context) {
         super(context, new AukvultureModel<>(context.bakeLayer(AukvultureModel.LAYER_LOCATION)), 1.2F);
@@ -49,6 +45,6 @@ public class AukvultureRenderer extends MobRenderer<AukvultureEntity, Aukvulture
 
     @Override
     public @NotNull ResourceLocation getTextureLocation(@NotNull AukvultureEntity entity) {
-        return TEXTURE;
+        return entity.getVariant().getTextureLocation(entity.isSaddled());
     }
 }

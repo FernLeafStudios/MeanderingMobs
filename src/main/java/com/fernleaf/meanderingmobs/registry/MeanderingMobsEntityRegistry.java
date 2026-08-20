@@ -1,7 +1,7 @@
 package com.fernleaf.meanderingmobs.registry;
 
 import com.fernleaf.meanderingmobs.MeanderingMobs;
-import com.fernleaf.meanderingmobs.client.model.AukvultureModel;
+import com.fernleaf.meanderingmobs.client.model.aukvulture.AukvultureModel;
 import com.fernleaf.meanderingmobs.client.model.ParrotfishModel;
 import com.fernleaf.meanderingmobs.client.model.RuffianLeaderModel;
 import com.fernleaf.meanderingmobs.client.model.SoulFlareModel;
@@ -16,7 +16,6 @@ import com.fernleaf.meanderingmobs.server.entity.*;
 import com.fernleaf.meanderingmobs.server.entity.projectile.QuillArrowEntity;
 import com.fernleaf.meanderingmobs.server.entity.projectile.SoulFireballEntity;
 import com.fernleaf.meanderingmobs.server.entity.projectile.SoulOrbEntity;
-import net.minecraft.client.renderer.entity.TippableArrowRenderer;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.EntityType;
@@ -58,7 +57,7 @@ public class MeanderingMobsEntityRegistry {
     public static final DeferredHolder<EntityType<?>, EntityType<ParrotfishEntity>> PARROT_FISH =
             ENTITIES.register("parrotfish", () ->
                     EntityType.Builder.of(ParrotfishEntity::new, MobCategory.WATER_CREATURE)
-                            .sized(1.75F, 1.75F)
+                            .sized(1.25F, 0.8F)
                             .clientTrackingRange(8)
                             .build("parrotfish")
             );

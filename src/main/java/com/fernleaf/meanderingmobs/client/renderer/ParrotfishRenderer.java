@@ -28,7 +28,7 @@ public class ParrotfishRenderer extends MobRenderer<ParrotfishEntity, Parrotfish
     protected void setupRotations(ParrotfishEntity entity, PoseStack poseStack, float ageInTicks, float rotationYaw, float partialTicks, float scale) {
         super.setupRotations(entity, poseStack, ageInTicks, rotationYaw, partialTicks, scale);
 
-        // Shift the model back along its Z-axis so the torso aligns with the entity origin
-        poseStack.translate(0.0D, 0.0D, -0.5D);
+        // Pull the model backward along Z so the body center aligns with the hitbox center
+        poseStack.translate(0.0D, 0.0D, 0.35D);
     }
 }

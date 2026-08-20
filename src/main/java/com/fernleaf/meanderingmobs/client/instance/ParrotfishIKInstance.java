@@ -19,13 +19,21 @@ public class ParrotfishIKInstance {
     public float pectoralFinFlap;
     public float beakOpen;
 
-    private float accumulatedWaveTime = 0.0f;
+    // Ram Attack Pose Transforms
+    public float bodyScrunch;   // 0.0 -> 1.0 (Body compressed/coiled)
+    public float finTuck;       // 0.0 -> 1.0 (Fins folded flat)
+    public float bodyScaleZ = 1.0f; // Stretch along motion axis
+
+    // Continuous accumulator to prevent phase jumping/jitter
+    private float wavePhase = 0.0f;
 
     public void update(LivingEntity entity, float limbSwing, float limbSwingAmount, float headPitch, float partialTick) {
         Vec3 move = entity.getDeltaMovement();
         double horizontalSpeedSqr = move.horizontalDistanceSqr();
         double totalSpeedSqr = horizontalSpeedSqr + (move.y * move.y);
+        float totalSpeed = IKMathUtils.getTotalSpeed(move);
 
+        // --- Pitch & Roll Handling ---
         float targetPitch = 0.0f;
         float targetRoll = 0.0f;
 
@@ -33,37 +41,59 @@ public class ParrotfishIKInstance {
             float horizontalSpeed = IKMathUtils.getHorizontalSpeed(move);
             targetPitch = (float) -Mth.atan2(move.y, horizontalSpeed);
 
-            // Interpolate smooth yaw delta across frames to prevent micro-stuttering
             float currentYaw = Mth.rotLerp(partialTick, entity.yRotO, entity.getYRot());
             float prevYaw = entity.yRotO;
             float yawDelta = Mth.wrapDegrees(currentYaw - prevYaw);
-            targetRoll = IKMathUtils.clampRadians(yawDelta * 0.08f, -0.45f, 0.45f);
+            targetRoll = IKMathUtils.clampRadians(yawDelta * 0.12f, -0.55f, 0.55f);
         }
 
-        // Eating beak transition
+        this.pitch = IKMathUtils.lerp(this.pitch, targetPitch, 0.10f);
+        this.roll = IKMathUtils.lerp(this.roll, targetRoll, 0.08f);
+
+        // --- Ram Attack State Transforms ---
+        float targetScrunch = 0.0f;
+        float targetFinTuck = 0.0f;
+        float targetScaleZ = 1.0f;
+
+        if (entity instanceof ParrotfishEntity parrotfish && parrotfish.isCharging()) {
+            if (totalSpeed < 0.25f) { // Wind-up Phase (Compress accordion)
+                targetScrunch = 1.0f;
+                targetFinTuck = -0.3f;
+                targetScaleZ = 0.8F;
+                float intensity = 0.65f + Mth.clamp(totalSpeed * 0.9f, 0.0f, 0.30f);
+            } else { // Active Ram Phase (Stretch along motion axis)
+                targetScrunch = 0.0f;
+                targetFinTuck = 1.0f;
+                targetScaleZ = 1.25f;
+            }
+        }
+
+        // Smooth state lerps
+        this.bodyScrunch = IKMathUtils.lerp(this.bodyScrunch, targetScrunch, 0.25f);
+        this.finTuck = IKMathUtils.lerp(this.finTuck, targetFinTuck, 0.25f);
+        this.bodyScaleZ = IKMathUtils.lerp(this.bodyScaleZ, targetScaleZ, 0.2f);
+
+        // --- Beak Eating Animation ---
         float age = IKMathUtils.getAge(entity, partialTick);
         if (entity instanceof ParrotfishEntity parrotfish && parrotfish.isEating()) {
-            this.beakOpen = (Mth.sin(age * 0.8f) + 1.0f) * 0.25f;
+            this.beakOpen = (Mth.sin(age * 0.8f) + 1.0f) * 0.35f;
         } else {
             this.beakOpen = IKMathUtils.lerp(this.beakOpen, 0.0f, 0.2f);
         }
 
-        // Smoother lerp factors to reduce rotation snap
-        this.pitch = IKMathUtils.lerp(this.pitch, targetPitch, 0.10f);
-        this.roll = IKMathUtils.lerp(this.roll, targetRoll, 0.08f);
+        float speedPhaseRate = 0.03f + Mth.clamp(totalSpeed * 0.22f, 0.0f, 0.09f);
+        this.wavePhase += speedPhaseRate;
 
-        // Accumulate wave phase rather than multiplying raw age by dynamic speed factor
-        float totalSpeed = IKMathUtils.getTotalSpeed(move);
-        float speedFactor = Mth.clamp(totalSpeed * 4.0f, 0.2f, 1.5f);
-        this.accumulatedWaveTime += 0.25f * speedFactor;
+        // 2. HALVED ARC INTENSITY: Tighter, subtle flex arc (50% reduction)
+        float intensity = 0.25f + Mth.clamp(totalSpeed * 0.9f, 0.0f, 0.25f);
 
-        // Progressive spine wave propagation
-        this.torsoYaw = Mth.sin(this.accumulatedWaveTime) * 0.12f;
-        this.backYaw = Mth.sin(this.accumulatedWaveTime - 0.6f) * 0.20f;
-        this.tailYaw = Mth.sin(this.accumulatedWaveTime - 1.2f) * 0.38f;
+        // Sweeping spine S-curve wave with halved base angles
+        this.torsoYaw = Mth.sin(this.wavePhase) * 0.10f * intensity;
+        this.backYaw  = Mth.sin(this.wavePhase - 0.75f) * 0.22f * intensity;
+        this.tailYaw  = Mth.sin(this.wavePhase - 1.50f) * 0.40f * intensity;
 
-        // Pectoral fin flutter
-        float horizontalSpeed = IKMathUtils.getHorizontalSpeed(move);
-        this.pectoralFinFlap = Mth.cos(age * 0.2F) * 0.15f + (horizontalSpeed * 0.4f);
+        // Synchronized pectoral fin rowing (also halved for consistency)
+        float finFlapCycle = Mth.cos(this.wavePhase * 0.7f) * 0.20f * intensity;
+        this.pectoralFinFlap = IKMathUtils.lerp(finFlapCycle, -0.65f, Math.max(0.0f, this.finTuck));
     }
 }

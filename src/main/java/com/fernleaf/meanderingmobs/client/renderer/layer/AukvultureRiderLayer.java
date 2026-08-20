@@ -1,6 +1,6 @@
 package com.fernleaf.meanderingmobs.client.renderer.layer;
 
-import com.fernleaf.meanderingmobs.client.model.AukvultureModel;
+import com.fernleaf.meanderingmobs.client.model.aukvulture.AukvultureModel;
 import com.fernleaf.meanderingmobs.client.renderer.AukvultureRenderer;
 import com.fernleaf.meanderingmobs.server.entity.AukvultureEntity;
 import com.mojang.blaze3d.vertex.PoseStack;

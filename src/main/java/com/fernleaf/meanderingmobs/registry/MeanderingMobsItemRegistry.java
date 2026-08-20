@@ -8,11 +8,16 @@ import com.fernleaf.meanderingmobs.server.item.TeguPouchItem;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.Item;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.common.DeferredSpawnEggItem;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
+
+import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 public class MeanderingMobsItemRegistry {
@@ -51,6 +56,49 @@ public class MeanderingMobsItemRegistry {
     public static final DeferredHolder<Item, Item> PORCUPINE_QUILL = ITEMS.register("porcupine_quill",
             () -> new PorcupineQuillItem(new Item.Properties())
     );
+
+    // Spawn Eggs (Uses custom textures from assets/meanderingmobs/textures/item/spawn_egg/)
+    public static final DeferredHolder<Item, Item> AUKVULTURE_SPAWN_EGG = registerSpawnEgg(
+            "aukvulture",
+            MeanderingMobsEntityRegistry.AUKVULTURE
+    );
+
+    public static final DeferredHolder<Item, Item> PORCUPINE_SPAWN_EGG = registerSpawnEgg(
+            "porcupine",
+            MeanderingMobsEntityRegistry.PORCUPINE
+    );
+
+    public static final DeferredHolder<Item, Item> TEGU_SPAWN_EGG = registerSpawnEgg(
+            "tegu",
+            MeanderingMobsEntityRegistry.TEGU
+    );
+
+    public static final DeferredHolder<Item, Item> WHISP_SPAWN_EGG = registerSpawnEgg(
+            "whisp",
+            MeanderingMobsEntityRegistry.WHISP
+    );
+
+    public static final DeferredHolder<Item, Item> PARROTFISH_SPAWN_EGG = registerSpawnEgg(
+            "parrotfish",
+            MeanderingMobsEntityRegistry.PARROT_FISH
+    );
+
+    public static final DeferredHolder<Item, Item> SOULFLARE_SPAWN_EGG = registerSpawnEgg(
+            "soulflare",
+            MeanderingMobsEntityRegistry.SOULFLARE
+    );
+
+    /**
+     * Helper method to register spawn eggs with custom texture support.
+     */
+    public static DeferredHolder<Item, Item> registerSpawnEgg(
+            String entityName,
+            Supplier<? extends EntityType<? extends Mob>> entityTypeSupplier
+    ) {
+        return ITEMS.register(entityName + "_spawn_egg",
+                () -> new DeferredSpawnEggItem(entityTypeSupplier, 0xFFFFFF, 0xFFFFFF, new Item.Properties())
+        );
+    }
 
     public static void register(IEventBus eventBus) {
         ITEMS.register(eventBus);

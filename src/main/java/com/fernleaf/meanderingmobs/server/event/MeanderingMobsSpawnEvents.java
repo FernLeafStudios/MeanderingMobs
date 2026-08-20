@@ -5,12 +5,16 @@ import com.fernleaf.meanderingmobs.registry.MeanderingMobsEntityRegistry;
 import com.fernleaf.meanderingmobs.server.entity.AukvultureEntity;
 import com.fernleaf.meanderingmobs.server.entity.PorcupineEntity;
 import com.fernleaf.meanderingmobs.server.entity.TeguEntity;
+import com.fernleaf.meanderingmobs.server.entity.ai.allay.WhispOrbitGoal;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.SpawnPlacementTypes;
+import net.minecraft.world.entity.ai.goal.FollowMobGoal;
 import net.minecraft.world.entity.animal.WaterAnimal;
+import net.minecraft.world.entity.animal.allay.Allay;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent;
 
 @EventBusSubscriber(modid = MeanderingMobs.MODID)
@@ -57,5 +61,12 @@ public class MeanderingMobsSpawnEvents {
                 PorcupineEntity::checkPorcupineSpawnRules,
                 RegisterSpawnPlacementsEvent.Operation.REPLACE
         );
+    }
+
+    @SubscribeEvent
+    public static void onEntityJoinLevel(EntityJoinLevelEvent event) {
+        if (!event.getLevel().isClientSide() && event.getEntity() instanceof Allay allay) {
+            allay.goalSelector.addGoal(3, new WhispOrbitGoal(allay, 2.5D, 0.05D));
+        }
     }
 }

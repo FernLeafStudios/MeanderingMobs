@@ -14,7 +14,8 @@ public enum WhispCosplay implements IModelVariant<WhispCosplay.WhispModelType> {
     NORMA(1, "orange", CurlyHairWhispModel.LAYER_LOCATION, WhispModelType.CURLY),
     JANE(2, "red", StraightHairWhispModel.LAYER_LOCATION, WhispModelType.STRAIGHT),
     SANDY(3, "light_blue", StraightHairWhispModel.LAYER_LOCATION, WhispModelType.STRAIGHT),
-    RUBY(4, "blue", StraightHairWhispModel.LAYER_LOCATION, WhispModelType.STRAIGHT);
+    RUBY(4, "blue", StraightHairWhispModel.LAYER_LOCATION, WhispModelType.STRAIGHT),
+    RAVEN(5, "raven", StraightHairWhispModel.LAYER_LOCATION, WhispModelType.STRAIGHT);
 
     private static final Function<Integer, WhispCosplay> LOOKUP =
             ModelVariantRegistry.createLookup(values(), STRAIGHT);
