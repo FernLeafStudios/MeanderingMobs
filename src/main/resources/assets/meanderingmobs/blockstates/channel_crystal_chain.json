@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "axis=x": { "model": "meanderingmobs:block/channel_crystal_chain", "x": 90, "y": 90 },
+    "axis=y": { "model": "meanderingmobs:block/channel_crystal_chain" },
+    "axis=z": { "model": "meanderingmobs:block/channel_crystal_chain", "x": 90 }
+  }
+}

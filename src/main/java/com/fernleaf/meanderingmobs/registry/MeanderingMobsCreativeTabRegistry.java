@@ -25,10 +25,15 @@ public class MeanderingMobsCreativeTabRegistry {
                         output.accept(MeanderingMobsItemRegistry.TEGU_POUCH.get());
                         output.accept(MeanderingMobsItemRegistry.RAW_PARROT_FISH.get());
 
-                        // Soul Tools
+                        // Soul Tools & Tech
                         output.accept(MeanderingMobsItemRegistry.SOUL_ORB.get());
                         output.accept(MeanderingMobsItemRegistry.SOUL_ORB_ACTIVE.get());
                         output.accept(MeanderingMobsItemRegistry.SOUL_ROD.get());
+                        output.accept(MeanderingMobsItemRegistry.CHANNEL_CRYSTAL_SHARD.get());
+                        output.accept(MeanderingMobsBlockRegistry.CHANNEL_CRYSTAL_LAMP_ITEM.get());
+                        output.accept(MeanderingMobsBlockRegistry.CHANNEL_CRYSTAL_BLOCK_ITEM.get());
+                        output.accept(MeanderingMobsBlockRegistry.CHANNEL_CRYSTAL_CLUSTER_ITEM.get());
+                        output.accept(MeanderingMobsBlockRegistry.CHANNEL_CRYSTAL_CHAIN_ITEM.get());
 
                         // Spawn Eggs
                         output.accept(MeanderingMobsItemRegistry.AUKVULTURE_SPAWN_EGG.get());

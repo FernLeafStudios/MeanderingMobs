@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "is_tip=true,tip_direction=up": { "model": "meanderingmobs:block/channel_crystal_cluster_tip" },
+    "is_tip=true,tip_direction=down": { "model": "meanderingmobs:block/channel_crystal_cluster_tip", "x": 180 },
+    "is_tip=false,tip_direction=up": { "model": "meanderingmobs:block/channel_crystal_cluster_base" },
+    "is_tip=false,tip_direction=down": { "model": "meanderingmobs:block/channel_crystal_cluster_base", "x": 180 }
+  }
+}

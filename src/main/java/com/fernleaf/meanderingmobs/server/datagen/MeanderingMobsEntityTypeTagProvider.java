@@ -44,5 +44,15 @@ public class MeanderingMobsEntityTypeTagProvider extends EntityTypeTagsProvider 
                 .add(EntityType.DROWNED)
                 .add(EntityType.STRAY)
                 .add(EntityType.PHANTOM);
+
+        this.tag(MeanderingMobsTagRegistry.EntityTypes.RALLY_CRYSTAL_PAWN)
+                .add(EntityType.SKELETON);
+
+        this.tag(MeanderingMobsTagRegistry.EntityTypes.RALLY_CRYSTAL_KNIGHT)
+                .add(EntityType.STRAY);
+
+        this.tag(MeanderingMobsTagRegistry.EntityTypes.RALLY_CRYSTAL_BISHOP)
+                .add(EntityType.WITHER_SKELETON);
     }
+
 }

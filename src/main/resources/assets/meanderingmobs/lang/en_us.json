@@ -28,6 +28,20 @@
   "item.meanderingmobs.soul_orb_active": "Active Soul Orb",
   "item.meanderingmobs.soul_rod": "Soul Rod",
 
+  "entity.meanderingmobs.soul_hound": "Soulhound",
+
+  "entity.meanderingmobs.rally_crystal": "Rally Crystal",
+  "message.meanderingmobs.rally_crystal.emerge": "The air grows cold as souls rally...",
+  "item.meanderingmobs.channel_crystal_lamp": "Channel Crystal Lamp",
+  "item.meanderingmobs.channel_crystal_block": "Channel Crystal Block",
+  "item.meanderingmobs.channel_crystal_chain": "Channel Crystal Chain",
+  "item.meanderingmobs.channel_crystal_shard": "Channel Crystal Shard",
+  "item.meanderingmobs.channel_crystal_cluster": "Channel Crystal Cluster",
+  "block.meanderingmobs.channel_crystal_lamp": "Channel Crystal Lamp",
+  "block.meanderingmobs.channel_crystal_block": "Channel Crystal Block",
+  "block.meanderingmobs.channel_crystal_chain": "Channel Crystal Chain",
+  "block.meanderingmobs.channel_crystal_cluster": "Channel Crystal Cluster",
+
   "entity.meanderingmobs.tegu": "Tegu",
   "item.meanderingmobs.tegu_spawn_egg": "Tegu Spawn Egg",
   "item.meanderingmobs.tegu_scale": "Tegu Scale",

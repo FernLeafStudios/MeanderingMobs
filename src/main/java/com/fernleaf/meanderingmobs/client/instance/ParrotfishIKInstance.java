@@ -55,23 +55,24 @@ public class ParrotfishIKInstance {
         float targetFinTuck = 0.0f;
         float targetScaleZ = 1.0f;
 
-        if (entity instanceof ParrotfishEntity parrotfish && parrotfish.isCharging()) {
-            if (totalSpeed < 0.25f) { // Wind-up Phase (Compress accordion)
-                targetScrunch = 1.0f;
+        boolean isCharging = entity instanceof ParrotfishEntity parrotfish && parrotfish.isCharging();
+
+        if (isCharging) {
+            if (totalSpeed < 0.25f) { // Wind-up / Coiling Phase (PRONOUNCED SQUISH)
+                targetScrunch = 1.0f;     // Maximum accordion compress
                 targetFinTuck = -0.3f;
-                targetScaleZ = 0.8F;
-                float intensity = 0.65f + Mth.clamp(totalSpeed * 0.9f, 0.0f, 0.30f);
-            } else { // Active Ram Phase (Stretch along motion axis)
+                targetScaleZ = 0.65f;     // Squishes tighter along Z axis
+            } else { // Active Ram Phase (Pew Pew Rocket Dash)
                 targetScrunch = 0.0f;
                 targetFinTuck = 1.0f;
-                targetScaleZ = 1.25f;
+                targetScaleZ = 1.45f;     // Stretches dramatically during the rush
             }
         }
 
         // Smooth state lerps
-        this.bodyScrunch = IKMathUtils.lerp(this.bodyScrunch, targetScrunch, 0.25f);
+        this.bodyScrunch = IKMathUtils.lerp(this.bodyScrunch, targetScrunch, 0.35f);
         this.finTuck = IKMathUtils.lerp(this.finTuck, targetFinTuck, 0.25f);
-        this.bodyScaleZ = IKMathUtils.lerp(this.bodyScaleZ, targetScaleZ, 0.2f);
+        this.bodyScaleZ = IKMathUtils.lerp(this.bodyScaleZ, targetScaleZ, 0.3f);
 
         // --- Beak Eating Animation ---
         float age = IKMathUtils.getAge(entity, partialTick);
@@ -81,18 +82,26 @@ public class ParrotfishIKInstance {
             this.beakOpen = IKMathUtils.lerp(this.beakOpen, 0.0f, 0.2f);
         }
 
+        // --- Spine Wave & Tail Motion ---
+        // Rapidly accelerate tail wag speed during charges
         float speedPhaseRate = 0.03f + Mth.clamp(totalSpeed * 0.22f, 0.0f, 0.09f);
+        if (isCharging) {
+            speedPhaseRate *= 3.5f; // CRAZY TAIL SPEED
+        }
         this.wavePhase += speedPhaseRate;
 
-        // 2. HALVED ARC INTENSITY: Tighter, subtle flex arc (50% reduction)
+        // Base tail sweep intensity
         float intensity = 0.25f + Mth.clamp(totalSpeed * 0.9f, 0.0f, 0.25f);
+        if (isCharging) {
+            intensity *= 2.8f; // CRAZY TAIL AMPLITUDE
+        }
 
-        // Sweeping spine S-curve wave with halved base angles
+        // Sweeping spine S-curve wave
         this.torsoYaw = Mth.sin(this.wavePhase) * 0.10f * intensity;
         this.backYaw  = Mth.sin(this.wavePhase - 0.75f) * 0.22f * intensity;
         this.tailYaw  = Mth.sin(this.wavePhase - 1.50f) * 0.40f * intensity;
 
-        // Synchronized pectoral fin rowing (also halved for consistency)
+        // Synchronized pectoral fin rowing
         float finFlapCycle = Mth.cos(this.wavePhase * 0.7f) * 0.20f * intensity;
         this.pectoralFinFlap = IKMathUtils.lerp(finFlapCycle, -0.65f, Math.max(0.0f, this.finTuck));
     }

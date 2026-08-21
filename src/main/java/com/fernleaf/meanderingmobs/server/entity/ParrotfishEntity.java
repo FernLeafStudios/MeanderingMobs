@@ -1,5 +1,6 @@
 package com.fernleaf.meanderingmobs.server.entity;
 
+import com.fernleaf.meanderingmobs.client.model.parrotfish.ParrotfishVariant;
 import com.fernleaf.meanderingmobs.server.entity.ai.parrotfish.ParrotfishCocoonGoal;
 import com.fernleaf.meanderingmobs.server.entity.ai.parrotfish.ParrotfishEatCoralGoal;
 import com.fernleaf.meanderingmobs.server.entity.ai.parrotfish.ParrotfishRamAttackGoal;
@@ -44,6 +45,8 @@ public class ParrotfishEntity extends MeanderingMobsAquaticEntity {
             SynchedEntityData.defineId(ParrotfishEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> DATA_IS_EATING =
             SynchedEntityData.defineId(ParrotfishEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Integer> DATA_VARIANT_ID =
+            SynchedEntityData.defineId(ParrotfishEntity.class, EntityDataSerializers.INT);
 
     private int stunnedTicks = 0;
     private int eatCoralCooldown = 0;
@@ -73,6 +76,15 @@ public class ParrotfishEntity extends MeanderingMobsAquaticEntity {
         builder.define(DATA_IS_CHARGING, false);
         builder.define(DATA_IS_STUNNED, false);
         builder.define(DATA_IS_EATING, false);
+        builder.define(DATA_VARIANT_ID, ParrotfishVariant.BUMPHEAD.id);
+    }
+
+    public ParrotfishVariant getVariant() {
+        return ParrotfishVariant.byId(this.entityData.get(DATA_VARIANT_ID));
+    }
+
+    public void setVariant(ParrotfishVariant variant) {
+        this.entityData.set(DATA_VARIANT_ID, variant.id);
     }
 
     @Override
@@ -193,6 +205,7 @@ public class ParrotfishEntity extends MeanderingMobsAquaticEntity {
         super.addAdditionalSaveData(compound);
         compound.putBoolean("HasCocoon", this.hasCocoon());
         compound.putInt("CocoonCooldown", this.cocoonCooldown);
+        compound.putInt("Variant", this.getVariant().id);
     }
 
     @Override
@@ -200,6 +213,9 @@ public class ParrotfishEntity extends MeanderingMobsAquaticEntity {
         super.readAdditionalSaveData(compound);
         this.setCocoon(compound.getBoolean("HasCocoon"));
         this.cocoonCooldown = compound.getInt("CocoonCooldown");
+        if (compound.contains("Variant")) {
+            this.setVariant(ParrotfishVariant.byId(compound.getInt("Variant")));
+        }
     }
 
     @Override

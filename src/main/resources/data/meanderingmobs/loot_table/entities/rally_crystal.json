@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:entity",
+  "pools": [
+    {
+      "bonus_rolls": 0.0,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "functions": [
+            {
+              "count": {
+                "type": "minecraft:uniform",
+                "max": 10.0,
+                "min": 4.0
+              },
+              "function": "minecraft:set_count"
+            }
+          ],
+          "name": "meanderingmobs:channel_crystal_shard"
+        }
+      ],
+      "rolls": 1.0
+    }
+  ],
+  "random_sequence": "meanderingmobs:entities/rally_crystal"
+}

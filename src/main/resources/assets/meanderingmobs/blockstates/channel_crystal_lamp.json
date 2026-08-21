@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "powered=false": {
+      "model": "meanderingmobs:block/channel_crystal_lamp_off"
+    },
+    "powered=true": {
+      "model": "meanderingmobs:block/channel_crystal_lamp_on"
+    }
+  }
+}

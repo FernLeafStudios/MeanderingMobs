@@ -1,5 +1,6 @@
 package com.fernleaf.meanderingmobs.server.entity;
 
+import com.fernleaf.meanderingmobs.client.model.tegu.TeguVariant;
 import com.fernleaf.meanderingmobs.server.entity.ai.TameableStateGoal;
 import com.fernleaf.meanderingmobs.server.entity.ai.tegu.TeguShedGoal;
 import com.fernleaf.meanderingmobs.server.entity.ai.tegu.TeguStealFromChestGoal;
@@ -43,7 +44,10 @@ public class TeguEntity extends MeanderingMobsTameableEntity {
 
     public static final TagKey<Item> TEGU_TAMEABLE = TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath("meanderingmobs", "tegu_tame"));
 
-    private static final EntityDataAccessor<ItemStack> DATA_MOUTH_ITEM = SynchedEntityData.defineId(TeguEntity.class, EntityDataSerializers.ITEM_STACK);
+    private static final EntityDataAccessor<ItemStack> DATA_MOUTH_ITEM =
+            SynchedEntityData.defineId(TeguEntity.class, EntityDataSerializers.ITEM_STACK);
+    private static final EntityDataAccessor<Integer> DATA_VARIANT_ID =
+            SynchedEntityData.defineId(TeguEntity.class, EntityDataSerializers.INT);
 
     public final AnimationState idleAnimationState = new AnimationState();
     public final AnimationState idle2AnimationState = new AnimationState();
@@ -72,6 +76,7 @@ public class TeguEntity extends MeanderingMobsTameableEntity {
     protected void defineSynchedData(SynchedEntityData.@NotNull Builder builder) {
         super.defineSynchedData(builder);
         builder.define(DATA_MOUTH_ITEM, ItemStack.EMPTY);
+        builder.define(DATA_VARIANT_ID, TeguVariant.MARBLED.id);
     }
 
     @Override
@@ -189,6 +194,13 @@ public class TeguEntity extends MeanderingMobsTameableEntity {
 
     public ItemStack getMouthItem() { return this.entityData.get(DATA_MOUTH_ITEM); }
     public void setMouthItem(ItemStack stack) { this.entityData.set(DATA_MOUTH_ITEM, stack); }
+    public TeguVariant getVariant() {
+        return TeguVariant.byId(this.entityData.get(DATA_VARIANT_ID));
+    }
+
+    public void setVariant(TeguVariant variant) {
+        this.entityData.set(DATA_VARIANT_ID, variant.id);
+    }
 
     private int getRandomShedTime() {
         return 6000 + this.random.nextInt(6000);
@@ -217,6 +229,7 @@ public class TeguEntity extends MeanderingMobsTameableEntity {
     @Override
     public void addAdditionalSaveData(@NotNull CompoundTag tag) {
         super.addAdditionalSaveData(tag);
+        tag.putInt("Variant", this.getVariant().id);
         if (!getMouthItem().isEmpty()) {
             tag.put("MouthItem", getMouthItem().save(this.registryAccess()));
         }
@@ -225,6 +238,9 @@ public class TeguEntity extends MeanderingMobsTameableEntity {
     @Override
     public void readAdditionalSaveData(@NotNull CompoundTag tag) {
         super.readAdditionalSaveData(tag);
+        if (tag.contains("Variant")) {
+            this.setVariant(TeguVariant.byId(tag.getInt("Variant")));
+        }
         if (tag.contains("MouthItem")) {
             setMouthItem(ItemStack.parse(this.registryAccess(), tag.getCompound("MouthItem")).orElse(ItemStack.EMPTY));
         }

@@ -1,4 +1,4 @@
-package com.fernleaf.meanderingmobs.client.model;
+package com.fernleaf.meanderingmobs.client.model.parrotfish;
 
 import com.fernleaf.meanderingmobs.MeanderingMobs;
 import com.fernleaf.meanderingmobs.client.adapter.ParrotfishModelAdapter;

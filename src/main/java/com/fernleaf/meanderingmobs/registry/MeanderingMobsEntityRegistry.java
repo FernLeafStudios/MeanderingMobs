@@ -1,11 +1,13 @@
 package com.fernleaf.meanderingmobs.registry;
 
 import com.fernleaf.meanderingmobs.MeanderingMobs;
+import com.fernleaf.meanderingmobs.client.model.SoulHoundModel;
 import com.fernleaf.meanderingmobs.client.model.aukvulture.AukvultureModel;
-import com.fernleaf.meanderingmobs.client.model.ParrotfishModel;
+import com.fernleaf.meanderingmobs.client.model.crystal.RallyCrystalModel;
+import com.fernleaf.meanderingmobs.client.model.parrotfish.ParrotfishModel;
 import com.fernleaf.meanderingmobs.client.model.RuffianLeaderModel;
 import com.fernleaf.meanderingmobs.client.model.SoulFlareModel;
-import com.fernleaf.meanderingmobs.client.model.TeguModel;
+import com.fernleaf.meanderingmobs.client.model.tegu.TeguModel;
 import com.fernleaf.meanderingmobs.client.model.porcupine.ColdPorcupineModel;
 import com.fernleaf.meanderingmobs.client.model.porcupine.TemperatePorcupineModel;
 import com.fernleaf.meanderingmobs.client.model.porcupine.WarmPorcupineModel;
@@ -20,6 +22,7 @@ import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.entity.animal.Wolf;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -57,7 +60,7 @@ public class MeanderingMobsEntityRegistry {
     public static final DeferredHolder<EntityType<?>, EntityType<ParrotfishEntity>> PARROT_FISH =
             ENTITIES.register("parrotfish", () ->
                     EntityType.Builder.of(ParrotfishEntity::new, MobCategory.WATER_CREATURE)
-                            .sized(1.25F, 0.8F)
+                            .sized(1.25F, 1.25F)
                             .clientTrackingRange(8)
                             .build("parrotfish")
             );
@@ -86,6 +89,14 @@ public class MeanderingMobsEntityRegistry {
                             .build("soulflare")
             );
 
+    public static final DeferredHolder<EntityType<?>, EntityType<SoulHoundEntity>> SOUL_HOUND =
+            ENTITIES.register("soul_hound", () ->
+                    EntityType.Builder.of(SoulHoundEntity::new, MobCategory.MONSTER)
+                            .sized(0.6F, 0.85F)
+                            .clientTrackingRange(8)
+                            .build("soul_hound")
+            );
+
     public static final DeferredHolder<EntityType<?>, EntityType<SoulOrbEntity>> SOUL_ORB_PROJECTILE =
             ENTITIES.register("soul_orb", () ->
                     EntityType.Builder.<SoulOrbEntity>of(SoulOrbEntity::new, MobCategory.MISC)
@@ -109,9 +120,18 @@ public class MeanderingMobsEntityRegistry {
                     EntityType.Builder.<QuillArrowEntity>of(QuillArrowEntity::new, MobCategory.MISC)
                             .sized(0.5F, 0.5F)
                             .clientTrackingRange(4)
-                            .updateInterval(2) // <-- Change this to 2 (Vanilla arrow standard)
-                            .setTrackingRange(64) // <-- Add this to ensure it renders from afar
+                            .updateInterval(2)
+                            .setTrackingRange(64)
                             .build("quill_arrow")
+            );
+
+    public static final DeferredHolder<EntityType<?>, EntityType<RallyCrystalEntity>> RALLY_CRYSTAL =
+            ENTITIES.register("rally_crystal", () ->
+                    EntityType.Builder.of(RallyCrystalEntity::new, MobCategory.MISC)
+                            .sized(0.875F, 2.3125F)
+                            .clientTrackingRange(10)
+                            .updateInterval(3)
+                            .build("rally_crystal")
             );
 
 
@@ -130,6 +150,8 @@ public class MeanderingMobsEntityRegistry {
             event.put(PORCUPINE.get(), PorcupineEntity.createAttributes().build());
             event.put(WHISP.get(), WhispEntity.createAttributes().build());
             event.put(SOULFLARE.get(), SoulFlareEntity.createAttributes().build());
+            event.put(SOUL_HOUND.get(), SoulHoundEntity.createAttributes().build());
+            event.put(RALLY_CRYSTAL.get(), RallyCrystalEntity.createAttributes().build());
         }
     }
 
@@ -144,9 +166,11 @@ public class MeanderingMobsEntityRegistry {
             event.registerEntityRenderer(PORCUPINE.get(), PorcupineRenderer::new);
             event.registerEntityRenderer(WHISP.get(), WhispRenderer::new);
             event.registerEntityRenderer(SOULFLARE.get(), SoulFlareRenderer::new);
+            event.registerEntityRenderer(SOUL_HOUND.get(), SoulHoundRenderer::new);
             event.registerEntityRenderer(SOUL_ORB_PROJECTILE.get(), ThrownItemRenderer::new);
             event.registerEntityRenderer(SOUL_FIREBALL.get(), ThrownItemRenderer::new);
             event.registerEntityRenderer(QUILL_ARROW.get(), QuillArrowRenderer::new);
+            event.registerEntityRenderer(RALLY_CRYSTAL.get(), RallyCrystalRenderer::new);
         }
 
         @SubscribeEvent
@@ -161,6 +185,8 @@ public class MeanderingMobsEntityRegistry {
             event.registerLayerDefinition(StraightHairWhispModel.LAYER_LOCATION, StraightHairWhispModel::createBodyLayer);
             event.registerLayerDefinition(CurlyHairWhispModel.LAYER_LOCATION, CurlyHairWhispModel::createBodyLayer);
             event.registerLayerDefinition(SoulFlareModel.LAYER_LOCATION, SoulFlareModel::createBodyLayer);
+            event.registerLayerDefinition(SoulHoundModel.LAYER_LOCATION, SoulHoundModel::createBodyLayer);
+            event.registerLayerDefinition(RallyCrystalModel.LAYER_LOCATION, RallyCrystalModel::createBodyLayer);
         }
     }
 }

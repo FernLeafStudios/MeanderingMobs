@@ -1,4 +1,4 @@
-package com.fernleaf.meanderingmobs.client.model;
+package com.fernleaf.meanderingmobs.client.model.tegu;
 
 import com.fernleaf.meanderingmobs.MeanderingMobs;
 import com.fernleaf.meanderingmobs.client.animation.TeguAnimations;

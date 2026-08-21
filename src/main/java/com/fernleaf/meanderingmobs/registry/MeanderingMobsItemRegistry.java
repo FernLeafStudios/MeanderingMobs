@@ -57,6 +57,10 @@ public class MeanderingMobsItemRegistry {
             () -> new PorcupineQuillItem(new Item.Properties())
     );
 
+    public static final DeferredHolder<Item, Item> CHANNEL_CRYSTAL_SHARD = ITEMS.register("channel_crystal_shard",
+            () -> new Item(new Item.Properties())
+    );
+
     // Spawn Eggs (Uses custom textures from assets/meanderingmobs/textures/item/spawn_egg/)
     public static final DeferredHolder<Item, Item> AUKVULTURE_SPAWN_EGG = registerSpawnEgg(
             "aukvulture",

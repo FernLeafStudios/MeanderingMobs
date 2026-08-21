@@ -1,0 +1,8 @@
+{
+  "render_type": "minecraft:cutout",
+  "parent": "block/cross",
+  "textures": {
+    "cross": "meanderingmobs:block/channel_crystal_cluster_tip",
+    "particle": "meanderingmobs:block/channel_crystal_cluster_tip"
+  }
+}

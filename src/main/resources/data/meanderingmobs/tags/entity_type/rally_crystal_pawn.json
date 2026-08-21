@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:skeleton",
+    "meanderingmobs:soul_hound"
+  ]
+}

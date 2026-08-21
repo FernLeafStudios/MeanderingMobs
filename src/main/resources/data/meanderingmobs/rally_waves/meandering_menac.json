@@ -1,0 +1,29 @@
+{
+  "waves": [
+    {
+      "entity": "minecraft:zoglin",
+      "min_count": 1,
+      "max_count": 2
+    },
+    {
+      "tag": "meanderingmobs:rally_crystal_pawn",
+      "min_count": 3,
+      "max_count": 5
+    },
+    {
+      "entity": "minecraft:wither_skeleton",
+      "min_count": 2,
+      "max_count": 3
+    },
+    {
+      "tag": "meanderingmobs:rally_crystal_knight",
+      "min_count": 3,
+      "max_count": 5
+    },
+    {
+      "tag": "meanderingmobs:rally_crystal_pawn",
+      "min_count": 2,
+      "max_count": 4
+    }
+  ]
+}

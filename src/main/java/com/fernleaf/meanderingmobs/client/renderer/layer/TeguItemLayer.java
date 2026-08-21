@@ -1,6 +1,6 @@
 package com.fernleaf.meanderingmobs.client.renderer.layer;
 
-import com.fernleaf.meanderingmobs.client.model.TeguModel;
+import com.fernleaf.meanderingmobs.client.model.tegu.TeguModel;
 import com.fernleaf.meanderingmobs.server.entity.TeguEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
