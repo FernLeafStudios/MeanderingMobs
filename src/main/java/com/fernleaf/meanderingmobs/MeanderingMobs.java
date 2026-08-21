@@ -2,6 +2,7 @@ package com.fernleaf.meanderingmobs;
 
 import com.fernleaf.meanderingmobs.config.MeanderingMobsConfig;
 import com.fernleaf.meanderingmobs.registry.*;
+import com.fernleaf.meanderingmobs.server.data.VariantSpawnManager;
 import com.fernleaf.meanderingmobs.server.datagen.MeanderingMobsBiomeTagProvider;
 import com.fernleaf.meanderingmobs.server.datagen.MeanderingMobsBlockTagProvider;
 import com.fernleaf.meanderingmobs.server.datagen.MeanderingMobsEntityTypeTagProvider;
@@ -16,6 +17,7 @@ import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
+import net.neoforged.neoforge.event.AddReloadListenerEvent;
 import org.slf4j.Logger;
 
 import java.util.concurrent.CompletableFuture;

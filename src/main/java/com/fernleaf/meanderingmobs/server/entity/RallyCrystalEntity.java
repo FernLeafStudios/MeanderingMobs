@@ -3,6 +3,7 @@ package com.fernleaf.meanderingmobs.server.entity;
 import com.fernleaf.meanderingmobs.MeanderingMobs;
 import com.fernleaf.meanderingmobs.server.data.RallyWaveManager;
 import com.fernleaf.meanderingmobs.server.data.RallyWavePattern;
+import com.fernleaf.meanderingmobs.server.entity.util.MeanderingMobsHostileEntity;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderSet;
@@ -37,7 +38,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-public class RallyCrystalEntity extends Monster {
+public class RallyCrystalEntity extends MeanderingMobsHostileEntity {
 
     private static final EntityDataAccessor<Boolean> IS_SINKING = SynchedEntityData.defineId(RallyCrystalEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Integer> SINK_TICKS = SynchedEntityData.defineId(RallyCrystalEntity.class, EntityDataSerializers.INT);

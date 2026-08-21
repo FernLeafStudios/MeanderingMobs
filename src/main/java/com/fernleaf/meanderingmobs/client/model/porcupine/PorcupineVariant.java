@@ -10,8 +10,8 @@ import net.minecraft.resources.ResourceLocation;
 import java.util.function.Function;
 
 public enum PorcupineVariant implements IModelVariant<PorcupineVariant.ModelType> {
-    COLD(0, "cold", ColdPorcupineModel.LAYER_LOCATION, ModelType.COLD),
-    TEMPERATE(1, "temperate", TemperatePorcupineModel.LAYER_LOCATION, ModelType.TEMPERATE),
+    TEMPERATE(0, "temperate", TemperatePorcupineModel.LAYER_LOCATION, ModelType.TEMPERATE),
+    COLD(1, "cold", ColdPorcupineModel.LAYER_LOCATION, ModelType.COLD),
     WARM(2, "warm", WarmPorcupineModel.LAYER_LOCATION, ModelType.WARM);
 
     private static final Function<Integer, PorcupineVariant> LOOKUP =

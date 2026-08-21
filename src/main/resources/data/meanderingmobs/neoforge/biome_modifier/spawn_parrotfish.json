@@ -8,9 +8,9 @@
   "spawners": [
     {
       "type": "meanderingmobs:parrotfish",
-      "weight": 12,
-      "minCount": 2,
-      "maxCount": 5
+      "weight": 8,
+      "minCount": 1,
+      "maxCount": 3
     }
   ]
 }

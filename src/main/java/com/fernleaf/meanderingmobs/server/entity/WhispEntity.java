@@ -1,14 +1,17 @@
 package com.fernleaf.meanderingmobs.server.entity;
 
 import com.fernleaf.meanderingmobs.client.instance.WhispIKInstance.WhispProceduralState;
+import com.fernleaf.meanderingmobs.client.model.whisp.WhispCosplay;
 import com.fernleaf.meanderingmobs.client.sound.WhispSoundInstance;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsSoundsRegistry;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsTagRegistry;
+import com.fernleaf.meanderingmobs.server.data.VariantSpawnManager;
 import com.fernleaf.meanderingmobs.server.entity.ai.TameableStateGoal;
 import com.fernleaf.meanderingmobs.server.entity.ai.whisp.*;
 import com.fernleaf.meanderingmobs.server.entity.util.MeanderingMobsTameableEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -16,11 +19,14 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.FlyingMoveControl;
@@ -34,6 +40,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.Vec3;
@@ -48,6 +56,8 @@ public class WhispEntity extends MeanderingMobsTameableEntity {
             SynchedEntityData.defineId(WhispEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Boolean> DATA_TAGGING =
             SynchedEntityData.defineId(WhispEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Integer> DATA_VARIANT_ID =
+            SynchedEntityData.defineId(WhispEntity.class, EntityDataSerializers.INT);
 
     private @Nullable UUID tagPlayerUUID;
 
@@ -69,6 +79,7 @@ public class WhispEntity extends MeanderingMobsTameableEntity {
     protected void defineSynchedData(SynchedEntityData.@NotNull Builder builder) {
         super.defineSynchedData(builder);
         builder.define(DATA_COSPLAY, 0);
+        builder.define(DATA_VARIANT_ID, 0);
         builder.define(DATA_TAGGING, false);
     }
 
@@ -116,7 +127,8 @@ public class WhispEntity extends MeanderingMobsTameableEntity {
 
         if (itemStack.is(Items.BRUSH)) {
             if (!this.level().isClientSide()) {
-                setCosplay((getCosplay() + 1) % 16);
+                int nextCosplay = (getCosplay() + 1) % WhispCosplay.values().length;
+                setCosplay(nextCosplay);
                 triggerProceduralState(WhispProceduralState.HAPPY_BOUNCE.id);
             }
             return InteractionResult.sidedSuccess(this.level().isClientSide());
@@ -193,6 +205,8 @@ public class WhispEntity extends MeanderingMobsTameableEntity {
 
     public void setCosplay(int cosplay) { this.entityData.set(DATA_COSPLAY, cosplay); }
     public int getCosplay() { return this.entityData.get(DATA_COSPLAY); }
+    public int getVariant() { return this.entityData.get(DATA_VARIANT_ID); }
+    public void setVariant(int variant) { this.entityData.set(DATA_VARIANT_ID, variant); }
 
     @Override
     public void playAmbientSound() {
@@ -204,16 +218,20 @@ public class WhispEntity extends MeanderingMobsTameableEntity {
         }
     }
 
+    // BEFORE (Bugged)
     @Override
     public void addAdditionalSaveData(@NotNull CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         tag.putInt("Cosplay", getCosplay());
+        tag.putInt("Variant", getVariant());
+        if (tag.contains("Variant")) setVariant(tag.getInt("Variant")); // <-- Bad line!
     }
 
     @Override
     public void readAdditionalSaveData(@NotNull CompoundTag tag) {
         super.readAdditionalSaveData(tag);
         if (tag.contains("Cosplay")) setCosplay(tag.getInt("Cosplay"));
+        if (tag.contains("Variant")) setVariant(tag.getInt("Variant"));
     }
 
     @Override
@@ -235,4 +253,17 @@ public class WhispEntity extends MeanderingMobsTameableEntity {
 
     @Override
     protected SoundEvent getDeathSound() { return MeanderingMobsSoundsRegistry.WHISP_DEATH.get(); }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    public SpawnGroupData finalizeSpawn(@NotNull ServerLevelAccessor level, @NotNull DifficultyInstance difficulty, @NotNull MobSpawnType spawnType, @Nullable SpawnGroupData spawnData) {
+        SpawnGroupData data = super.finalizeSpawn(level, difficulty, spawnType, spawnData);
+        if (spawnType != MobSpawnType.COMMAND && spawnType != MobSpawnType.SPAWN_EGG) {
+            Holder<Biome> biome = level.getBiome(this.blockPosition());
+            int variantId = VariantSpawnManager.getVariantForSpawn(this, biome);
+            this.setVariant(variantId);
+        }
+
+        return data;
+    }
 }

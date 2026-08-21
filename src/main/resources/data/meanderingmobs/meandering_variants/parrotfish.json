@@ -1,0 +1,17 @@
+{
+  "entity": "meanderingmobs:parrotfish",
+  "rules": [
+    {
+      "biome": "minecraft:warm_ocean",
+      "variant": 1
+    },
+    {
+      "biome_tag": "minecraft:is_jungle",
+      "variant": 2
+    },
+    {
+      "biome_tag": "minecraft:is_ocean",
+      "variant": 0
+    }
+  ]
+}

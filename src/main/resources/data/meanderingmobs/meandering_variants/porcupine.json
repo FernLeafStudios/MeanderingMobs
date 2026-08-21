@@ -1,0 +1,13 @@
+{
+  "entity": "meanderingmobs:porcupine",
+  "rules": [
+    {
+      "biome_tag": "c:is_cold/overworld",
+      "variant": 1
+    },
+    {
+      "biome_tag": "c:is_hot/overworld",
+      "variant": 2
+    }
+  ]
+}

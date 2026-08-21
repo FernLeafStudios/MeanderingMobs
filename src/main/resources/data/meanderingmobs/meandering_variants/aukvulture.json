@@ -1,0 +1,9 @@
+{
+  "entity": "meanderingmobs:aukvulture",
+  "rules": [
+    {
+      "biome_tag": "c:is_swamp",
+      "variant": 1
+    }
+  ]
+}

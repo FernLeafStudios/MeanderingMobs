@@ -1,11 +1,14 @@
 package com.fernleaf.meanderingmobs.server.entity;
 
+import com.fernleaf.meanderingmobs.MeanderingMobs;
 import com.fernleaf.meanderingmobs.client.model.parrotfish.ParrotfishVariant;
+import com.fernleaf.meanderingmobs.server.data.VariantSpawnManager;
 import com.fernleaf.meanderingmobs.server.entity.ai.parrotfish.ParrotfishCocoonGoal;
 import com.fernleaf.meanderingmobs.server.entity.ai.parrotfish.ParrotfishEatCoralGoal;
 import com.fernleaf.meanderingmobs.server.entity.ai.parrotfish.ParrotfishRamAttackGoal;
 import com.fernleaf.meanderingmobs.server.entity.ai.parrotfish.ParrotfishSwimGoal;
 import com.fernleaf.meanderingmobs.server.entity.util.MeanderingMobsAquaticEntity;
+import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -13,12 +16,10 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.SmoothSwimmingLookControl;
@@ -31,9 +32,13 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
+
+import javax.annotation.Nullable;
 
 public class ParrotfishEntity extends MeanderingMobsAquaticEntity {
 
@@ -86,6 +91,7 @@ public class ParrotfishEntity extends MeanderingMobsAquaticEntity {
     public void setVariant(ParrotfishVariant variant) {
         this.entityData.set(DATA_VARIANT_ID, variant.id);
     }
+
 
     @Override
     protected @NotNull PathNavigation createNavigation(@NotNull Level level) {
@@ -216,6 +222,17 @@ public class ParrotfishEntity extends MeanderingMobsAquaticEntity {
         if (compound.contains("Variant")) {
             this.setVariant(ParrotfishVariant.byId(compound.getInt("Variant")));
         }
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType spawnType, @Nullable SpawnGroupData spawnData) {
+        SpawnGroupData data = super.finalizeSpawn(level, difficulty, spawnType, spawnData);
+
+        Holder<Biome> biome = level.getBiome(this.blockPosition());
+        int variantId = VariantSpawnManager.getVariantForSpawn(this, biome);
+        this.setVariant(ParrotfishVariant.byId(variantId));
+        return data;
     }
 
     @Override

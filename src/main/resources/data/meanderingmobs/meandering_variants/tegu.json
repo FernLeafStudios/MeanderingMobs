@@ -1,0 +1,9 @@
+{
+  "entity": "meanderingmobs:tegu",
+  "rules": [
+    {
+      "biome_tag": "c:is_badlands",
+      "variant": 1
+    }
+  ]
+}

@@ -1,11 +1,14 @@
 package com.fernleaf.meanderingmobs.server.entity;
 
 import com.fernleaf.meanderingmobs.client.model.tegu.TeguVariant;
+import com.fernleaf.meanderingmobs.registry.MeanderingMobsItemRegistry;
+import com.fernleaf.meanderingmobs.server.data.VariantSpawnManager;
 import com.fernleaf.meanderingmobs.server.entity.ai.TameableStateGoal;
 import com.fernleaf.meanderingmobs.server.entity.ai.tegu.TeguShedGoal;
 import com.fernleaf.meanderingmobs.server.entity.ai.tegu.TeguStealFromChestGoal;
 import com.fernleaf.meanderingmobs.server.entity.util.MeanderingMobsTameableEntity;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -16,12 +19,10 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.AnimationState;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
@@ -33,9 +34,9 @@ import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
@@ -100,7 +101,7 @@ public class TeguEntity extends MeanderingMobsTameableEntity {
         if (!this.level().isClientSide() && this.isAlive()) {
             if (--this.shedTimer <= 0) {
                 this.level().broadcastEntityEvent(this, EVENT_SHED);
-                this.spawnAtLocation(Items.ARMADILLO_SCUTE);
+                this.spawnAtLocation(MeanderingMobsItemRegistry.TEGU_SCALE.get()); // Added .get() here!
                 this.shedTimer = getRandomShedTime();
             }
         }
@@ -269,5 +270,16 @@ public class TeguEntity extends MeanderingMobsTameableEntity {
                 || stateBelow.is(BlockTags.SAND)
                 || stateBelow.is(BlockTags.TERRACOTTA)
                 || stateBelow.is(Blocks.GRAVEL);
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    public SpawnGroupData finalizeSpawn(@NotNull ServerLevelAccessor level, @NotNull DifficultyInstance difficulty, @NotNull MobSpawnType spawnType, @javax.annotation.Nullable SpawnGroupData spawnData) {
+        SpawnGroupData data = super.finalizeSpawn(level, difficulty, spawnType, spawnData);
+
+        Holder<Biome> biome = level.getBiome(this.blockPosition());
+        int variantId = VariantSpawnManager.getVariantForSpawn(this, biome);
+        this.setVariant(TeguVariant.byId(variantId));
+        return data;
     }
 }

@@ -10,7 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 import java.util.function.Function;
 
 public enum WhispCosplay implements IModelVariant<WhispCosplay.WhispModelType> {
-    STRAIGHT(0, "default", StraightHairWhispModel.LAYER_LOCATION, WhispModelType.STRAIGHT),
+    STRAIGHT(0, "none", StraightHairWhispModel.LAYER_LOCATION, WhispModelType.STRAIGHT),
     NORMA(1, "orange", CurlyHairWhispModel.LAYER_LOCATION, WhispModelType.CURLY),
     JANE(2, "red", StraightHairWhispModel.LAYER_LOCATION, WhispModelType.STRAIGHT),
     SANDY(3, "light_blue", StraightHairWhispModel.LAYER_LOCATION, WhispModelType.STRAIGHT),

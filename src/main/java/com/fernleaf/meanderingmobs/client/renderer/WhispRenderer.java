@@ -8,7 +8,6 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
-import net.minecraft.client.renderer.entity.layers.EyesLayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
@@ -31,17 +30,21 @@ public class WhispRenderer extends MobRenderer<WhispEntity, HierarchicalModel<Wh
 
     @Override
     public @NotNull ResourceLocation getTextureLocation(WhispEntity entity) {
-        return WhispCosplay.byId(entity.getCosplay()).textureLocation;
+        WhispCosplay cosplay = WhispCosplay.byId(entity.getCosplay());
+        if (cosplay.getId() != 0) {
+            return cosplay.textureLocation;
+        }
+        return WhispVariant.byId(entity.getVariant()).textureLocation;
     }
 
     @Override
     protected int getBlockLightLevel(@NotNull WhispEntity entity, @NotNull BlockPos pos) {
-        return 15; // Forces full brightness on the block light channel
+        return 15;
     }
 
     @Override
     protected int getSkyLightLevel(@NotNull WhispEntity entity, @NotNull BlockPos pos) {
-        return 15; // Forces full brightness on the skylight channel
+        return 15;
     }
 
     @Override
@@ -52,7 +55,11 @@ public class WhispRenderer extends MobRenderer<WhispEntity, HierarchicalModel<Wh
     @Override
     public void render(WhispEntity entity, float entityYaw, float partialTicks, @NotNull PoseStack poseStack, @NotNull MultiBufferSource buffer, int packedLight) {
         WhispCosplay cosplay = WhispCosplay.byId(entity.getCosplay());
-        this.model = this.bakedModels.getOrDefault(cosplay.modelType, this.bakedModels.get(WhispCosplay.WhispModelType.STRAIGHT));
+        WhispCosplay.WhispModelType activeModelType = (cosplay.getId() != 0)
+                ? cosplay.modelType
+                : WhispVariant.byId(entity.getVariant()).modelType;
+
+        this.model = this.bakedModels.getOrDefault(activeModelType, this.bakedModels.get(WhispCosplay.WhispModelType.STRAIGHT));
 
         super.render(entity, entityYaw, partialTicks, poseStack, buffer, packedLight);
     }

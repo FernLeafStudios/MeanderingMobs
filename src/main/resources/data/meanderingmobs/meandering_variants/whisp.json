@@ -1,0 +1,13 @@
+{
+  "entity": "meanderingmobs:whisp",
+  "rules": [
+    {
+      "biome_tag": "c:is_swamp",
+      "variant": 1
+    },
+    {
+      "biome": "minecraft:warped_forest",
+      "variant": 2
+    }
+  ]
+}

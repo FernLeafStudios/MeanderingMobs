@@ -1,9 +1,11 @@
 package com.fernleaf.meanderingmobs.server.entity;
 
+import com.fernleaf.meanderingmobs.client.model.aukvulture.AukvultureVariant;
 import com.fernleaf.meanderingmobs.client.model.porcupine.PorcupineVariant;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsEffectsRegistry;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsItemRegistry;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsTagRegistry;
+import com.fernleaf.meanderingmobs.server.data.VariantSpawnManager;
 import com.fernleaf.meanderingmobs.server.entity.ai.TameableStateGoal;
 import com.fernleaf.meanderingmobs.server.entity.ai.porcupine.PorcupineDefendGoal;
 import com.fernleaf.meanderingmobs.server.entity.util.MeanderingMobsTameableEntity;
@@ -206,19 +208,15 @@ public class PorcupineEntity extends MeanderingMobsTameableEntity {
         }
     }
 
+    @SuppressWarnings("deprecation")
     @Override
-    public SpawnGroupData finalizeSpawn(@NotNull ServerLevelAccessor level, @NotNull DifficultyInstance difficulty, @NotNull MobSpawnType spawnType, @Nullable SpawnGroupData spawnData) {
+    public SpawnGroupData finalizeSpawn(@NotNull ServerLevelAccessor level, @NotNull DifficultyInstance difficulty, @NotNull MobSpawnType spawnType, @javax.annotation.Nullable SpawnGroupData spawnData) {
+        SpawnGroupData data = super.finalizeSpawn(level, difficulty, spawnType, spawnData);
+
         Holder<Biome> biome = level.getBiome(this.blockPosition());
-
-        if (biome.is(MeanderingMobsTagRegistry.Biomes.SPAWNS_COLD_PORCUPINES)) {
-            this.setVariant(PorcupineVariant.COLD);
-        } else if (biome.is(MeanderingMobsTagRegistry.Biomes.SPAWNS_WARM_PORCUPINES)) {
-            this.setVariant(PorcupineVariant.WARM);
-        } else {
-            this.setVariant(PorcupineVariant.TEMPERATE);
-        }
-
-        return super.finalizeSpawn(level, difficulty, spawnType, spawnData);
+        int variantId = VariantSpawnManager.getVariantForSpawn(this, biome);
+        this.setVariant(PorcupineVariant.byId(variantId));
+        return data;
     }
 
     @Override
