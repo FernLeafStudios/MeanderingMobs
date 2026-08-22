@@ -1,13 +1,13 @@
 package com.fernleaf.meanderingmobs.registry;
 
 import com.fernleaf.meanderingmobs.MeanderingMobs;
-import com.fernleaf.meanderingmobs.client.model.SoulHoundModel;
+import com.fernleaf.meanderingmobs.client.model.soul_hound.SoulHoundModel;
 import com.fernleaf.meanderingmobs.client.model.aukvulture.AukvultureModel;
 import com.fernleaf.meanderingmobs.client.model.crystal.RallyCrystalModel;
 import com.fernleaf.meanderingmobs.client.model.okapi.OkapiModel;
 import com.fernleaf.meanderingmobs.client.model.parrotfish.ParrotfishModel;
-import com.fernleaf.meanderingmobs.client.model.RuffianLeaderModel;
-import com.fernleaf.meanderingmobs.client.model.SoulFlareModel;
+import com.fernleaf.meanderingmobs.client.model.ruffian.RuffianLeaderModel;
+import com.fernleaf.meanderingmobs.client.model.soulflare.SoulFlareModel;
 import com.fernleaf.meanderingmobs.client.model.pilot_whale.PilotWhaleModel;
 import com.fernleaf.meanderingmobs.client.model.tegu.TeguModel;
 import com.fernleaf.meanderingmobs.client.model.porcupine.ColdPorcupineModel;
@@ -26,7 +26,6 @@ import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
-import net.minecraft.world.entity.animal.Wolf;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;

@@ -2,7 +2,7 @@ package com.fernleaf.meanderingmobs.client.adapter;
 
 import com.fernleaf.fernframe.proprio.util.ModelPartUtils;
 import com.fernleaf.meanderingmobs.client.instance.RuffianLeaderIKInstance;
-import com.fernleaf.meanderingmobs.client.model.RuffianLeaderModel;
+import com.fernleaf.meanderingmobs.client.model.ruffian.RuffianLeaderModel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 

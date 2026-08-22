@@ -1,4 +1,4 @@
-package com.fernleaf.meanderingmobs.client.model;
+package com.fernleaf.meanderingmobs.client.model.soulflare;
 
 import com.fernleaf.meanderingmobs.MeanderingMobs;
 import com.fernleaf.meanderingmobs.server.entity.SoulFlareEntity;

@@ -1,6 +1,5 @@
-package com.fernleaf.meanderingmobs.client.model;
+package com.fernleaf.meanderingmobs.client.model.ruffian;
 
-import com.fernleaf.fernframe.FernFrame;
 import com.fernleaf.meanderingmobs.MeanderingMobs;
 import com.fernleaf.meanderingmobs.client.adapter.RuffianLeaderModelAdapter;
 import com.fernleaf.meanderingmobs.client.instance.RuffianLeaderIKInstance;

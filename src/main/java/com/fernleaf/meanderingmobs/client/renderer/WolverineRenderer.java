@@ -5,6 +5,7 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Mob;
+import org.jetbrains.annotations.NotNull;
 
 public class WolverineRenderer<T extends Mob> extends MobRenderer<T, WolverineModel<T>> {
     private static final ResourceLocation TEXTURE =
@@ -15,7 +16,7 @@ public class WolverineRenderer<T extends Mob> extends MobRenderer<T, WolverineMo
     }
 
     @Override
-    public ResourceLocation getTextureLocation(T entity) {
+    public @NotNull ResourceLocation getTextureLocation(@NotNull T entity) {
         return TEXTURE;
     }
 }

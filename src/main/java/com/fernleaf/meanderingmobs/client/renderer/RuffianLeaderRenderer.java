@@ -1,7 +1,7 @@
 package com.fernleaf.meanderingmobs.client.renderer;
 
 import com.fernleaf.meanderingmobs.MeanderingMobs;
-import com.fernleaf.meanderingmobs.client.model.RuffianLeaderModel;
+import com.fernleaf.meanderingmobs.client.model.ruffian.RuffianLeaderModel;
 import com.fernleaf.meanderingmobs.server.entity.RuffianLeaderEntity;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;

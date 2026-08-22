@@ -2,7 +2,7 @@ package com.fernleaf.meanderingmobs.client.adapter;
 
 import com.fernleaf.fernframe.proprio.util.ModelPartUtils;
 import com.fernleaf.meanderingmobs.client.instance.SoulHoundIKInstance;
-import com.fernleaf.meanderingmobs.client.model.SoulHoundModel;
+import com.fernleaf.meanderingmobs.client.model.soul_hound.SoulHoundModel;
 import net.minecraft.world.entity.LivingEntity;
 
 public class SoulHoundModelAdapter {

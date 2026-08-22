@@ -1,33 +1,34 @@
 package com.fernleaf.meanderingmobs.client.model.okapi;
 
+import com.fernleaf.meanderingmobs.client.adapter.OkapiModelAdapter;
+import com.fernleaf.meanderingmobs.client.instance.OkapiIKInstance;
 import net.minecraft.client.model.HierarchicalModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
-import net.minecraft.client.model.geom.builders.CubeDeformation;
-import net.minecraft.client.model.geom.builders.CubeListBuilder;
-import net.minecraft.client.model.geom.builders.LayerDefinition;
-import net.minecraft.client.model.geom.builders.MeshDefinition;
-import net.minecraft.client.model.geom.builders.PartDefinition;
+import net.minecraft.client.model.geom.builders.*;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import org.jetbrains.annotations.NotNull;
 
-public class OkapiModel<T extends Entity> extends HierarchicalModel<T> {
+public class OkapiModel<T extends LivingEntity> extends HierarchicalModel<T> {
     public static final ModelLayerLocation LAYER_LOCATION = new ModelLayerLocation(
             ResourceLocation.fromNamespaceAndPath("meanderingmobs", "okapi"), "main"
     );
 
     private final ModelPart root;
-    private final ModelPart mainBody;
-    private final ModelPart neckAndHead;
-    private final ModelPart head;
-    private final ModelPart tongue;
-    private final ModelPart legs;
-    private final ModelPart frontRightLeg;
-    private final ModelPart frontLeftLeg;
-    private final ModelPart backLeftLeg;
-    private final ModelPart backRightLeg;
-    private final ModelPart tail;
+    public final ModelPart mainBody;
+    public final ModelPart neckAndHead;
+    public final ModelPart head;
+    public final ModelPart tongue;
+    public final ModelPart legs;
+    public final ModelPart frontRightLeg;
+    public final ModelPart frontLeftLeg;
+    public final ModelPart backLeftLeg;
+    public final ModelPart backRightLeg;
+    public final ModelPart tail;
+
+    private final OkapiIKInstance ikInstance = new OkapiIKInstance();
 
     public OkapiModel(ModelPart root) {
         this.root = root;
@@ -105,12 +106,22 @@ public class OkapiModel<T extends Entity> extends HierarchicalModel<T> {
     }
 
     @Override
-    public ModelPart root() {
+    public @NotNull ModelPart root() {
         return this.root;
     }
 
     @Override
     public void setupAnim(T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
         this.root().getAllParts().forEach(ModelPart::resetPose);
+
+        float partialTick = ageInTicks - (float) entity.tickCount;
+        this.ikInstance.update(entity, limbSwing, limbSwingAmount, partialTick);
+
+        // Head tracking
+        this.head.yRot = netHeadYaw * ((float) Math.PI / 180F);
+        this.head.xRot = headPitch * ((float) Math.PI / 180F);
+
+        // Procedural IK & Ear/Tail dynamics adapter
+        OkapiModelAdapter.applyToModel(entity, this, this.ikInstance);
     }
 }
