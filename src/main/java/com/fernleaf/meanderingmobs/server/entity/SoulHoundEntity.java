@@ -41,9 +41,9 @@ public class SoulHoundEntity extends MeanderingMobsHostileEntity {
 
     public static AttributeSupplier.Builder createAttributes() {
         return Monster.createMonsterAttributes()
-                .add(Attributes.MAX_HEALTH, 30.0D)
+                .add(Attributes.MAX_HEALTH, 10.0D)
                 .add(Attributes.MOVEMENT_SPEED, 0.45D)
-                .add(Attributes.ATTACK_DAMAGE, 5.0D)
+                .add(Attributes.ATTACK_DAMAGE, 3.0D)
                 .add(Attributes.FOLLOW_RANGE, 24.0D);
     }
 

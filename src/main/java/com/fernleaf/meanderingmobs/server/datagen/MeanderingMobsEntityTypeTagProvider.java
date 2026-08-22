@@ -49,7 +49,7 @@ public class MeanderingMobsEntityTypeTagProvider extends EntityTypeTagsProvider 
                 .add(EntityType.SKELETON);
 
         this.tag(MeanderingMobsTagRegistry.EntityTypes.RALLY_CRYSTAL_KNIGHT)
-                .add(EntityType.STRAY);
+                .add(EntityType.ZOMBIFIED_PIGLIN);
 
         this.tag(MeanderingMobsTagRegistry.EntityTypes.RALLY_CRYSTAL_BISHOP)
                 .add(EntityType.WITHER_SKELETON);

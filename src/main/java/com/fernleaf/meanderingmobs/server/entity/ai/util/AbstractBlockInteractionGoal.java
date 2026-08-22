@@ -14,6 +14,7 @@ public abstract class AbstractBlockInteractionGoal<T extends PathfinderMob> exte
     protected final double speedModifier;
     protected final double reachDistanceSqr;
     protected int cooldown = 0;
+    private int repathCooldown = 0;
 
     public AbstractBlockInteractionGoal(T entity, double speedModifier, double reachDistanceSqr) {
         this.entity = entity;
@@ -30,6 +31,13 @@ public abstract class AbstractBlockInteractionGoal<T extends PathfinderMob> exte
         return true;
     }
 
+    /**
+     * Optional check to verify if the block is still valid while pathfinding/interacting
+     */
+    protected boolean isTargetStillValid(BlockPos pos) {
+        return pos != null;
+    }
+
     @Override
     public boolean canUse() {
         if (this.cooldown > 0) {
@@ -39,16 +47,23 @@ public abstract class AbstractBlockInteractionGoal<T extends PathfinderMob> exte
         if (!canInteract()) return false;
 
         this.targetPos = findTargetBlock();
-        return this.targetPos != null;
+        return this.targetPos != null && isTargetStillValid(this.targetPos);
     }
 
     @Override
     public boolean canContinueToUse() {
-        return this.targetPos != null && canInteract();
+        return this.targetPos != null && isTargetStillValid(this.targetPos) && canInteract();
     }
 
     @Override
     public void start() {
+        if (this.targetPos != null) {
+            this.repathCooldown = 0;
+            this.tryMoveToTarget();
+        }
+    }
+
+    private void tryMoveToTarget() {
         if (this.targetPos != null) {
             this.entity.getNavigation().moveTo(
                     this.targetPos.getX() + 0.5D,
@@ -63,6 +78,10 @@ public abstract class AbstractBlockInteractionGoal<T extends PathfinderMob> exte
     public void tick() {
         if (this.targetPos == null) return;
 
+        if (this.repathCooldown > 0) {
+            this.repathCooldown--;
+        }
+
         this.entity.getLookControl().setLookAt(
                 this.targetPos.getX() + 0.5D,
                 this.targetPos.getY() + 0.5D,
@@ -70,21 +89,21 @@ public abstract class AbstractBlockInteractionGoal<T extends PathfinderMob> exte
                 30.0F, 30.0F
         );
 
-        if (this.entity.distanceToSqr(Vec3.atCenterOf(this.targetPos)) <= this.reachDistanceSqr) {
+        double distSqr = this.entity.distanceToSqr(Vec3.atCenterOf(this.targetPos));
+
+        if (distSqr <= this.reachDistanceSqr) {
             onReachedBlock(this.targetPos);
-        } else if (this.entity.getNavigation().isDone()) {
-            this.entity.getNavigation().moveTo(
-                    this.targetPos.getX() + 0.5D,
-                    this.targetPos.getY(),
-                    this.targetPos.getZ() + 0.5D,
-                    this.speedModifier
-            );
+        } else if (this.entity.getNavigation().isDone() && this.repathCooldown <= 0) {
+            // Repath every 10 ticks instead of every tick if navigation stalls
+            this.repathCooldown = 10;
+            this.tryMoveToTarget();
         }
     }
 
     @Override
     public void stop() {
         this.targetPos = null;
+        this.repathCooldown = 0;
     }
 
     public void setCooldown(int ticks) {

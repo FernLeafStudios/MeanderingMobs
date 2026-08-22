@@ -439,7 +439,8 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
         if (this.clientFlapping) {
             motionY = Mth.lerp(0.2D, motionY, 0.45D);
         } else if (this.clientDiving) {
-            motionY = Mth.lerp(0.2D, motionY, -0.95D);
+            // Increased downward dive velocity by 50% (-0.95D * 1.5)
+            motionY = Mth.lerp(0.2D, motionY, -1.425D);
         } else {
             double glideY = -0.04D + ((playerPitch / 90.0D) * -0.25D);
             motionY = Mth.lerp(0.12D, motionY, glideY);
@@ -447,7 +448,9 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
 
         double speedBonus = (playerPitch > 0 ? (playerPitch / 90.0D) * 0.45D : 0.0D);
         double baseThrust = (player.zza > 0 ? 0.85D : 0.55D) + speedBonus;
-        if (this.clientDiving) baseThrust += 0.4D;
+        if (this.clientDiving) {
+            baseThrust += 0.6D;
+        }
 
         Vec3 targetGlideMotion = new Vec3(lookVec.x * baseThrust, motionY, lookVec.z * baseThrust);
         this.setDeltaMovement(Mth.lerp(0.2D, motion.x, targetGlideMotion.x), motionY, Mth.lerp(0.2D, motion.z, targetGlideMotion.z));

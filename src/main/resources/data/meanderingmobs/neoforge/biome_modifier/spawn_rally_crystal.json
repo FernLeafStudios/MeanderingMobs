@@ -6,7 +6,7 @@
   "spawners": [
     {
       "type": "meanderingmobs:rally_crystal",
-      "weight": 1000,
+      "weight": 1,
       "minCount": 1,
       "maxCount": 1
     }

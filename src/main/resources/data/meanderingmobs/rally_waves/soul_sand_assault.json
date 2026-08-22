@@ -11,7 +11,7 @@
       "max_count": 5
     },
     {
-      "entity": "minecraft:wither_skeleton",
+      "tag": "meanderingmobs:rally_crystal_bishop",
       "min_count": 2,
       "max_count": 3
     },

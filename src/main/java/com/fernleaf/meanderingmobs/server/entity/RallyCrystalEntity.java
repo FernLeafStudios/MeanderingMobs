@@ -52,6 +52,7 @@ public class RallyCrystalEntity extends MeanderingMobsHostileEntity {
     private RallyWavePattern activePattern = null;
 
     private static final double DETECTION_RADIUS = 12.0;
+    private static final double MOB_CLEANUP_RADIUS_SQR = 64.0 * 64.0; // 64 Block Despawn Radius
 
     public RallyCrystalEntity(EntityType<? extends Monster> entityType, Level level) {
         super(entityType, level);
@@ -67,7 +68,7 @@ public class RallyCrystalEntity extends MeanderingMobsHostileEntity {
 
     @Override
     protected void registerGoals() {
-        // Leave completely empty so it stays rooted in place like a stationary structure!
+        // Stationary entity
     }
 
     @Override
@@ -77,7 +78,7 @@ public class RallyCrystalEntity extends MeanderingMobsHostileEntity {
 
     @Override
     protected void doPush(@NotNull Entity entity) {
-        // Prevent entities from nudging or pushing the crystal around
+        // Stationary
     }
 
     @Override
@@ -97,6 +98,7 @@ public class RallyCrystalEntity extends MeanderingMobsHostileEntity {
         builder.define(SINK_TICKS, 0);
     }
 
+    // Custom Natural Spawn predicate check
     public static boolean checkRallyCrystalSpawnRules(
             EntityType<RallyCrystalEntity> entityType,
             ServerLevelAccessor level,
@@ -106,7 +108,10 @@ public class RallyCrystalEntity extends MeanderingMobsHostileEntity {
     ) {
         BlockState stateBelow = level.getBlockState(pos.below());
         boolean isSoulBlock = stateBelow.is(Blocks.SOUL_SAND) || stateBelow.is(Blocks.SOUL_SOIL);
-        return isSoulBlock && level.getBlockState(pos).isAir() && level.getBlockState(pos.above()).isAir();
+        return isSoulBlock
+                && level.getBlockState(pos).isAir()
+                && level.getBlockState(pos.above()).isAir()
+                && checkMonsterSpawnRules(entityType, level, spawnType, pos, random);
     }
 
     @Override
@@ -140,10 +145,13 @@ public class RallyCrystalEntity extends MeanderingMobsHostileEntity {
             return;
         }
 
-        // 1. Clean active mobs
+        // 1. Clean active mobs: check if dead, despawned, or exited 64-block radius
         this.activeWaveMobs.removeIf(uuid -> {
             Entity entity = serverLevel.getEntity(uuid);
-            return entity != null && !entity.isAlive();
+            if (entity == null || !entity.isAlive()) {
+                return true; // Entity despawned, unloaded, or dead
+            }
+            return this.distanceToSqr(entity) > MOB_CLEANUP_RADIUS_SQR; // Beyond 64 blocks
         });
 
         // 2. Cooldown timer

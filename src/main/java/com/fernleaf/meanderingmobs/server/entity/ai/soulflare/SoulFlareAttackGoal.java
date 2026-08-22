@@ -29,7 +29,7 @@ public class SoulFlareAttackGoal extends AbstractTelegraphedAttackGoal<SoulFlare
 
     @Override
     protected void onWindupTick(LivingEntity target, int currentTimer) {
-        // Look control handles targeting in tick()
+        this.entity.getLookControl().setLookAt(target, 30.0F, 30.0F);
     }
 
     @Override
@@ -59,8 +59,9 @@ public class SoulFlareAttackGoal extends AbstractTelegraphedAttackGoal<SoulFlare
             this.entity.level().addFreshEntity(fireball);
         }
 
+        // Low-pitched Blaze shoot (0.6 pitch)
         this.entity.level().playSound(null, this.entity.getX(), this.entity.getY(), this.entity.getZ(),
-                SoundEvents.BLAZE_SHOOT, SoundSource.HOSTILE, 1.0F, 0.7F);
+                SoundEvents.BLAZE_SHOOT, SoundSource.HOSTILE, 1.0F, 0.6F);
     }
 
     @Override

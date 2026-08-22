@@ -1,6 +1,8 @@
 package com.fernleaf.meanderingmobs.client.model.soulflare;
 
 import com.fernleaf.meanderingmobs.MeanderingMobs;
+import com.fernleaf.meanderingmobs.client.adapter.SoulFlareModelAdapter;
+import com.fernleaf.meanderingmobs.client.instance.SoulFlareIKInstance;
 import com.fernleaf.meanderingmobs.server.entity.SoulFlareEntity;
 import net.minecraft.client.model.HierarchicalModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
@@ -15,14 +17,14 @@ public class SoulFlareModel<T extends SoulFlareEntity> extends HierarchicalModel
             new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(MeanderingMobs.MODID, "soulflare"), "main");
 
     private final ModelPart root;
-    private final ModelPart head;
-    private final ModelPart body;
-    private final ModelPart orb;
-    private final ModelPart shields;
-    private final ModelPart shield1;
-    private final ModelPart shield2;
+    public final ModelPart head;
+    public final ModelPart body;
+    public final ModelPart orb;
+    public final ModelPart shields;
+    public final ModelPart shield1;
+    public final ModelPart shield2;
 
-    private float currentFlareAngle = 0.85F;
+    private final SoulFlareIKInstance ikInstance = new SoulFlareIKInstance();
 
     public SoulFlareModel(ModelPart root) {
         this.root = root.getChild("SoulFlare");
@@ -65,43 +67,14 @@ public class SoulFlareModel<T extends SoulFlareEntity> extends HierarchicalModel
     public void setupAnim(T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
         this.root().getAllParts().forEach(ModelPart::resetPose);
 
-        this.head.yRot = netHeadYaw * ((float)Math.PI / 180F);
-        this.head.xRot = headPitch * ((float)Math.PI / 180F);
+        // Head tracking
+        this.head.yRot = netHeadYaw * Mth.DEG_TO_RAD;
+        this.head.xRot = headPitch * Mth.DEG_TO_RAD;
 
-        this.root.y = 24.0F + Mth.sin(ageInTicks * 0.1F) * 2.0F;
-        this.orb.yRot = -ageInTicks * 0.08F;
-
-        boolean charging = entity.isCharging();
-        boolean spinning = entity.isSpinning();
-        boolean cooldown = entity.isOnCooldown();
-
-        // Spin speed dynamic transitions
-        float targetSpinSpeed = 0.12F;
-        if (charging) {
-            targetSpinSpeed = 0.30F;
-        } else if (spinning) {
-            targetSpinSpeed = 0.70F;
-        } else if (cooldown) {
-            targetSpinSpeed = 0.04F;
-        }
-        this.shields.yRot = ageInTicks * targetSpinSpeed;
-
-        // Target angle interpolation:
-        float targetAngle;
-        if (charging) {
-            targetAngle = -0.10F;
-        } else if (spinning) {
-            targetAngle = 1.10F;
-        } else if (cooldown) {
-            targetAngle = -0.50F;
-        } else {
-            targetAngle = -0.50F; // Folds shields down when idling or passive
-        }
-
-        this.currentFlareAngle = Mth.lerp(0.15F, this.currentFlareAngle, targetAngle);
-
-        this.shield1.xRot = -this.currentFlareAngle;
-        this.shield2.xRot = -this.currentFlareAngle;
+        // IK calculation & Application
+        float partialTick = ageInTicks - (float) entity.tickCount;
+        this.ikInstance.update(entity, ageInTicks, partialTick);
+        SoulFlareModelAdapter.applyToModel(entity, this, this.ikInstance);
     }
 
     @Override

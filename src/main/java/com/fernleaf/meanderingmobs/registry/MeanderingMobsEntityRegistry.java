@@ -123,12 +123,13 @@ public class MeanderingMobsEntityRegistry {
 
     public static final DeferredHolder<EntityType<?>, EntityType<RallyCrystalEntity>> RALLY_CRYSTAL =
             ENTITIES.register("rally_crystal", () ->
-                    EntityType.Builder.of(RallyCrystalEntity::new, MobCategory.MISC)
+                    EntityType.Builder.of(RallyCrystalEntity::new, MobCategory.MONSTER)
                             .sized(0.875F, 2.3125F)
                             .clientTrackingRange(10)
                             .updateInterval(3)
                             .build("rally_crystal")
             );
+
     // Update 2 Mobs
     public static final DeferredHolder<EntityType<?>, EntityType<RuffianLeaderEntity>> RUFFIAN_LEADER =
             ENTITIES.register("ruffian_leader", () ->
@@ -168,7 +169,7 @@ public class MeanderingMobsEntityRegistry {
     // Update 6 Mobs
     public static final DeferredHolder<EntityType<?>, EntityType<WolverineEntity>> WOLVERINE =
             ENTITIES.register("wolverine", () ->
-                    EntityType.Builder.of(WolverineEntity::new, MobCategory.MONSTER)
+                    EntityType.Builder.of(WolverineEntity::new, MobCategory.CREATURE)
                             .sized(0.6F, 0.6F)
                             .clientTrackingRange(8)
                             .build("wolverine")
