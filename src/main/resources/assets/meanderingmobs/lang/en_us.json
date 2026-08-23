@@ -66,9 +66,15 @@
   "message.ruffian.wander": "Ruffian is now wandering",
   "message.ruffian.sit": "Ruffian is now staying",
   "message.ruffian.follow": "Ruffian is now following",
+  "message.ruffian.work": "Ruffian is now working",
 
   "entity.meanderingmobs.okapi": "Okapi",
   "message.okapi.wander": "Okapi is now wandering",
   "message.okapi.sit": "Okapi is now staying",
-  "message.okapi.follow": "Okapi is now following"
+  "message.okapi.follow": "Okapi is now following",
+
+  "entity.meanderingmobs.wolverine": "Wolverine",
+  "message.wolverine.wander": "Wolverine is now wandering",
+  "message.wolverine.sit": "Wolverine is now staying",
+  "message.wolverine.follow": "Wolverine is now following"
 }

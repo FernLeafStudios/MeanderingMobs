@@ -3,6 +3,7 @@ package com.fernleaf.meanderingmobs.server.entity;
 import com.fernleaf.meanderingmobs.server.entity.ai.TameableStateGoal;
 import com.fernleaf.meanderingmobs.server.entity.ai.okapi.OkapiAlertGoal;
 import com.fernleaf.meanderingmobs.server.entity.ai.okapi.OkapiBrowseGoal;
+import com.fernleaf.meanderingmobs.server.entity.ai.okapi.OkapiHideGoal;
 import com.fernleaf.meanderingmobs.server.entity.util.MeanderingMobsTameableEntity;
 import com.fernleaf.meanderingmobs.config.MeanderingMobsConfig;
 import net.minecraft.core.registries.Registries;
@@ -13,6 +14,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PathfinderMob;
@@ -28,8 +31,11 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
 
 public class OkapiEntity extends MeanderingMobsTameableEntity {
 
@@ -54,12 +60,13 @@ public class OkapiEntity extends MeanderingMobsTameableEntity {
     @Override
     protected void registerGoals() {
         this.goalSelector.addGoal(0, new FloatGoal(this));
-        this.goalSelector.addGoal(1, new OkapiAlertGoal(this, MeanderingMobsConfig.getSafe(MeanderingMobsConfig.OKAPI_ALERT_RADIUS)));
-        this.goalSelector.addGoal(2, new TameableStateGoal(this));
-        this.goalSelector.addGoal(3, new OkapiBrowseGoal(this, 1.1D));
-        this.goalSelector.addGoal(4, new WaterAvoidingRandomStrollGoal(this, 1.0D));
-        this.goalSelector.addGoal(5, new LookAtPlayerGoal(this, Player.class, 6.0F));
-        this.goalSelector.addGoal(6, new RandomLookAroundGoal(this));
+        this.goalSelector.addGoal(1, new OkapiHideGoal(this));
+        this.goalSelector.addGoal(2, new OkapiAlertGoal(this, MeanderingMobsConfig.getSafe(MeanderingMobsConfig.OKAPI_ALERT_RADIUS)));
+        this.goalSelector.addGoal(3, new TameableStateGoal(this));
+        this.goalSelector.addGoal(4, new OkapiBrowseGoal(this, 1.1D));
+        this.goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, 1.0D));
+        this.goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 6.0F));
+        this.goalSelector.addGoal(7, new RandomLookAroundGoal(this));
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -119,6 +126,12 @@ public class OkapiEntity extends MeanderingMobsTameableEntity {
         super.tickRidden(player, travelVector);
         this.setRot(player.getYRot(), player.getXRot() * 0.5F);
         this.yRotO = this.yBodyRot = this.yHeadRot = this.getYRot();
+
+        if (!this.level().isClientSide() && player.isUsingItem() && player.getUseItem().is(Items.GOAT_HORN)) {
+            if (player.getTicksUsingItem() % 10 == 0) {
+                this.triggerHornGlowPulse(24.0D);
+            }
+        }
     }
 
     @Override
@@ -137,5 +150,19 @@ public class OkapiEntity extends MeanderingMobsTameableEntity {
     @Override
     public LivingEntity getControllingPassenger() {
         return this.getFirstPassenger() instanceof LivingEntity living ? living : null;
+    }
+
+    public void triggerHornGlowPulse(double radius) {
+        if (!this.level().isClientSide()) {
+            AABB scanArea = this.getBoundingBox().inflate(radius, 8.0D, radius);
+            List<LivingEntity> nearbyMobs = this.level().getEntitiesOfClass(
+                    LivingEntity.class,
+                    scanArea,
+                    e -> e != this && e != this.getControllingPassenger() && e.isAlive()
+            );
+            for (LivingEntity mob : nearbyMobs) {
+                mob.addEffect(new MobEffectInstance(MobEffects.GLOWING, 200, 0, false, true));
+            }
+        }
     }
 }

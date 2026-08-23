@@ -4,6 +4,7 @@ import com.fernleaf.meanderingmobs.registry.MeanderingMobsTagRegistry;
 import com.fernleaf.meanderingmobs.server.entity.OkapiEntity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
 
 import java.util.EnumSet;
@@ -18,12 +19,12 @@ public class OkapiAlertGoal extends Goal {
     public OkapiAlertGoal(OkapiEntity okapi, double alertRadius) {
         this.okapi = okapi;
         this.alertRadius = alertRadius;
-        this.setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
+        this.setFlags(EnumSet.of(Flag.LOOK));
     }
 
     @Override
     public boolean canUse() {
-        if (this.okapi.isVehicle()) {
+        if (this.okapi.isVehicle() || this.okapi.isTamed()) {
             return false;
         }
         this.detectedThreat = findNearestThreat();
@@ -32,7 +33,8 @@ public class OkapiAlertGoal extends Goal {
 
     @Override
     public boolean canContinueToUse() {
-        if (this.detectedThreat == null || !this.detectedThreat.isAlive()) {
+        // Instantly exit state if tamed while goal is running
+        if (this.okapi.isTamed() || this.okapi.isVehicle() || this.detectedThreat == null || !this.detectedThreat.isAlive()) {
             return false;
         }
         return this.okapi.distanceToSqr(this.detectedThreat) <= (alertRadius * alertRadius);
@@ -43,7 +45,14 @@ public class OkapiAlertGoal extends Goal {
         List<LivingEntity> targets = this.okapi.level().getEntitiesOfClass(
                 LivingEntity.class,
                 searchBox,
-                mob -> mob != this.okapi && mob.getType().is(MeanderingMobsTagRegistry.EntityTypes.ALERT_OKAPI)
+                mob -> {
+                    if (mob == this.okapi || !mob.isAlive()) return false;
+                    if (mob.getType().is(MeanderingMobsTagRegistry.EntityTypes.ALERT_OKAPI)) return true;
+                    if (!this.okapi.isTamed() && mob instanceof Player player) {
+                        return !player.isShiftKeyDown() && !player.isSpectator();
+                    }
+                    return false;
+                }
         );
 
         LivingEntity closest = null;
@@ -52,7 +61,7 @@ public class OkapiAlertGoal extends Goal {
             double distSqr = this.okapi.distanceToSqr(target);
             if (distSqr < closestDistSqr) {
                 closestDistSqr = distSqr;
-                closest = target; // Make sure we assign the closest entity
+                closest = target;
             }
         }
         return closest;
@@ -60,14 +69,12 @@ public class OkapiAlertGoal extends Goal {
 
     @Override
     public void start() {
-        this.okapi.getNavigation().stop();
         this.okapi.setAlertState(true);
     }
 
     @Override
     public void tick() {
         if (this.detectedThreat != null) {
-            this.okapi.getNavigation().stop();
             this.okapi.getLookControl().setLookAt(
                     this.detectedThreat.getX(),
                     this.detectedThreat.getY() + this.detectedThreat.getEyeHeight(),

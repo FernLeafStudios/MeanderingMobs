@@ -8,17 +8,17 @@ import net.minecraft.world.entity.LivingEntity;
 public class WolverineModelAdapter {
 
     public static void applyToModel(LivingEntity entity, WolverineModel<?> model, WolverineIKInstance ik) {
-        model.mainBody.xRot += ik.bodyXRot;
-        ModelPartUtils.addYOffsetBlocks(model.mainBody, ik.bodyYOffset);
+        model.body.xRot += ik.bodyXRot;
+        ModelPartUtils.addYOffsetBlocks(model.body, ik.bodyYOffset);
 
         // Head and Tail
         model.head.xRot += ik.headXRot;
         model.tail.zRot += ik.tailZRot;
 
-        // Leg rotations
-        model.leftLeg1.xRot += ik.frontLeftLegXRot;
-        model.rightLeg1.xRot += ik.frontRightLegXRot;
-        model.leftLeg2.xRot += ik.backLeftLegXRot;
-        model.rightLeg2.xRot += ik.backRightLegXRot;
+        // Leg rotations mapped directly to clean model fields
+        model.leftFrontLeg.xRot += ik.frontLeftLegXRot;
+        model.rightFrontLeg.xRot += ik.frontRightLegXRot;
+        model.leftHindLeg.xRot += ik.backLeftLegXRot;
+        model.rightHindLeg.xRot += ik.backRightLegXRot;
     }
 }

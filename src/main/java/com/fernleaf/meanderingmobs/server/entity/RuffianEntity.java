@@ -3,29 +3,39 @@ package com.fernleaf.meanderingmobs.server.entity;
 import com.fernleaf.fernframe.umweltlite.goals.engine.PersonalityEngine;
 import com.fernleaf.meanderingmobs.client.model.ruffian.RuffianRank;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsTagRegistry;
-import com.fernleaf.meanderingmobs.server.entity.ai.TameableStateGoal;
 import com.fernleaf.meanderingmobs.server.entity.ai.ruffian.*;
+import com.fernleaf.meanderingmobs.server.entity.ai.ruffian.brain.RuffianActivities;
+import com.fernleaf.meanderingmobs.server.entity.ai.ruffian.brain.RuffianMemoryModuleTypes;
 import com.fernleaf.meanderingmobs.server.entity.util.MeanderingMobsTameableEntity;
-import net.minecraft.core.registries.Registries;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.mojang.serialization.Dynamic;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.TagKey;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.Containers;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.goal.FloatGoal;
-import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
-import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
-import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
+import net.minecraft.world.entity.ai.behavior.LookAtTargetSink;
+import net.minecraft.world.entity.ai.behavior.MoveToTargetSink;
+import net.minecraft.world.entity.ai.behavior.RandomStroll;
+import net.minecraft.world.entity.ai.behavior.Swim;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
+import net.minecraft.world.entity.schedule.Activity;
+import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
@@ -33,12 +43,8 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+@SuppressWarnings("deprecation")
 public class RuffianEntity extends MeanderingMobsTameableEntity {
-
-    public static final TagKey<Item> ADOPTION_CERTIFICATE = TagKey.create(
-            Registries.ITEM,
-            ResourceLocation.fromNamespaceAndPath("meanderingmobs", "adoption_certificate")
-    );
 
     private static final EntityDataAccessor<Integer> DATA_RANK =
             SynchedEntityData.defineId(RuffianEntity.class, EntityDataSerializers.INT);
@@ -55,6 +61,7 @@ public class RuffianEntity extends MeanderingMobsTameableEntity {
     private static final EntityDataAccessor<Boolean> DATA_IS_WORKING =
             SynchedEntityData.defineId(RuffianEntity.class, EntityDataSerializers.BOOLEAN);
 
+    private final SimpleContainer inventory = new SimpleContainer(27);
     private PersonalityEngine personalityEngine;
     private int anxiousCooldown = 0;
     private int caringCooldown = 0;
@@ -63,6 +70,10 @@ public class RuffianEntity extends MeanderingMobsTameableEntity {
 
     public RuffianEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
         super(entityType, level);
+    }
+
+    public SimpleContainer getInventory() {
+        return this.inventory;
     }
 
     public PersonalityEngine getPersonalityEngine() {
@@ -75,28 +86,99 @@ public class RuffianEntity extends MeanderingMobsTameableEntity {
     public static AttributeSupplier.Builder createAttributes() {
         return PathfinderMob.createMobAttributes()
                 .add(Attributes.MAX_HEALTH, 24.0D)
-                .add(Attributes.MOVEMENT_SPEED, 0.28D)
+                .add(Attributes.MOVEMENT_SPEED, 0.3D)
                 .add(Attributes.ATTACK_DAMAGE, 4.0D)
                 .add(Attributes.FOLLOW_RANGE, 20.0D)
                 .add(Attributes.STEP_HEIGHT, 1.0D);
     }
 
+    // --- BRAIN SETUP ---
+
     @Override
-    protected void registerGoals() {
-        super.registerGoals();
-        this.goalSelector.addGoal(0, new FloatGoal(this));
-        this.goalSelector.addGoal(1, new TameableStateGoal(this));
-        this.goalSelector.addGoal(2, new RuffianCaringGoal(this));
-        this.goalSelector.addGoal(3, new RuffianHideGoal(this));
-        this.goalSelector.addGoal(4, new RuffianWorkingGoal(this));
-        this.goalSelector.addGoal(5, new RuffianReadGoal(this));
-        this.goalSelector.addGoal(6, new RuffianNapGoal(this));
-        this.goalSelector.addGoal(7, new RuffianPlayGoal(this));
-        this.goalSelector.addGoal(8, new RuffianAttemptRideGoal(this));
-        this.goalSelector.addGoal(9, new WaterAvoidingRandomStrollGoal(this, 1.0D));
-        this.goalSelector.addGoal(10, new LookAtPlayerGoal(this, Player.class, 8.0F));
-        this.goalSelector.addGoal(11, new RandomLookAroundGoal(this));
+    protected Brain.@NotNull Provider<RuffianEntity> brainProvider() {
+        return Brain.provider(
+                ImmutableList.of(
+                        MemoryModuleType.LOOK_TARGET,
+                        MemoryModuleType.WALK_TARGET,
+                        MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE,
+                        MemoryModuleType.PATH,
+                        MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES,
+                        MemoryModuleType.NEAREST_PLAYERS,
+                        RuffianMemoryModuleTypes.STORAGE_POS.get(),
+                        RuffianMemoryModuleTypes.WORKSTATION_POS.get(),
+                        RuffianMemoryModuleTypes.BOOKSHELF_POS.get()
+                ),
+                ImmutableList.of(
+                        SensorType.NEAREST_LIVING_ENTITIES,
+                        SensorType.NEAREST_PLAYERS
+                )
+        );
     }
+
+    @Override
+    protected @NotNull Brain<?> makeBrain(@NotNull Dynamic<?> dynamic) {
+        Brain<RuffianEntity> brain = this.brainProvider().makeBrain(dynamic);
+        this.registerBrainGoals(brain);
+        return brain;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public @NotNull Brain<RuffianEntity> getBrain() {
+        return (Brain<RuffianEntity>) super.getBrain();
+    }
+
+    private void registerBrainGoals(Brain<RuffianEntity> brain) {
+        // Core for Creatures
+        brain.addActivity(Activity.CORE, 0, ImmutableList.of(
+                new Swim(0.8F),
+                new LookAtTargetSink(45, 90),
+                new MoveToTargetSink(),
+                new RuffianStateBehavior()
+        ));
+
+        // Chores for da babies
+        brain.addActivity(RuffianActivities.CHORES.get(), 5, ImmutableList.of(
+                new RuffianSmeltBehavior(),
+                new RuffianRepairBehavior()
+        ));
+
+        // Baby idling about
+        brain.addActivity(Activity.IDLE, 10, ImmutableList.of(
+                new RuffianCaringBehavior(),
+                new RuffianHideBehavior(),
+                new RuffianReadBehavior(),
+                new RuffianNapBehavior(),
+                new RuffianPlayBehavior(),
+                new RuffianAttemptRideBehavior(),
+                RandomStroll.stroll(1.0F)
+        ));
+
+        brain.setCoreActivities(ImmutableSet.of(Activity.CORE));
+        brain.setDefaultActivity(Activity.IDLE);
+        brain.useDefaultActivity();
+    }
+
+    @Override
+    protected void customServerAiStep() {
+        ServerLevel level = (ServerLevel) this.level();
+        Brain<RuffianEntity> brain = this.getBrain();
+
+        if (this.getAiState() == 3) {
+            if (!brain.isActive(RuffianActivities.CHORES.get())) {
+                brain.setActiveActivityIfPossible(RuffianActivities.CHORES.get());
+            }
+        } else {
+            if (!brain.isActive(Activity.IDLE)) {
+                brain.setActiveActivityIfPossible(Activity.IDLE);
+            }
+        }
+
+        brain.tick(level, this);
+        super.customServerAiStep();
+    }
+
+    // --- DATA & TICKING ---
 
     @Override
     protected void defineSynchedData(SynchedEntityData.@NotNull Builder builder) {
@@ -147,40 +229,39 @@ public class RuffianEntity extends MeanderingMobsTameableEntity {
 
     public boolean isNapping() { return this.entityData.get(DATA_IS_NAPPING); }
     public void setNapping(boolean napping) { this.entityData.set(DATA_IS_NAPPING, napping); }
-    public boolean canNap() {return this.napCooldown <= 0; }
-    public void applyNapCooldown(int ticks) {this.napCooldown = ticks; }
+    public boolean canNap() { return this.napCooldown <= 0; }
+    public void applyNapCooldown(int ticks) { this.napCooldown = ticks; }
 
     public boolean isWorking() { return this.entityData.get(DATA_IS_WORKING); }
     public void setWorking(boolean working) { this.entityData.set(DATA_IS_WORKING, working); }
 
     @Override
     public void cycleAiState(Player player, String entityTypeName) {
-        // 0: WANDER, 1: SIT, 2: FOLLOW, 3: WORK
         int nextState = (this.getAiState() + 1) % 4;
         this.setAiState(nextState);
 
         String messageKey = switch (nextState) {
-            case 1 -> "message.meanderingmobs." + entityTypeName + ".sitting";
-            case 2 -> "message.meanderingmobs." + entityTypeName + ".following";
-            case 3 -> "message.meanderingmobs." + entityTypeName + ".working";
-            default -> "message.meanderingmobs." + entityTypeName + ".wandering";
+            case 1 -> "message." + entityTypeName + ".sitting";
+            case 2 -> "message." + entityTypeName + ".following";
+            case 3 -> "message." + entityTypeName + ".working";
+            default -> "message." + entityTypeName + ".wandering";
         };
 
         player.displayClientMessage(Component.translatable(messageKey), true);
     }
 
     @Override
-    public @NotNull InteractionResult mobInteract(Player player, InteractionHand hand) {
+    public @NotNull InteractionResult mobInteract(Player player, @NotNull InteractionHand hand) {
         ItemStack itemstack = player.getItemInHand(hand);
 
-        // --- ADOPTION / TAMING MECHANIC ---
+        // Adoption
         if (!this.isTamed() && itemstack.is(MeanderingMobsTagRegistry.Items.ADOPTION_CERTIFICATE)) {
             if (!player.getAbilities().instabuild) {
                 itemstack.shrink(1);
             }
             if (!this.level().isClientSide()) {
                 this.tame(player);
-                this.level().broadcastEntityEvent(this, (byte) 7); // Heart particles
+                this.level().broadcastEntityEvent(this, (byte) 7);
                 player.displayClientMessage(
                         Component.translatable("message.meanderingmobs.ruffian.adopted"),
                         true
@@ -189,60 +270,86 @@ public class RuffianEntity extends MeanderingMobsTameableEntity {
             return InteractionResult.sidedSuccess(this.level().isClientSide());
         }
 
-        // --- STATE SWITCHING (SIT / FOLLOW / WANDER) ---
-        if (this.isTamed() && this.isOwner(player) && player.isSecondaryUseActive()) {
+        // Tamed interactions
+        if (this.isTamed() && this.isOwner(player)) {
+            // Crouch + Right Click: Change AI State
+            if (player.isSecondaryUseActive()) {
+                if (!this.level().isClientSide()) {
+                    this.cycleAiState(player, "ruffian");
+                }
+                return InteractionResult.sidedSuccess(this.level().isClientSide());
+            }
+
+            // Book Reading check
+            if (!this.level().isClientSide && itemstack.is(Items.ENCHANTED_BOOK) && this.canRead()) {
+                float analytical = this.getPersonalityEngine().getTrait("analytical");
+                if (analytical >= 0.5F) {
+                    ItemStack bookCopy = itemstack.split(1);
+                    this.setItemInHand(InteractionHand.MAIN_HAND, bookCopy);
+                    this.setReading(true);
+                    this.applyReadCooldown(600);
+                    this.swing(hand);
+                    return InteractionResult.SUCCESS;
+                }
+            }
+
+            // Standard Right Click: Open Inventory Screen
             if (!this.level().isClientSide()) {
-                this.cycleAiState(player, "ruffian");
+                player.openMenu(new SimpleMenuProvider(
+                        (containerId, playerInventory, p) -> ChestMenu.threeRows(containerId, playerInventory, this.inventory),
+                        this.getDisplayName()
+                ));
             }
             return InteractionResult.sidedSuccess(this.level().isClientSide());
-        }
-
-        // --- ENCHANTED BOOK READING MECHANIC (ONLY IF TAMED) ---
-        if (!this.level().isClientSide && this.isTamed() && itemstack.is(Items.ENCHANTED_BOOK) && this.canRead()) {
-            float analytical = this.getPersonalityEngine().getTrait("analytical");
-
-            if (analytical >= 0.5F) {
-                ItemStack bookCopy = itemstack.split(1);
-                this.setItemInHand(InteractionHand.MAIN_HAND, bookCopy);
-                this.applyReadCooldown(600);
-                this.swing(hand);
-                return InteractionResult.SUCCESS;
-            }
         }
 
         return super.mobInteract(player, hand);
     }
 
     @Override
+    public void dropCustomDeathLoot(@NotNull ServerLevel level, @NotNull DamageSource damageSource, boolean recentlyHit) {
+        super.dropCustomDeathLoot(level, damageSource, recentlyHit);
+        Containers.dropContents(this.level(), this, this.inventory);
+    }
+
+    @Override
     public void addAdditionalSaveData(@NotNull CompoundTag tag) {
         super.addAdditionalSaveData(tag);
-        tag.putInt("Rank", getRank());
-        tag.putInt("Color", getColor());
-        tag.putBoolean("IsPlaying", isPlaying());
-        tag.putBoolean("IsCrouching", isCrouchingAnxious());
+        tag.putInt("Rank", this.getRank());
+        tag.putInt("Color", this.getColor());
+        tag.putBoolean("IsPlaying", this.isPlaying());
+        tag.putBoolean("IsCrouching", this.isCrouchingAnxious());
         tag.putInt("AnxiousCooldown", this.anxiousCooldown);
         tag.putInt("CaringCooldown", this.caringCooldown);
-        tag.putBoolean("IsReading", isReading());
+        tag.putBoolean("IsReading", this.isReading());
         tag.putInt("ReadCooldown", this.readCooldown);
-        tag.putBoolean("IsNapping", isNapping());
-        tag.putBoolean("IsWorking", isWorking());
-        tag.put("Personality", getPersonalityEngine().serializeNBT());
+        tag.putBoolean("IsNapping", this.isNapping());
+        tag.putInt("NapCooldown", this.napCooldown);
+        tag.putBoolean("IsWorking", this.isWorking());
+        tag.put("Inventory", this.inventory.createTag(this.registryAccess()));
+        tag.put("Personality", this.getPersonalityEngine().serializeNBT());
     }
 
     @Override
     public void readAdditionalSaveData(@NotNull CompoundTag tag) {
         super.readAdditionalSaveData(tag);
-        if (tag.contains("Rank")) setRank(tag.getInt("Rank"));
-        if (tag.contains("Color")) setColor(tag.getInt("Color"));
-        if (tag.contains("IsPlaying")) setPlaying(tag.getBoolean("IsPlaying"));
-        if (tag.contains("IsCrouching")) setCrouchingAnxious(tag.getBoolean("IsCrouching"));
+        if (tag.contains("Rank")) this.setRank(tag.getInt("Rank"));
+        if (tag.contains("Color")) this.setColor(tag.getInt("Color"));
+        if (tag.contains("IsPlaying")) this.setPlaying(tag.getBoolean("IsPlaying"));
+        if (tag.contains("IsCrouching")) this.setCrouchingAnxious(tag.getBoolean("IsCrouching"));
         if (tag.contains("AnxiousCooldown")) this.anxiousCooldown = tag.getInt("AnxiousCooldown");
         if (tag.contains("CaringCooldown")) this.caringCooldown = tag.getInt("CaringCooldown");
-        if (tag.contains("IsReading")) setReading(tag.getBoolean("IsReading"));
+        if (tag.contains("IsReading")) this.setReading(tag.getBoolean("IsReading"));
         if (tag.contains("ReadCooldown")) this.readCooldown = tag.getInt("ReadCooldown");
-        if (tag.contains("IsNapping")) setNapping(tag.getBoolean("IsNapping"));
-        if (tag.contains("IsWorking")) setWorking(tag.getBoolean("IsWorking"));
-        if (tag.contains("Personality")) getPersonalityEngine().deserializeNBT(tag.getCompound("Personality"));
+        if (tag.contains("IsNapping")) this.setNapping(tag.getBoolean("IsNapping"));
+        if (tag.contains("NapCooldown")) this.napCooldown = tag.getInt("NapCooldown");
+        if (tag.contains("IsWorking")) this.setWorking(tag.getBoolean("IsWorking"));
+        if (tag.contains("Inventory")) {
+            this.inventory.fromTag(tag.getList("Inventory", CompoundTag.TAG_COMPOUND), this.registryAccess());
+        }
+        if (tag.contains("Personality", CompoundTag.TAG_COMPOUND)) {
+            this.getPersonalityEngine().deserializeNBT(tag.getCompound("Personality"));
+        }
     }
 
     @Override

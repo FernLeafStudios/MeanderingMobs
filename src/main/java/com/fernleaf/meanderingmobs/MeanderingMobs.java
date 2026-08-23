@@ -7,6 +7,8 @@ import com.fernleaf.meanderingmobs.server.datagen.MeanderingMobsBiomeTagProvider
 import com.fernleaf.meanderingmobs.server.datagen.MeanderingMobsBlockTagProvider;
 import com.fernleaf.meanderingmobs.server.datagen.MeanderingMobsEntityTypeTagProvider;
 import com.fernleaf.meanderingmobs.server.datagen.MeanderingMobsItemTagProvider;
+import com.fernleaf.meanderingmobs.server.entity.ai.ruffian.brain.RuffianActivities;
+import com.fernleaf.meanderingmobs.server.entity.ai.ruffian.brain.RuffianMemoryModuleTypes;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
@@ -41,6 +43,8 @@ public class MeanderingMobs {
         MeanderingMobsEffectsRegistry.register(modEventBus);
         MeanderingMobsSoundsRegistry.SOUND_EVENTS.register(modEventBus);
         MeanderingMobsCreativeTabRegistry.register(modEventBus);
+        RuffianMemoryModuleTypes.register(modEventBus);
+        RuffianActivities.register(modEventBus);
 
         // Register Game/Server Events (Commands, Level Events, etc.)
         NeoForge.EVENT_BUS.addListener(MeanderingMobs::onRegisterCommands);

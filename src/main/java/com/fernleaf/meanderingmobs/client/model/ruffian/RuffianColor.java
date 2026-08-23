@@ -40,11 +40,10 @@ public enum RuffianColor {
     public static RuffianColor byId(int id) {
         if (id < 0 || id >= BY_ID.length) return BLUE;
 
-        // TEMPORARY SAFETY: Map everything to BLUE, RED, or YELLOW until all 16 textures are made
         RuffianColor selected = BY_ID[id];
-        if (selected == RED || selected == YELLOW) {
+        if (selected == RED || selected == YELLOW || selected == GREEN || selected == PURPLE) {
             return selected;
         }
-        return BLUE; // Default missing colors to blue for testing
+        return BLUE;
     }
 }
