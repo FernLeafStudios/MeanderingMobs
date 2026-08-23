@@ -153,7 +153,7 @@ public class RuffianReadGoal extends Goal {
                 double offsetY = serverLevel.random.nextDouble() * 1.5D;
                 double offsetZ = (serverLevel.random.nextDouble() - 0.5D) * 0.8D;
                 serverLevel.sendParticles(
-                        ParticleTypes.ANGRY_VILLAGER,
+                        ParticleTypes.ELECTRIC_SPARK,
                         this.ruffian.getX() + offsetX,
                         this.ruffian.getY() + offsetY,
                         this.ruffian.getZ() + offsetZ,

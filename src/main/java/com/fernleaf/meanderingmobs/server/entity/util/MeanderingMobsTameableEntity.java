@@ -26,7 +26,8 @@ public abstract class MeanderingMobsTameableEntity extends MeanderingMobsEntity 
     public enum CommandState {
         WANDER(0),
         SIT(1),
-        FOLLOW(2);
+        FOLLOW(2),
+        WORK(3);
 
         public final int id;
         CommandState(int id) { this.id = id; }

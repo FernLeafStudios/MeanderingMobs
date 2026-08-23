@@ -26,6 +26,11 @@ public class MeanderingMobsTagRegistry {
                 Registries.ITEM,
                 ResourceLocation.fromNamespaceAndPath("meanderingmobs", "okapi_tame")
         );
+
+        public static final TagKey<Item> ADOPTION_CERTIFICATE = TagKey.create(
+                Registries.ITEM,
+                ResourceLocation.fromNamespaceAndPath("meanderingmobs", "adoption_certificate")
+        );
     }
 
     public static class Blocks {

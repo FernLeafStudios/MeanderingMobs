@@ -90,14 +90,11 @@ public class WolverineModel<T extends Entity> extends HierarchicalModel<T> {
     @Override
     public void setupAnim(T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
         this.root().getAllParts().forEach(ModelPart::resetPose);
-
-        // Standard head tracking for vanilla look logic
         if (this.head != null) {
             this.head.yRot += netHeadYaw * ((float) Math.PI / 180F);
             this.head.xRot += headPitch * ((float) Math.PI / 180F);
         }
 
-        // Apply Proprio IK instance calculations if it's a living entity
         if (entity instanceof LivingEntity living) {
             this.ikInstance.update(living, limbSwing, limbSwingAmount, 1.0F); // partialTick can be passed via render if needed, defaulting safely
             WolverineModelAdapter.applyToModel(living, this, this.ikInstance);

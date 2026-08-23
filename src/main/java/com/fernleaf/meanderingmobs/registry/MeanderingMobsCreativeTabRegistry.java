@@ -35,6 +35,9 @@ public class MeanderingMobsCreativeTabRegistry {
                         output.accept(MeanderingMobsBlockRegistry.CHANNEL_CRYSTAL_CLUSTER_ITEM.get());
                         output.accept(MeanderingMobsBlockRegistry.CHANNEL_CRYSTAL_CHAIN_ITEM.get());
 
+                        // Special Items
+                        output.accept((MeanderingMobsItemRegistry.ADOPTION_CERTIFICATE.get()));
+
                         // Spawn Eggs
                         output.accept(MeanderingMobsItemRegistry.AUKVULTURE_SPAWN_EGG.get());
                         output.accept(MeanderingMobsItemRegistry.PORCUPINE_SPAWN_EGG.get());

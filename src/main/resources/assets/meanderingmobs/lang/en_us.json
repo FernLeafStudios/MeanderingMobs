@@ -61,6 +61,11 @@
   "message.porcupine.follow": "Porcupine is now following",
 
   "entity.meanderingmobs.ruffian": "Ruffian",
+  "item.meanderingmobs.adoption_certificate": "Adoption Certificate",
+  "message.meanderingmobs.ruffian.adopted": "You have officially adopted this little ruffian!",
+  "message.ruffian.wander": "Ruffian is now wandering",
+  "message.ruffian.sit": "Ruffian is now staying",
+  "message.ruffian.follow": "Ruffian is now following",
 
   "entity.meanderingmobs.okapi": "Okapi",
   "message.okapi.wander": "Okapi is now wandering",

@@ -2,7 +2,7 @@ package com.fernleaf.meanderingmobs;
 
 import com.fernleaf.meanderingmobs.config.MeanderingMobsConfig;
 import com.fernleaf.meanderingmobs.registry.*;
-import com.fernleaf.meanderingmobs.server.data.VariantSpawnManager;
+import com.fernleaf.meanderingmobs.server.command.RuffianInspectCommand;
 import com.fernleaf.meanderingmobs.server.datagen.MeanderingMobsBiomeTagProvider;
 import com.fernleaf.meanderingmobs.server.datagen.MeanderingMobsBlockTagProvider;
 import com.fernleaf.meanderingmobs.server.datagen.MeanderingMobsEntityTypeTagProvider;
@@ -15,9 +15,10 @@ import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
-import net.neoforged.neoforge.event.AddReloadListenerEvent;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import org.slf4j.Logger;
 
 import java.util.concurrent.CompletableFuture;
@@ -39,9 +40,16 @@ public class MeanderingMobs {
         MeanderingMobsBlockRegistry.register(modEventBus);
         MeanderingMobsEffectsRegistry.register(modEventBus);
         MeanderingMobsSoundsRegistry.SOUND_EVENTS.register(modEventBus);
-        MeanderingMobsCreativeTabRegistry.register(modEventBus); // <-- Added here
+        MeanderingMobsCreativeTabRegistry.register(modEventBus);
+
+        // Register Game/Server Events (Commands, Level Events, etc.)
+        NeoForge.EVENT_BUS.addListener(MeanderingMobs::onRegisterCommands);
 
         LOGGER.info("Meandering Mobs initialized with FernFrame!");
+    }
+
+    public static void onRegisterCommands(RegisterCommandsEvent event) {
+        RuffianInspectCommand.register(event.getDispatcher());
     }
 
     private void gatherData(GatherDataEvent event) {

@@ -71,11 +71,9 @@ public class CurlyHairWhispModel<T extends LivingEntity> extends HierarchicalMod
         float partialTick = ageInTicks - (float) entity.tickCount;
         this.ikInstance.update(entity, limbSwing, limbSwingAmount, netHeadYaw, headPitch, partialTick);
 
-        // Direct head look yaw & pitch tracking
         this.head.yRot = netHeadYaw * ((float) Math.PI / 180F);
         this.head.xRot = headPitch * ((float) Math.PI / 180F);
 
-        // Apply procedural dynamics adapter
         WhispModelAdapter.applyToModel(entity, this, this.ikInstance);
     }
 }

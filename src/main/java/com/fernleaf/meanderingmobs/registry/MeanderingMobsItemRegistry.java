@@ -52,12 +52,15 @@ public class MeanderingMobsItemRegistry {
             () -> new TeguPouchItem(new Item.Properties().stacksTo(1))
     );
 
-    // --- UPDATED TO PorcupineQuillItem ---
     public static final DeferredHolder<Item, Item> PORCUPINE_QUILL = ITEMS.register("porcupine_quill",
             () -> new PorcupineQuillItem(new Item.Properties())
     );
 
     public static final DeferredHolder<Item, Item> CHANNEL_CRYSTAL_SHARD = ITEMS.register("channel_crystal_shard",
+            () -> new Item(new Item.Properties())
+    );
+
+    public static final DeferredHolder<Item, Item> ADOPTION_CERTIFICATE = ITEMS.register("adoption_certificate",
             () -> new Item(new Item.Properties())
     );
 

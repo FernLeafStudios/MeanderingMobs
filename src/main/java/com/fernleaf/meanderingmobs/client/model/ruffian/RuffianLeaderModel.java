@@ -63,11 +63,17 @@ public class RuffianLeaderModel<T extends PathfinderMob> extends HierarchicalMod
         MeshDefinition meshdefinition = new MeshDefinition();
         PartDefinition partdefinition = meshdefinition.getRoot();
 
-        PartDefinition main3 = partdefinition.addOrReplaceChild("main3", CubeListBuilder.create(), PartPose.offset(0.0F, 24.0F, 0.0F));
-        main3.addOrReplaceChild("right_leg", CubeListBuilder.create().texOffs(19, 45).addBox(-1.5F, -3.0F, -1.5F, 3.0F, 11.0F, 3.0F, new CubeDeformation(0.0F)), PartPose.offset(1.5F, -8.0F, -0.5F));
-        main3.addOrReplaceChild("left_leg", CubeListBuilder.create().texOffs(19, 45).mirror().addBox(-1.5F, -3.0F, -1.5F, 3.0F, 11.0F, 3.0F, new CubeDeformation(0.0F)).mirror(false), PartPose.offset(-1.5F, -8.0F, -0.5F));
+        // Updated pivot: (0.0F, 8.0F, 0.0F)
+        PartDefinition main3 = partdefinition.addOrReplaceChild("main3", CubeListBuilder.create(), PartPose.offset(0.0F, 8.0F, 0.0F));
 
-        PartDefinition main2 = main3.addOrReplaceChild("main2", CubeListBuilder.create(), PartPose.offset(0.0F, -13.0F, -0.5F));
+        // Updated pivot: (1.5F, 8.0F, -0.5F)
+        main3.addOrReplaceChild("right_leg", CubeListBuilder.create().texOffs(19, 45).addBox(-1.5F, -3.0F, -1.5F, 3.0F, 11.0F, 3.0F, new CubeDeformation(0.0F)), PartPose.offset(1.5F, 8.0F, -0.5F));
+
+        // Updated pivot: (-1.5F, 8.0F, -0.5F)
+        main3.addOrReplaceChild("left_leg", CubeListBuilder.create().texOffs(19, 45).mirror().addBox(-1.5F, -3.0F, -1.5F, 3.0F, 11.0F, 3.0F, new CubeDeformation(0.0F)).mirror(false), PartPose.offset(-1.5F, 8.0F, -0.5F));
+
+        // Updated pivot: (0.0F, 3.0F, -0.5F)
+        PartDefinition main2 = main3.addOrReplaceChild("main2", CubeListBuilder.create(), PartPose.offset(0.0F, 3.0F, -0.5F));
         PartDefinition main = main2.addOrReplaceChild("main", CubeListBuilder.create(), PartPose.offset(0.0F, 0.0F, 0.0F));
 
         PartDefinition head = main.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 18).addBox(-3.5F, -8.0F, -3.0F, 7.0F, 8.0F, 6.0F, new CubeDeformation(0.0F))

@@ -34,12 +34,13 @@ public class TameableStateGoal extends Goal {
         if (state == MeanderingMobsTameableEntity.CommandState.FOLLOW) {
             Player player = this.mob.getOwner();
             if (player == null || player.isSpectator()) return false;
-            if (this.mob.distanceToSqr(player) < 6.25D) return false; // Within 2.5 blocks
+            if (this.mob.distanceToSqr(player) < 6.25D) return false;
 
             this.owner = player;
             return true;
         }
 
+        // Ignore WORK and WANDER states so other goals can run
         return false;
     }
 

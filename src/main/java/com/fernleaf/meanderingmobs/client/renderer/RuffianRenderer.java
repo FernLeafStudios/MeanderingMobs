@@ -2,6 +2,7 @@ package com.fernleaf.meanderingmobs.client.renderer;
 
 import com.fernleaf.meanderingmobs.client.model.ruffian.*;
 import com.fernleaf.meanderingmobs.client.renderer.layer.RuffianReadingLayer;
+import com.fernleaf.meanderingmobs.client.renderer.layer.RuffianWorkingLayer;
 import com.fernleaf.meanderingmobs.server.entity.RuffianEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.HierarchicalModel;
@@ -24,6 +25,7 @@ public class RuffianRenderer extends MobRenderer<RuffianEntity, HierarchicalMode
 
         this.bakedModels.put(RuffianRank.RuffianModelType.SNATCHER, this.model);
         this.bakedModels.put(RuffianRank.RuffianModelType.LEADER, new RuffianLeaderModel<>(context.bakeLayer(RuffianLeaderModel.LAYER_LOCATION)));
+        this.addLayer(new RuffianWorkingLayer(this));
         this.addLayer(new RuffianReadingLayer(this));
     }
 

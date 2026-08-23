@@ -15,6 +15,7 @@ public abstract class AbstractBlockInteractionGoal<T extends PathfinderMob> exte
     protected final double reachDistanceSqr;
     protected int cooldown = 0;
     private int repathCooldown = 0;
+    protected boolean reachedTarget = false;
 
     public AbstractBlockInteractionGoal(T entity, double speedModifier, double reachDistanceSqr) {
         this.entity = entity;
@@ -31,11 +32,17 @@ public abstract class AbstractBlockInteractionGoal<T extends PathfinderMob> exte
         return true;
     }
 
-    /**
-     * Optional check to verify if the block is still valid while pathfinding/interacting
-     */
     protected boolean isTargetStillValid(BlockPos pos) {
         return pos != null;
+    }
+
+    public void setTargetPos(BlockPos pos) {
+        this.targetPos = pos;
+        this.reachedTarget = false;
+        if (pos != null) {
+            this.repathCooldown = 0;
+            this.tryMoveToTarget();
+        }
     }
 
     @Override
@@ -46,8 +53,12 @@ public abstract class AbstractBlockInteractionGoal<T extends PathfinderMob> exte
         }
         if (!canInteract()) return false;
 
-        this.targetPos = findTargetBlock();
-        return this.targetPos != null && isTargetStillValid(this.targetPos);
+        BlockPos found = findTargetBlock();
+        if (found != null && isTargetStillValid(found)) {
+            setTargetPos(found);
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -57,10 +68,8 @@ public abstract class AbstractBlockInteractionGoal<T extends PathfinderMob> exte
 
     @Override
     public void start() {
-        if (this.targetPos != null) {
-            this.repathCooldown = 0;
-            this.tryMoveToTarget();
-        }
+        this.reachedTarget = false;
+        this.tryMoveToTarget();
     }
 
     private void tryMoveToTarget() {
@@ -92,11 +101,16 @@ public abstract class AbstractBlockInteractionGoal<T extends PathfinderMob> exte
         double distSqr = this.entity.distanceToSqr(Vec3.atCenterOf(this.targetPos));
 
         if (distSqr <= this.reachDistanceSqr) {
-            onReachedBlock(this.targetPos);
-        } else if (this.entity.getNavigation().isDone() && this.repathCooldown <= 0) {
-            // Repath every 10 ticks instead of every tick if navigation stalls
-            this.repathCooldown = 10;
-            this.tryMoveToTarget();
+            if (!this.reachedTarget) {
+                this.reachedTarget = true;
+                onReachedBlock(this.targetPos);
+            }
+        } else {
+            this.reachedTarget = false;
+            if (this.entity.getNavigation().isDone() && this.repathCooldown <= 0) {
+                this.repathCooldown = 10;
+                this.tryMoveToTarget();
+            }
         }
     }
 
@@ -104,6 +118,7 @@ public abstract class AbstractBlockInteractionGoal<T extends PathfinderMob> exte
     public void stop() {
         this.targetPos = null;
         this.repathCooldown = 0;
+        this.reachedTarget = false;
     }
 
     public void setCooldown(int ticks) {

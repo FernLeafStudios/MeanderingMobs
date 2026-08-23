@@ -11,11 +11,14 @@ import net.minecraft.world.phys.Vec3;
 public class RuffianIKInstance {
 
     // Root / Base Rotation
-    public float rootXRot; // Rotates the entire main3 group down towards the ground
+    public float rootXRot;
+    public float rootYOffset;
 
     // Procedural Gait & Locomotion
     public float leftLegXRot;
     public float rightLegXRot;
+    public float leftLegYRot;
+    public float rightLegYRot;
     public float leftArmXRot;
     public float rightArmXRot;
     public float leftArmZRot;
@@ -36,19 +39,46 @@ public class RuffianIKInstance {
     public void update(LivingEntity entity, float limbSwing, float limbSwingAmount, float headPitch, float partialTick) {
         float age = IKMathUtils.getAge(entity, partialTick);
 
-        // Strict state checking
         boolean isPlaying = entity instanceof RuffianEntity ruffian && ruffian.isPlaying();
         boolean isAnxiousCrouch = entity instanceof RuffianEntity ruffian && ruffian.isCrouchingAnxious();
         boolean isReading = entity instanceof RuffianEntity ruffian && ruffian.isReading();
+        boolean isNapping = entity instanceof RuffianEntity ruffian && ruffian.isNapping();
 
         float walkFreq = 0.6662f + (isPlaying ? 0.333f : 0.0f);
         float swingRad = Mth.cos(limbSwing * walkFreq) * (1.2f + (isPlaying ? 0.4f : 0.0f)) * limbSwingAmount;
 
-        // --- STATE: 0: READING ---
-        if (isReading) {
+        if (isNapping) {
+            this.rootXRot = 90.0f * Mth.DEG_TO_RAD;
+            // Push the entire model down cleanly flat to ground
+            this.rootYOffset = 10.0f; // Fine-tune this block unit to adjust exact ground depth
+
+            // Do NOT touch pelvic Y offset so the torso and pelvis stay anchored together
+            this.pelvicYOffset = 0.0f;
+            this.pelvicZOffset = 0.0f;
+            this.torsoXRot = 0.0f;
+            this.torsoZRot = 0.0f;
+
+            // Freeze leg walking motion
+            this.leftLegXRot = 0.0f;
+            this.rightLegXRot = 0.0f;
+
+            // Apply sprawled Y angle rotations
+            this.leftLegYRot = 45.0f * Mth.DEG_TO_RAD;
+            this.rightLegYRot = 20.0f * Mth.DEG_TO_RAD;
+
+            // Arms sprawled flat
+            this.leftArmXRot = 0.2f;
+            this.rightArmXRot = 0.2f;
+            this.leftArmZRot = 1.35f;
+            this.rightArmZRot = -1.35f;
+        }
+        else if (isReading) {
             this.rootXRot = 0.0f;
+            this.rootYOffset = 0.0f;
             this.pelvicZOffset = 0.0f;
             this.pelvicYOffset = 0.0f;
+            this.leftLegYRot = 0.0f;
+            this.rightLegYRot = 0.0f;
 
             // Subtle breathing/sway while studying deeply
             float studySway = Mth.sin(age * 2.0f) * 0.02f;
@@ -65,12 +95,14 @@ public class RuffianIKInstance {
             this.leftLegXRot = 0.0f;
             this.rightLegXRot = 0.0f;
         }
-        // --- STATE 1: ANXIOUS CROUCH / SLINK ---
         else if (isAnxiousCrouch) {
             float shiver = Mth.sin(age * 4.0f) * 0.06f;
 
-            // Pitch main3 forward by exactly 60 degrees around Y=12 pivot
             this.rootXRot = 60.0f * Mth.DEG_TO_RAD;
+            this.rootYOffset = 4.0f;
+            this.rootYOffset = 0.0f;
+            this.leftLegYRot = 0.0f;
+            this.rightLegYRot = 0.0f;
 
             // Relax internal body angles since root carries the main tilt
             this.torsoXRot = 0.10f;
@@ -90,10 +122,12 @@ public class RuffianIKInstance {
             // Tremble in fear
             this.torsoZRot = shiver;
         }
-        // --- STATE 2: PLAYING / NARUTO RUN ---
         else if (isPlaying) {
             this.rootXRot = 0.0f;
+            this.rootYOffset = 0.0f;
             this.pelvicZOffset = 0.0f;
+            this.leftLegYRot = 0.0f;
+            this.rightLegYRot = 0.0f;
 
             this.leftLegXRot = swingRad;
             this.rightLegXRot = -swingRad;
@@ -107,10 +141,12 @@ public class RuffianIKInstance {
             this.torsoZRot = Mth.sin(limbSwing * walkFreq) * 0.15f * limbSwingAmount;
             this.pelvicYOffset = Mth.sin(limbSwing * walkFreq * 2.0f) * 0.13f * limbSwingAmount;
         }
-        // --- STATE 3: DEFAULT HUMANOID GAIT ---
         else {
             this.rootXRot = 0.0f;
+            this.rootYOffset = 0.0f;
             this.pelvicZOffset = 0.0f;
+            this.leftLegYRot = 0.0f;
+            this.rightLegYRot = 0.0f;
 
             this.leftLegXRot = swingRad;
             this.rightLegXRot = -swingRad;

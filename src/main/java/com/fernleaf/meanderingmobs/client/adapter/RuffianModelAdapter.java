@@ -17,6 +17,9 @@ public class RuffianModelAdapter {
             // Pitch root node down so the entire entity tilts flat to floor
             main3.xRot = ik.rootXRot;
 
+            // Push the main3 root node down in pixel space to ground the nap pose
+            main3.y += ik.rootYOffset;
+
             ModelPartUtils.ifPresent(main3, main2 -> {
                 // Apply rotation angles directly
                 main2.xRot = ik.torsoXRot;
@@ -52,8 +55,16 @@ public class RuffianModelAdapter {
                 }, "main");
             }, "main2");
 
-            ModelPartUtils.ifPresent(main3, leg -> leg.xRot = ik.leftLegXRot, "left_leg");
-            ModelPartUtils.ifPresent(main3, leg -> leg.xRot = ik.rightLegXRot, "right_leg");
+            // Leg Rotations (applying X pitch & Y yaw for the sprawled legs)
+            ModelPartUtils.ifPresent(main3, leg -> {
+                leg.xRot = ik.leftLegXRot;
+                leg.yRot = ik.leftLegYRot;
+            }, "left_leg");
+
+            ModelPartUtils.ifPresent(main3, leg -> {
+                leg.xRot = ik.rightLegXRot;
+                leg.yRot = ik.rightLegYRot;
+            }, "right_leg");
         }, "main3");
     }
 }
