@@ -32,6 +32,9 @@ public class ParrotfishIKInstance {
         double horizontalSpeedSqr = move.horizontalDistanceSqr();
         double totalSpeedSqr = horizontalSpeedSqr + (move.y * move.y);
         float totalSpeed = IKMathUtils.getTotalSpeed(move);
+        boolean isCharging = entity instanceof ParrotfishEntity parrotfish && parrotfish.isCharging();
+        boolean isEating = entity instanceof ParrotfishEntity parrotfish && parrotfish.isEating();
+
 
         // --- Pitch & Roll Handling ---
         float targetPitch = 0.0f;
@@ -55,14 +58,13 @@ public class ParrotfishIKInstance {
         float targetFinTuck = 0.0f;
         float targetScaleZ = 1.0f;
 
-        boolean isCharging = entity instanceof ParrotfishEntity parrotfish && parrotfish.isCharging();
 
         if (isCharging) {
             if (totalSpeed < 0.25f) { // Wind-up / Coiling Phase (PRONOUNCED SQUISH)
                 targetScrunch = 1.0f;     // Maximum accordion compress
                 targetFinTuck = -0.3f;
                 targetScaleZ = 0.65f;     // Squishes tighter along Z axis
-            } else { // Active Ram Phase (Pew Pew Rocket Dash)
+            } else { // Active Ram Phase (Pew-Pew Rocket Dash)
                 targetScrunch = 0.0f;
                 targetFinTuck = 1.0f;
                 targetScaleZ = 1.45f;     // Stretches dramatically during the rush
@@ -76,7 +78,7 @@ public class ParrotfishIKInstance {
 
         // --- Beak Eating Animation ---
         float age = IKMathUtils.getAge(entity, partialTick);
-        if (entity instanceof ParrotfishEntity parrotfish && parrotfish.isEating()) {
+        if (isEating) {
             this.beakOpen = (Mth.sin(age * 0.8f) + 1.0f) * 0.35f;
         } else {
             this.beakOpen = IKMathUtils.lerp(this.beakOpen, 0.0f, 0.2f);

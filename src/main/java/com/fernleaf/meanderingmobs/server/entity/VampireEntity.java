@@ -1,6 +1,6 @@
 package com.fernleaf.meanderingmobs.server.entity;
 
-import com.fernleaf.meanderingmobs.server.entity.util.MeanderingMobsTameableEntity;
+import com.fernleaf.meanderingmobs.server.entity.util.MeanderingMobsHumanoidEntity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -8,7 +8,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.level.Level;
 
-public class VampireEntity extends MeanderingMobsTameableEntity {
+public class VampireEntity extends MeanderingMobsHumanoidEntity {
 
     public VampireEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
         super(entityType, level);

@@ -1,8 +1,8 @@
 package com.fernleaf.meanderingmobs.client.model.ruffian;
 
 import com.fernleaf.meanderingmobs.MeanderingMobs;
-import com.fernleaf.meanderingmobs.client.adapter.RuffianLeaderModelAdapter;
-import com.fernleaf.meanderingmobs.client.instance.RuffianLeaderIKInstance;
+import com.fernleaf.meanderingmobs.client.adapter.RuffianModelAdapter;
+import com.fernleaf.meanderingmobs.client.instance.RuffianIKInstance;
 import net.minecraft.client.model.HierarchicalModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
@@ -36,7 +36,7 @@ public class RuffianLeaderModel<T extends PathfinderMob> extends HierarchicalMod
     private final ModelPart left_arm;
     private final ModelPart left_hand;
 
-    private final RuffianLeaderIKInstance ikInstance = new RuffianLeaderIKInstance();
+    private final RuffianIKInstance ikInstance = new RuffianIKInstance();
 
     public RuffianLeaderModel(ModelPart root) {
         this.root = root;
@@ -64,13 +64,10 @@ public class RuffianLeaderModel<T extends PathfinderMob> extends HierarchicalMod
         PartDefinition partdefinition = meshdefinition.getRoot();
 
         PartDefinition main3 = partdefinition.addOrReplaceChild("main3", CubeListBuilder.create(), PartPose.offset(0.0F, 24.0F, 0.0F));
-
-        PartDefinition right_leg = main3.addOrReplaceChild("right_leg", CubeListBuilder.create().texOffs(19, 45).addBox(-1.5F, -3.0F, -1.5F, 3.0F, 11.0F, 3.0F, new CubeDeformation(0.0F)), PartPose.offset(1.5F, -8.0F, -0.5F));
-
-        PartDefinition left_leg = main3.addOrReplaceChild("left_leg", CubeListBuilder.create().texOffs(19, 45).mirror().addBox(-1.5F, -3.0F, -1.5F, 3.0F, 11.0F, 3.0F, new CubeDeformation(0.0F)).mirror(false), PartPose.offset(-1.5F, -8.0F, -0.5F));
+        main3.addOrReplaceChild("right_leg", CubeListBuilder.create().texOffs(19, 45).addBox(-1.5F, -3.0F, -1.5F, 3.0F, 11.0F, 3.0F, new CubeDeformation(0.0F)), PartPose.offset(1.5F, -8.0F, -0.5F));
+        main3.addOrReplaceChild("left_leg", CubeListBuilder.create().texOffs(19, 45).mirror().addBox(-1.5F, -3.0F, -1.5F, 3.0F, 11.0F, 3.0F, new CubeDeformation(0.0F)).mirror(false), PartPose.offset(-1.5F, -8.0F, -0.5F));
 
         PartDefinition main2 = main3.addOrReplaceChild("main2", CubeListBuilder.create(), PartPose.offset(0.0F, -13.0F, -0.5F));
-
         PartDefinition main = main2.addOrReplaceChild("main", CubeListBuilder.create(), PartPose.offset(0.0F, 0.0F, 0.0F));
 
         PartDefinition head = main.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 18).addBox(-3.5F, -8.0F, -3.0F, 7.0F, 8.0F, 6.0F, new CubeDeformation(0.0F))
@@ -80,25 +77,20 @@ public class RuffianLeaderModel<T extends PathfinderMob> extends HierarchicalMod
                 .texOffs(54, 19).addBox(0.5F, -1.5F, -1.5F, 4.0F, 2.0F, 4.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, -7.5F, -2.0F));
 
         PartDefinition hair2 = hair.addOrReplaceChild("hair2", CubeListBuilder.create().texOffs(27, 18).addBox(-4.5F, -2.0F, -1.0F, 9.0F, 9.0F, 4.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, 0.5F, 3.5F));
-
-        PartDefinition hair3 = hair2.addOrReplaceChild("hair3", CubeListBuilder.create().texOffs(29, 0).addBox(-5.5F, 9.0F, -1.5F, 11.0F, 4.0F, 4.0F, new CubeDeformation(0.0F))
+        hair2.addOrReplaceChild("hair3", CubeListBuilder.create().texOffs(29, 0).addBox(-5.5F, 9.0F, -1.5F, 11.0F, 4.0F, 4.0F, new CubeDeformation(0.0F))
                 .texOffs(27, 32).addBox(-4.5F, 0.0F, -1.5F, 9.0F, 9.0F, 3.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, 7.0F, 1.5F));
 
-        PartDefinition left_hair = hair.addOrReplaceChild("left_hair", CubeListBuilder.create().texOffs(96, 0).addBox(-0.5F, 0.0F, -1.0F, 1.0F, 11.0F, 2.0F, new CubeDeformation(0.0F)), PartPose.offset(-4.0F, 1.5F, 0.5F));
-
-        PartDefinition right_hair = hair.addOrReplaceChild("right_hair", CubeListBuilder.create().texOffs(88, 0).addBox(-0.5F, 0.0F, -1.0F, 1.0F, 12.0F, 2.0F, new CubeDeformation(0.0F)), PartPose.offset(4.0F, 0.5F, 0.5F));
+        hair.addOrReplaceChild("left_hair", CubeListBuilder.create().texOffs(96, 0).addBox(-0.5F, 0.0F, -1.0F, 1.0F, 11.0F, 2.0F, new CubeDeformation(0.0F)), PartPose.offset(-4.0F, 1.5F, 0.5F));
+        hair.addOrReplaceChild("right_hair", CubeListBuilder.create().texOffs(88, 0).addBox(-0.5F, 0.0F, -1.0F, 1.0F, 12.0F, 2.0F, new CubeDeformation(0.0F)), PartPose.offset(4.0F, 0.5F, 0.5F));
 
         PartDefinition body = main.addOrReplaceChild("body", CubeListBuilder.create().texOffs(0, 33).addBox(-3.0F, 0.0F, -1.5F, 6.0F, 11.0F, 3.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, -9.0F, 0.0F));
-
-        PartDefinition skirt = body.addOrReplaceChild("skirt", CubeListBuilder.create().texOffs(0, 4).addBox(-4.0F, 0.0F, -3.0F, 8.0F, 6.0F, 6.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, 9.0F, 0.0F));
+        body.addOrReplaceChild("skirt", CubeListBuilder.create().texOffs(0, 4).addBox(-4.0F, 0.0F, -3.0F, 8.0F, 6.0F, 6.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, 9.0F, 0.0F));
 
         PartDefinition right_arm = main2.addOrReplaceChild("right_arm", CubeListBuilder.create().texOffs(45, 45).addBox(0.0F, -1.0F, -1.5F, 3.0F, 10.0F, 3.0F, new CubeDeformation(0.0F)), PartPose.offset(3.0F, -8.0F, 0.0F));
-
-        PartDefinition right_hand = right_arm.addOrReplaceChild("right_hand", CubeListBuilder.create().texOffs(54, 9).addBox(-1.5F, 0.0F, -2.5F, 3.0F, 4.0F, 5.0F, new CubeDeformation(0.0F)), PartPose.offset(1.5F, 9.0F, 0.0F));
+        right_arm.addOrReplaceChild("right_hand", CubeListBuilder.create().texOffs(54, 9).addBox(-1.5F, 0.0F, -2.5F, 3.0F, 4.0F, 5.0F, new CubeDeformation(0.0F)), PartPose.offset(1.5F, 9.0F, 0.0F));
 
         PartDefinition left_arm = main2.addOrReplaceChild("left_arm", CubeListBuilder.create().texOffs(45, 45).mirror().addBox(-3.0F, -1.0F, -1.5F, 3.0F, 10.0F, 3.0F, new CubeDeformation(0.0F)).mirror(false), PartPose.offset(-3.0F, -8.0F, 0.0F));
-
-        PartDefinition left_hand = left_arm.addOrReplaceChild("left_hand", CubeListBuilder.create().texOffs(54, 9).mirror().addBox(-1.5F, 0.0F, -2.5F, 3.0F, 4.0F, 5.0F, new CubeDeformation(0.0F)).mirror(false), PartPose.offset(-1.5F, 9.0F, 0.0F));
+        left_arm.addOrReplaceChild("left_hand", CubeListBuilder.create().texOffs(54, 9).mirror().addBox(-1.5F, 0.0F, -2.5F, 3.0F, 4.0F, 5.0F, new CubeDeformation(0.0F)).mirror(false), PartPose.offset(-1.5F, 9.0F, 0.0F));
 
         return LayerDefinition.create(meshdefinition, 128, 128);
     }
@@ -112,7 +104,6 @@ public class RuffianLeaderModel<T extends PathfinderMob> extends HierarchicalMod
     public void setupAnim(T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
         this.root().getAllParts().forEach(ModelPart::resetPose);
 
-        // 1. Head look & body rotation
         float yawRad = netHeadYaw * Mth.DEG_TO_RAD;
         float pitchRad = headPitch * Mth.DEG_TO_RAD;
 
@@ -120,9 +111,8 @@ public class RuffianLeaderModel<T extends PathfinderMob> extends HierarchicalMod
         this.head.yRot += yawRad * 0.7F;
         this.head.xRot += pitchRad;
 
-        // 2. Procedural Gait, Terrain IK & Ragdoll Hair Physics
         float partialTick = ageInTicks - (float) entity.tickCount;
         ikInstance.update(entity, limbSwing, limbSwingAmount, pitchRad, partialTick);
-        RuffianLeaderModelAdapter.applyToModel(entity, this, ikInstance);
+        RuffianModelAdapter.applyToModel(entity, this, ikInstance);
     }
 }

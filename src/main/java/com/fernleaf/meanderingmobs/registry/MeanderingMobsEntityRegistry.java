@@ -1,6 +1,7 @@
 package com.fernleaf.meanderingmobs.registry;
 
 import com.fernleaf.meanderingmobs.MeanderingMobs;
+import com.fernleaf.meanderingmobs.client.model.ruffian.RuffianSnatcherModel;
 import com.fernleaf.meanderingmobs.client.model.soul_hound.SoulHoundModel;
 import com.fernleaf.meanderingmobs.client.model.aukvulture.AukvultureModel;
 import com.fernleaf.meanderingmobs.client.model.crystal.RallyCrystalModel;
@@ -131,12 +132,12 @@ public class MeanderingMobsEntityRegistry {
             );
 
     // Update 2 Mobs
-    public static final DeferredHolder<EntityType<?>, EntityType<RuffianLeaderEntity>> RUFFIAN_LEADER =
-            ENTITIES.register("ruffian_leader", () ->
-                    EntityType.Builder.of(RuffianLeaderEntity::new, MobCategory.MONSTER)
+    public static final DeferredHolder<EntityType<?>, EntityType<RuffianEntity>> RUFFIAN_LEADER =
+            ENTITIES.register("ruffian", () ->
+                    EntityType.Builder.of(RuffianEntity::new, MobCategory.MONSTER)
                             .sized(0.7F, 1.95F)
                             .clientTrackingRange(10)
-                            .build("ruffian_leader")
+                            .build("ruffian")
             );
 
     // Update 3 Mobs
@@ -186,7 +187,7 @@ public class MeanderingMobsEntityRegistry {
         public static void registerAttributes(EntityAttributeCreationEvent event) {
             event.put(AUKVULTURE.get(), AukvultureEntity.createAttributes().build());
             event.put(TEGU.get(), TeguEntity.createAttributes().build());
-            event.put(RUFFIAN_LEADER.get(), RuffianLeaderEntity.createAttributes().build());
+            event.put(RUFFIAN_LEADER.get(), RuffianEntity.createAttributes().build());
             event.put(PARROT_FISH.get(), ParrotfishEntity.createAttributes().build());
             event.put(PORCUPINE.get(), PorcupineEntity.createAttributes().build());
             event.put(WHISP.get(), WhispEntity.createAttributes().build());
@@ -206,7 +207,7 @@ public class MeanderingMobsEntityRegistry {
         public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
             event.registerEntityRenderer(AUKVULTURE.get(), AukvultureRenderer::new);
             event.registerEntityRenderer(TEGU.get(), TeguRenderer::new);
-            event.registerEntityRenderer(RUFFIAN_LEADER.get(), RuffianLeaderRenderer::new);
+            event.registerEntityRenderer(RUFFIAN_LEADER.get(), RuffianRenderer::new);
             event.registerEntityRenderer(PARROT_FISH.get(), ParrotfishRenderer::new);
             event.registerEntityRenderer(PORCUPINE.get(), PorcupineRenderer::new);
             event.registerEntityRenderer(WHISP.get(), WhispRenderer::new);
@@ -226,7 +227,6 @@ public class MeanderingMobsEntityRegistry {
         public static void registerLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
             event.registerLayerDefinition(AukvultureModel.LAYER_LOCATION, AukvultureModel::createBodyLayer);
             event.registerLayerDefinition(TeguModel.LAYER_LOCATION, TeguModel::createBodyLayer);
-            event.registerLayerDefinition(RuffianLeaderModel.LAYER_LOCATION, RuffianLeaderModel::createBodyLayer);
             event.registerLayerDefinition(ParrotfishModel.LAYER_LOCATION, ParrotfishModel::createBodyLayer);
             event.registerLayerDefinition(ColdPorcupineModel.LAYER_LOCATION, ColdPorcupineModel::createBodyLayer);
             event.registerLayerDefinition(TemperatePorcupineModel.LAYER_LOCATION, TemperatePorcupineModel::createBodyLayer);
@@ -236,9 +236,21 @@ public class MeanderingMobsEntityRegistry {
             event.registerLayerDefinition(SoulFlareModel.LAYER_LOCATION, SoulFlareModel::createBodyLayer);
             event.registerLayerDefinition(SoulHoundModel.LAYER_LOCATION, SoulHoundModel::createBodyLayer);
             event.registerLayerDefinition(RallyCrystalModel.LAYER_LOCATION, RallyCrystalModel::createBodyLayer);
+
+            //Update 2
+            event.registerLayerDefinition(RuffianLeaderModel.LAYER_LOCATION, RuffianLeaderModel::createBodyLayer);
+            event.registerLayerDefinition(RuffianSnatcherModel.LAYER_LOCATION, RuffianSnatcherModel::createBodyLayer);
+
+            // Update 3
             event.registerLayerDefinition(RaspberryVampireModel.LAYER_LOCATION, RaspberryVampireModel::createBodyLayer);
+
+            // Update 4
             event.registerLayerDefinition(PilotWhaleModel.LAYER_LOCATION, PilotWhaleModel::createBodyLayer);
+
+            // Update 5
             event.registerLayerDefinition(OkapiModel.LAYER_LOCATION, OkapiModel::createBodyLayer);
+
+            // Update 6
             event.registerLayerDefinition(WolverineModel.LAYER_LOCATION, WolverineModel::createBodyLayer);
         }
     }
