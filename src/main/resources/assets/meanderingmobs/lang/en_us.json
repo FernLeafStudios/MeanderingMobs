@@ -58,5 +58,12 @@
   "effect.meanderingmobs.quilled": "Quilled",
   "message.porcupine.wander": "Porcupine is now wandering",
   "message.porcupine.sit": "Porcupine is now sitting",
-  "message.porcupine.follow": "Porcupine is now following"
+  "message.porcupine.follow": "Porcupine is now following",
+
+  "entity.meanderingmobs.ruffian": "Ruffian",
+
+  "entity.meanderingmobs.okapi": "Okapi",
+  "message.okapi.wander": "Okapi is now wandering",
+  "message.okapi.sit": "Okapi is now staying",
+  "message.okapi.follow": "Okapi is now following"
 }

@@ -27,8 +27,11 @@ public class MeanderingMobsConfig {
     public static final ModConfigSpec.IntValue TEGU_MIN_SHED_TICKS;
     public static final ModConfigSpec.IntValue TEGU_MAX_SHED_TICKS;
 
+    //Okapi Configs
+    public static final ModConfigSpec.DoubleValue OKAPI_ALERT_RADIUS;
+
     // Client Configs
-    public static final ModConfigSpec.BooleanValue ENABLE_AUKVULTURE_CAMERA_ROLL; // <--- New Toggle
+    public static final ModConfigSpec.BooleanValue ENABLE_AUKVULTURE_CAMERA_ROLL;
 
     static {
         ModConfigSpec.Builder commonBuilder = new ModConfigSpec.Builder();
@@ -76,6 +79,12 @@ public class MeanderingMobsConfig {
         TEGU_MAX_SHED_TICKS = commonBuilder
                 .comment("Maximum interval in ticks before a Tegu sheds a scale (12000 ticks = 10 minutes).")
                 .defineInRange("maxShedTicks", 12000, 2400, 144000);
+        commonBuilder.pop();
+
+        commonBuilder.push("Okapi Settings");
+        OKAPI_ALERT_RADIUS = commonBuilder
+                .comment("Radius in blocks that okapis scan for hostile mobs tagged in 'alert_okapi'.")
+                .defineInRange("alertRadius", 12.0, 4.0, 32.0);
         commonBuilder.pop();
 
         COMMON_SPEC = commonBuilder.build();

@@ -4,6 +4,7 @@
     "#minecraft:skeletons",
     "#minecraft:raiders",
     "minecraft:zombie",
+    "minecraft:creeper",
     "minecraft:spider"
   ]
 }

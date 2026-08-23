@@ -1,5 +1,7 @@
 package com.fernleaf.meanderingmobs.client.model.wolverine;
 
+import com.fernleaf.meanderingmobs.client.adapter.WolverineModelAdapter;
+import com.fernleaf.meanderingmobs.client.instance.WolverineIKInstance;
 import net.minecraft.client.model.HierarchicalModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
@@ -11,6 +13,7 @@ import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 
 public class WolverineModel<T extends Entity> extends HierarchicalModel<T> {
     public static final ModelLayerLocation LAYER_LOCATION = new ModelLayerLocation(
@@ -18,13 +21,15 @@ public class WolverineModel<T extends Entity> extends HierarchicalModel<T> {
     );
 
     private final ModelPart root;
-    private final ModelPart mainBody;
-    private final ModelPart head;
-    private final ModelPart leftLeg1;
-    private final ModelPart rightLeg1;
-    private final ModelPart leftLeg2;
-    private final ModelPart rightLeg2;
-    private final ModelPart tail;
+    public final ModelPart mainBody;
+    public final ModelPart head;
+    public final ModelPart leftLeg1;
+    public final ModelPart rightLeg1;
+    public final ModelPart leftLeg2;
+    public final ModelPart rightLeg2;
+    public final ModelPart tail;
+
+    private final WolverineIKInstance ikInstance = new WolverineIKInstance();
 
     public WolverineModel(ModelPart root) {
         this.root = root;
@@ -85,5 +90,17 @@ public class WolverineModel<T extends Entity> extends HierarchicalModel<T> {
     @Override
     public void setupAnim(T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
         this.root().getAllParts().forEach(ModelPart::resetPose);
+
+        // Standard head tracking for vanilla look logic
+        if (this.head != null) {
+            this.head.yRot += netHeadYaw * ((float) Math.PI / 180F);
+            this.head.xRot += headPitch * ((float) Math.PI / 180F);
+        }
+
+        // Apply Proprio IK instance calculations if it's a living entity
+        if (entity instanceof LivingEntity living) {
+            this.ikInstance.update(living, limbSwing, limbSwingAmount, 1.0F); // partialTick can be passed via render if needed, defaulting safely
+            WolverineModelAdapter.applyToModel(living, this, this.ikInstance);
+        }
     }
 }

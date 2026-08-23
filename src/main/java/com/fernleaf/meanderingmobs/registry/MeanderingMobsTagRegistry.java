@@ -21,6 +21,11 @@ public class MeanderingMobsTagRegistry {
                 Registries.ITEM,
                 ResourceLocation.fromNamespaceAndPath("meanderingmobs", "porcupine_tame")
         );
+
+        public static final TagKey<Item> OKAPI_TAME = TagKey.create(
+                Registries.ITEM,
+                ResourceLocation.fromNamespaceAndPath("meanderingmobs", "okapi_tame")
+        );
     }
 
     public static class Blocks {
@@ -41,17 +46,26 @@ public class MeanderingMobsTagRegistry {
                 Registries.ENTITY_TYPE,
                 ResourceLocation.fromNamespaceAndPath("meanderingmobs", "porcupine_hates")
         );
+
+        public static final TagKey<EntityType<?>> ALERT_OKAPI = TagKey.create(
+                Registries.ENTITY_TYPE,
+                ResourceLocation.fromNamespaceAndPath(MeanderingMobs.MODID, "alert_okapi")
+        );
+
         public static final TagKey<EntityType<?>> RALLY_CRYSTAL_PAWN = TagKey.create(
                 Registries.ENTITY_TYPE,
-                ResourceLocation.fromNamespaceAndPath(MeanderingMobs.MODID, "rally_crystal_pawn"));
+                ResourceLocation.fromNamespaceAndPath(MeanderingMobs.MODID, "rally_crystal_pawn")
+        );
 
         public static final TagKey<EntityType<?>> RALLY_CRYSTAL_KNIGHT = TagKey.create(
                 Registries.ENTITY_TYPE,
-                ResourceLocation.fromNamespaceAndPath(MeanderingMobs.MODID, "rally_crystal_knight"));
+                ResourceLocation.fromNamespaceAndPath(MeanderingMobs.MODID, "rally_crystal_knight")
+        );
 
         public static final TagKey<EntityType<?>> RALLY_CRYSTAL_BISHOP = TagKey.create(
                 Registries.ENTITY_TYPE,
-                ResourceLocation.fromNamespaceAndPath(MeanderingMobs.MODID, "rally_crystal_bishop"));
+                ResourceLocation.fromNamespaceAndPath(MeanderingMobs.MODID, "rally_crystal_bishop")
+        );
     }
 
     public static class Biomes {

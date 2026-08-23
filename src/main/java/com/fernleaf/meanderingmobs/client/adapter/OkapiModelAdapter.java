@@ -8,21 +8,20 @@ import net.minecraft.world.entity.LivingEntity;
 public class OkapiModelAdapter {
 
     public static void applyToModel(LivingEntity entity, OkapiModel<?> model, OkapiIKInstance ik) {
-        // Torso pitch & bounce
-        model.mainBody.xRot += ik.bodyXRot;
-        ModelPartUtils.addYOffsetBlocks(model.mainBody, ik.bodyYOffset);
+        model.torso.xRot += ik.bodyXRot;
+        ModelPartUtils.addYOffsetBlocks(model.torso, ik.bodyYOffset);
 
-        // Head bopping & vertical neck offset
-        model.head.xRot += ik.headXRot;
-        ModelPartUtils.addYOffsetBlocks(model.head, ik.headYOffset);
+        model.headandneck.xRot += ik.headXRot;
+        ModelPartUtils.addYOffsetBlocks(model.headandneck, ik.headYOffset);
 
-        // Tail flick
         model.tail.zRot += ik.tailZRot;
 
-        // Quadruped leg rotations
-        model.frontRightLeg.xRot += ik.rightFrontLegXRot;
-        model.frontLeftLeg.xRot += ik.leftFrontLegXRot;
-        model.backRightLeg.xRot += ik.rightBackLegXRot;
-        model.backLeftLeg.xRot += ik.leftBackLegXRot;
+        model.ear_left.zRot += ik.leftEarZRot;
+        model.ear_right.zRot += ik.rightEarZRot;
+
+        model.front_leg_right.xRot += ik.rightFrontLegXRot;
+        model.front_leg_left.xRot += ik.leftFrontLegXRot;
+        model.hind_leg_right.xRot += ik.rightBackLegXRot;
+        model.hind_leg_left.xRot += ik.leftBackLegXRot;
     }
 }

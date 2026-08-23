@@ -1,8 +1,14 @@
 package com.fernleaf.meanderingmobs.server.entity;
 
 import com.fernleaf.meanderingmobs.server.entity.ai.TameableStateGoal;
+import com.fernleaf.meanderingmobs.server.entity.ai.okapi.OkapiAlertGoal;
+import com.fernleaf.meanderingmobs.server.entity.ai.okapi.OkapiBrowseGoal;
 import com.fernleaf.meanderingmobs.server.entity.util.MeanderingMobsTameableEntity;
+import com.fernleaf.meanderingmobs.config.MeanderingMobsConfig;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
@@ -32,17 +38,28 @@ public class OkapiEntity extends MeanderingMobsTameableEntity {
             ResourceLocation.fromNamespaceAndPath("meanderingmobs", "okapi_tame")
     );
 
+    private static final EntityDataAccessor<Boolean> DATA_ALERT =
+            SynchedEntityData.defineId(OkapiEntity.class, EntityDataSerializers.BOOLEAN);
+
     public OkapiEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
         super(entityType, level);
     }
 
     @Override
+    protected void defineSynchedData(SynchedEntityData.@NotNull Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(DATA_ALERT, false);
+    }
+
+    @Override
     protected void registerGoals() {
         this.goalSelector.addGoal(0, new FloatGoal(this));
-        this.goalSelector.addGoal(1, new TameableStateGoal(this));
-        this.goalSelector.addGoal(2, new WaterAvoidingRandomStrollGoal(this, 1.0D));
-        this.goalSelector.addGoal(3, new LookAtPlayerGoal(this, Player.class, 6.0F));
-        this.goalSelector.addGoal(4, new RandomLookAroundGoal(this));
+        this.goalSelector.addGoal(1, new OkapiAlertGoal(this, MeanderingMobsConfig.getSafe(MeanderingMobsConfig.OKAPI_ALERT_RADIUS)));
+        this.goalSelector.addGoal(2, new TameableStateGoal(this));
+        this.goalSelector.addGoal(3, new OkapiBrowseGoal(this, 1.1D));
+        this.goalSelector.addGoal(4, new WaterAvoidingRandomStrollGoal(this, 1.0D));
+        this.goalSelector.addGoal(5, new LookAtPlayerGoal(this, Player.class, 6.0F));
+        this.goalSelector.addGoal(6, new RandomLookAroundGoal(this));
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -52,11 +69,18 @@ public class OkapiEntity extends MeanderingMobsTameableEntity {
                 .add(Attributes.FOLLOW_RANGE, 16.0D);
     }
 
+    public void setAlertState(boolean alert) {
+        this.entityData.set(DATA_ALERT, alert);
+    }
+
+    public boolean isAlert() {
+        return this.entityData.get(DATA_ALERT);
+    }
+
     @Override
     public @NotNull InteractionResult mobInteract(@NotNull Player player, @NotNull InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
 
-        // 1. Taming Logic (Supports melon items and fallback item tag)
         if (!this.isTamed() && (stack.is(OKAPI_TAMEABLE) || stack.is(Items.MELON_SLICE) || stack.is(Items.MELON))) {
             if (!player.getAbilities().instabuild) {
                 stack.shrink(1);
@@ -65,15 +89,14 @@ public class OkapiEntity extends MeanderingMobsTameableEntity {
             if (!this.level().isClientSide()) {
                 if (this.random.nextInt(3) == 0) {
                     this.tame(player);
-                    this.level().broadcastEntityEvent(this, (byte) 7); // Heart particles
+                    this.level().broadcastEntityEvent(this, (byte) 7);
                 } else {
-                    this.level().broadcastEntityEvent(this, (byte) 6); // Smoke particles
+                    this.level().broadcastEntityEvent(this, (byte) 6);
                 }
             }
             return InteractionResult.sidedSuccess(this.level().isClientSide());
         }
 
-        // 2. Command State Cycle (Sneak + Right Click with owner)
         if (this.isTamed() && this.isOwner(player) && player.isSecondaryUseActive()) {
             if (!this.level().isClientSide()) {
                 this.cycleAiState(player, "okapi");
@@ -81,8 +104,7 @@ public class OkapiEntity extends MeanderingMobsTameableEntity {
             return InteractionResult.sidedSuccess(this.level().isClientSide());
         }
 
-        // 3. Mount Logic (Normal Right Click)
-        if (!this.isVehicle() && !player.isSecondaryUseActive()) {
+        if (this.isTamed() && this.isOwner(player) && !this.isVehicle() && !player.isSecondaryUseActive()) {
             if (!this.level().isClientSide()) {
                 player.startRiding(this);
             }
@@ -92,13 +114,9 @@ public class OkapiEntity extends MeanderingMobsTameableEntity {
         return super.mobInteract(player, hand);
     }
 
-    // --- Responsive Riding Dynamics ---
-
     @Override
     protected void tickRidden(@NotNull Player player, @NotNull Vec3 travelVector) {
         super.tickRidden(player, travelVector);
-
-        // Instantly align look and body rotations with the rider's view vector
         this.setRot(player.getYRot(), player.getXRot() * 0.5F);
         this.yRotO = this.yBodyRot = this.yHeadRot = this.getYRot();
     }
@@ -107,9 +125,7 @@ public class OkapiEntity extends MeanderingMobsTameableEntity {
     protected @NotNull Vec3 getRiddenInput(Player player, @NotNull Vec3 deltaIn) {
         float strafe = player.xxa * 0.6F;
         float forward = player.zza;
-
-        if (forward <= 0.0F) forward *= 0.3F; // Slower backing up
-
+        if (forward <= 0.0F) forward *= 0.3F;
         return new Vec3(strafe, 0.0D, forward);
     }
 

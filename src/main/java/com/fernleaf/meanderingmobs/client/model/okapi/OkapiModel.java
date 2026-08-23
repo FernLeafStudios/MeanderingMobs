@@ -17,90 +17,74 @@ public class OkapiModel<T extends LivingEntity> extends HierarchicalModel<T> {
     );
 
     private final ModelPart root;
-    public final ModelPart mainBody;
-    public final ModelPart neckAndHead;
+    public final ModelPart okapi;
+    public final ModelPart headandneck;
     public final ModelPart head;
+    public final ModelPart ear_left;
+    public final ModelPart ear_right;
     public final ModelPart tongue;
-    public final ModelPart legs;
-    public final ModelPart frontRightLeg;
-    public final ModelPart frontLeftLeg;
-    public final ModelPart backLeftLeg;
-    public final ModelPart backRightLeg;
+    public final ModelPart tonguetip;
+    public final ModelPart body;
+    public final ModelPart torso;
     public final ModelPart tail;
+    public final ModelPart front_leg_right;
+    public final ModelPart front_leg_left;
+    public final ModelPart hind_leg_right;
+    public final ModelPart hind_leg_left;
 
     private final OkapiIKInstance ikInstance = new OkapiIKInstance();
 
     public OkapiModel(ModelPart root) {
         this.root = root;
-        this.mainBody = root.getChild("MainBody");
-        this.neckAndHead = root.getChild("NeckAndHead");
-        this.head = this.neckAndHead.getChild("Head");
-        this.tongue = this.head.getChild("Tongue");
-        this.legs = root.getChild("Legs");
-        this.frontRightLeg = this.legs.getChild("FrontRightLeg");
-        this.frontLeftLeg = this.legs.getChild("FrontLeftLeg");
-        this.backLeftLeg = this.legs.getChild("BackLeftLeg");
-        this.backRightLeg = this.legs.getChild("BackRightLeg");
-        this.tail = root.getChild("Tail");
+        this.okapi = root.getChild("Okapi");
+        this.headandneck = this.okapi.getChild("headandneck");
+        this.head = this.headandneck.getChild("head");
+        this.ear_left = this.head.getChild("ear_left");
+        this.ear_right = this.head.getChild("ear_right");
+        this.tongue = this.head.getChild("tongue");
+        this.tonguetip = this.tongue.getChild("tonguetip");
+        this.body = this.okapi.getChild("body");
+        this.torso = this.body.getChild("torso");
+        this.tail = this.torso.getChild("tail");
+        this.front_leg_right = this.body.getChild("front_leg_right");
+        this.front_leg_left = this.body.getChild("front_leg_left");
+        this.hind_leg_right = this.body.getChild("hind_leg_right");
+        this.hind_leg_left = this.body.getChild("hind_leg_left");
     }
 
     public static LayerDefinition createBodyLayer() {
         MeshDefinition meshdefinition = new MeshDefinition();
         PartDefinition partdefinition = meshdefinition.getRoot();
 
-        partdefinition.addOrReplaceChild("MainBody",
-                CubeListBuilder.create().texOffs(0, 0).addBox(-5.0F, -7.0F, -12.0F, 10.0F, 11.0F, 24.0F, new CubeDeformation(0.0F)),
-                PartPose.offset(0.0F, 6.0F, 0.0F));
+        PartDefinition Okapi = partdefinition.addOrReplaceChild("Okapi", CubeListBuilder.create(), PartPose.offset(0.0F, 2.0F, 0.0F));
 
-        PartDefinition neckAndHead = partdefinition.addOrReplaceChild("NeckAndHead",
-                CubeListBuilder.create(), PartPose.offset(0.0F, 0.0F, -10.0F));
+        PartDefinition headandneck = Okapi.addOrReplaceChild("headandneck", CubeListBuilder.create().texOffs(18, 107).addBox(-2.5F, -6.0F, -3.0F, 5.0F, 10.0F, 6.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, -3.0F, -10.0F, 0.48F, 0.0F, 0.0F));
 
-        neckAndHead.addOrReplaceChild("Neck Base_r1",
-                CubeListBuilder.create().texOffs(0, 35).addBox(-5.0F, -4.0F, -2.0F, 10.0F, 6.0F, 7.0F, new CubeDeformation(-0.002F)),
-                PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, 0.3927F, 0.0F, 0.0F));
+        PartDefinition head = headandneck.addOrReplaceChild("head", CubeListBuilder.create().texOffs(45, 89).addBox(-2.0F, -4.0F, -8.0F, 4.0F, 4.0F, 5.0F, new CubeDeformation(0.0F))
+                .texOffs(8, 88).addBox(-3.0F, -5.0F, -3.0F, 6.0F, 5.0F, 7.0F, new CubeDeformation(0.0F))
+                .texOffs(101, 37).addBox(-1.5F, -4.0F, -2.0F, 3.0F, 2.0F, 4.0F, new CubeDeformation(0.0F))
+                .texOffs(101, 53).addBox(-1.5F, -6.0F, -4.0F, 3.0F, 2.0F, 4.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, -6.0F, -1.0F));
 
-        neckAndHead.addOrReplaceChild("Neck_r1",
-                CubeListBuilder.create().texOffs(0, 48).addBox(-3.0F, -6.2412F, -3.3681F, 6.0F, 6.0F, 4.0F, new CubeDeformation(-0.002F)),
-                PartPose.offsetAndRotation(0.0F, -4.0F, 0.0F, 0.3491F, 0.0F, 0.0F));
+        PartDefinition ear_left = head.addOrReplaceChild("ear_left", CubeListBuilder.create().texOffs(3, 117).mirror().addBox(-1.0F, -5.0F, 0.1F, 5.0F, 6.0F, 0.0F, new CubeDeformation(0.1F)).mirror(false), PartPose.offsetAndRotation(3.0F, -4.0F, 3.0F, 0.0F, 0.0F, 0.6545F));
 
-        PartDefinition head = neckAndHead.addOrReplaceChild("Head",
-                CubeListBuilder.create().texOffs(44, 0).addBox(-3.0F, -6.0F, -4.0F, 6.0F, 6.0F, 6.0F, new CubeDeformation(0.0F))
-                        .texOffs(44, 12).addBox(-2.0F, -6.0F, -10.0F, 4.0F, 6.0F, 6.0F, new CubeDeformation(0.0F))
-                        .texOffs(16, 10).addBox(3.0F, -7.0F, 0.0F, 3.0F, 3.0F, 1.0F, new CubeDeformation(0.0F))
-                        .texOffs(16, 10).mirror().addBox(-6.0F, -7.0F, 0.0F, 3.0F, 3.0F, 1.0F, new CubeDeformation(0.0F)).mirror(false)
-                        .texOffs(16, 6).addBox(1.0F, -8.0F, -1.0F, 2.0F, 2.0F, 2.0F, new CubeDeformation(0.0F))
-                        .texOffs(16, 6).mirror().addBox(-3.0F, -8.0F, -1.0F, 2.0F, 2.0F, 2.0F, new CubeDeformation(0.0F)).mirror(false),
-                PartPose.offset(0.0F, -8.0F, -3.0F));
+        PartDefinition ear_right = head.addOrReplaceChild("ear_right", CubeListBuilder.create().texOffs(4, 109).mirror().addBox(-4.0F, -5.0F, 0.0F, 5.0F, 6.0F, 0.0F, new CubeDeformation(0.1F)).mirror(false), PartPose.offsetAndRotation(-3.0F, -4.0F, 3.0F, 0.0F, 0.0F, -0.6545F));
 
-        head.addOrReplaceChild("Tongue",
-                CubeListBuilder.create().texOffs(10, 0).addBox(-1.0F, 0.0F, -6.0F, 2.0F, 0.0F, 6.0F, new CubeDeformation(-0.002F)),
-                PartPose.offset(0.0F, -1.0F, -3.0F));
+        PartDefinition tongue = head.addOrReplaceChild("tongue", CubeListBuilder.create().texOffs(31, 11).addBox(-1.0F, 0.0F, -8.0F, 2.0F, 0.0F, 8.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, -1.0F, 0.0F));
+        tongue.addOrReplaceChild("tonguetip", CubeListBuilder.create().texOffs(0, 0).addBox(-1.0F, 0.0F, -2.0F, 2.0F, 0.0F, 2.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, 0.0F, -8.0F, 0.9599F, 0.0F, 0.0F));
 
-        PartDefinition legs = partdefinition.addOrReplaceChild("Legs",
-                CubeListBuilder.create(), PartPose.offset(-4.0F, 9.0F, 0.0F));
+        PartDefinition body = Okapi.addOrReplaceChild("body", CubeListBuilder.create(), PartPose.offset(0.0F, 0.0F, 0.0F));
 
-        legs.addOrReplaceChild("FrontRightLeg",
-                CubeListBuilder.create().texOffs(34, 35).mirror().addBox(-1.0F, -1.0F, -2.0F, 4.0F, 16.0F, 4.0F, new CubeDeformation(-0.02F)).mirror(false),
-                PartPose.offset(0.0F, 0.0F, -10.0F));
+        PartDefinition torso = body.addOrReplaceChild("torso", CubeListBuilder.create().texOffs(12, 56).addBox(-5.0F, -5.0F, -11.0F, 10.0F, 13.0F, 10.0F, new CubeDeformation(0.0F))
+                .texOffs(11, 28).addBox(-5.0F, -3.0F, -1.0F, 10.0F, 11.0F, 11.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, 0.0F, 0.0F));
 
-        legs.addOrReplaceChild("FrontLeftLeg",
-                CubeListBuilder.create().texOffs(34, 35).addBox(-2.0F, -1.0F, -2.0F, 4.0F, 16.0F, 4.0F, new CubeDeformation(-0.02F)),
-                PartPose.offset(7.0F, 0.0F, -10.0F));
+        PartDefinition tail = torso.addOrReplaceChild("tail", CubeListBuilder.create(), PartPose.offset(0.0F, -1.0F, 10.0F));
 
-        legs.addOrReplaceChild("BackLeftLeg",
-                CubeListBuilder.create().texOffs(0, 0).addBox(-2.0F, -1.0F, -2.0F, 4.0F, 16.0F, 4.0F, new CubeDeformation(-0.02F)),
-                PartPose.offset(7.0F, 0.0F, 10.0F));
+        tail.addOrReplaceChild("cube_r1", CubeListBuilder.create().texOffs(6, 9).addBox(-2.0F, 0.0F, 0.0F, 4.0F, 0.0F, 10.0F, new CubeDeformation(0.1F)), PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, -1.3526F, 0.0F, 0.0F));
 
-        legs.addOrReplaceChild("BackRightLeg",
-                CubeListBuilder.create().texOffs(0, 0).mirror().addBox(-1.0F, -1.0F, -2.0F, 4.0F, 16.0F, 4.0F, new CubeDeformation(-0.02F)).mirror(false),
-                PartPose.offset(0.0F, 0.0F, 10.0F));
-
-        PartDefinition tail = partdefinition.addOrReplaceChild("Tail",
-                CubeListBuilder.create(), PartPose.offsetAndRotation(0.0F, 2.0F, 12.0F, -1.2217F, 0.0F, 0.0F));
-
-        tail.addOrReplaceChild("Tail_r1",
-                CubeListBuilder.create().texOffs(16, 14).addBox(-1.0F, 0.0F, 0.0F, 2.0F, 7.0F, 0.0F, new CubeDeformation(-0.002F)),
-                PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, 1.5708F, 0.0F, 0.0F));
+        body.addOrReplaceChild("front_leg_right", CubeListBuilder.create().texOffs(45, 105).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 14.0F, 4.0F, new CubeDeformation(0.0F)), PartPose.offset(3.0F, 8.0F, -7.0F));
+        body.addOrReplaceChild("front_leg_left", CubeListBuilder.create().texOffs(66, 105).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 14.0F, 4.0F, new CubeDeformation(0.0F)), PartPose.offset(-3.0F, 8.0F, -7.0F));
+        body.addOrReplaceChild("hind_leg_right", CubeListBuilder.create().texOffs(107, 105).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 14.0F, 4.0F, new CubeDeformation(0.0F)), PartPose.offset(-3.0F, 8.0F, 9.0F));
+        body.addOrReplaceChild("hind_leg_left", CubeListBuilder.create().texOffs(87, 105).addBox(4.0F, 0.0F, -2.0F, 4.0F, 14.0F, 4.0F, new CubeDeformation(0.0F)), PartPose.offset(-3.0F, 8.0F, 9.0F));
 
         return LayerDefinition.create(meshdefinition, 128, 128);
     }
@@ -121,7 +105,7 @@ public class OkapiModel<T extends LivingEntity> extends HierarchicalModel<T> {
         this.head.yRot = netHeadYaw * ((float) Math.PI / 180F);
         this.head.xRot = headPitch * ((float) Math.PI / 180F);
 
-        // Procedural IK & Ear/Tail dynamics adapter
+        // Apply procedural animations and adapter dynamics
         OkapiModelAdapter.applyToModel(entity, this, this.ikInstance);
     }
 }
