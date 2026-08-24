@@ -37,7 +37,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.schedule.Activity;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import org.jetbrains.annotations.NotNull;
@@ -52,8 +51,6 @@ public class RuffianEntity extends MeanderingMobsTameableEntity {
             SynchedEntityData.defineId(RuffianEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> DATA_IS_CROUCHING =
             SynchedEntityData.defineId(RuffianEntity.class, EntityDataSerializers.BOOLEAN);
-    private static final EntityDataAccessor<Boolean> DATA_IS_READING =
-            SynchedEntityData.defineId(RuffianEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> DATA_IS_NAPPING =
             SynchedEntityData.defineId(RuffianEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> DATA_IS_WORKING =
@@ -63,7 +60,6 @@ public class RuffianEntity extends MeanderingMobsTameableEntity {
     private PersonalityEngine personalityEngine;
     private int anxiousCooldown = 0;
     private int caringCooldown = 0;
-    private int readCooldown = 0;
     private int napCooldown = 0;
 
     public RuffianEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
@@ -103,8 +99,7 @@ public class RuffianEntity extends MeanderingMobsTameableEntity {
                         MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES,
                         MemoryModuleType.NEAREST_PLAYERS,
                         RuffianMemoryModuleTypes.STORAGE_POS.get(),
-                        RuffianMemoryModuleTypes.WORKSTATION_POS.get(),
-                        RuffianMemoryModuleTypes.BOOKSHELF_POS.get()
+                        RuffianMemoryModuleTypes.WORKSTATION_POS.get()
                 ),
                 ImmutableList.of(
                         SensorType.NEAREST_LIVING_ENTITIES,
@@ -144,9 +139,7 @@ public class RuffianEntity extends MeanderingMobsTameableEntity {
         // Idle Activity
         brain.addActivity(Activity.IDLE, 10, ImmutableList.of(
                 new RuffianCaringBehavior(),
-                new RuffianHideBehavior(),
-                new RuffianReadBehavior(),
-                new RuffianNapBehavior(),
+                new RuffianIdleBehavior(),
                 new RuffianPlayBehavior(),
                 new RuffianAttemptRideBehavior(),
                 RandomStroll.stroll(1.0F)
@@ -184,7 +177,6 @@ public class RuffianEntity extends MeanderingMobsTameableEntity {
         builder.define(DATA_VARIANT_ID, RuffianVariant.BLUE.id);
         builder.define(DATA_IS_PLAYING, false);
         builder.define(DATA_IS_CROUCHING, false);
-        builder.define(DATA_IS_READING, false);
         builder.define(DATA_IS_NAPPING, false);
         builder.define(DATA_IS_WORKING, false);
     }
@@ -195,7 +187,6 @@ public class RuffianEntity extends MeanderingMobsTameableEntity {
         if (!this.level().isClientSide) {
             if (this.anxiousCooldown > 0) this.anxiousCooldown--;
             if (this.caringCooldown > 0) this.caringCooldown--;
-            if (this.readCooldown > 0) this.readCooldown--;
             if (this.napCooldown > 0) this.napCooldown--;
         }
     }
@@ -219,12 +210,6 @@ public class RuffianEntity extends MeanderingMobsTameableEntity {
 
     public boolean isCrouchingAnxious() { return this.entityData.get(DATA_IS_CROUCHING); }
     public void setCrouchingAnxious(boolean crouching) { this.entityData.set(DATA_IS_CROUCHING, crouching); }
-
-    public boolean isReading() { return this.entityData.get(DATA_IS_READING); }
-    public void setReading(boolean reading) { this.entityData.set(DATA_IS_READING, reading); }
-
-    public void applyReadCooldown(int ticks) { this.readCooldown = ticks; }
-    public boolean canRead() { return this.readCooldown <= 0; }
 
     public boolean isNapping() { return this.entityData.get(DATA_IS_NAPPING); }
     public void setNapping(boolean napping) { this.entityData.set(DATA_IS_NAPPING, napping); }
@@ -279,19 +264,6 @@ public class RuffianEntity extends MeanderingMobsTameableEntity {
                 return InteractionResult.sidedSuccess(this.level().isClientSide());
             }
 
-            // Book Reading check
-            if (!this.level().isClientSide && itemstack.is(Items.ENCHANTED_BOOK) && this.canRead()) {
-                float analytical = this.getPersonalityEngine().getTrait("analytical");
-                if (analytical >= 0.5F) {
-                    ItemStack bookCopy = itemstack.split(1);
-                    this.setItemInHand(InteractionHand.MAIN_HAND, bookCopy);
-                    this.setReading(true);
-                    this.applyReadCooldown(600);
-                    this.swing(hand);
-                    return InteractionResult.SUCCESS;
-                }
-            }
-
             // Standard Right Click: Open Inventory Screen
             if (!this.level().isClientSide()) {
                 player.openMenu(new SimpleMenuProvider(
@@ -319,8 +291,6 @@ public class RuffianEntity extends MeanderingMobsTameableEntity {
         tag.putBoolean("IsCrouching", this.isCrouchingAnxious());
         tag.putInt("AnxiousCooldown", this.anxiousCooldown);
         tag.putInt("CaringCooldown", this.caringCooldown);
-        tag.putBoolean("IsReading", this.isReading());
-        tag.putInt("ReadCooldown", this.readCooldown);
         tag.putBoolean("IsNapping", this.isNapping());
         tag.putInt("NapCooldown", this.napCooldown);
         tag.putBoolean("IsWorking", this.isWorking());
@@ -338,8 +308,6 @@ public class RuffianEntity extends MeanderingMobsTameableEntity {
         if (tag.contains("IsCrouching")) this.setCrouchingAnxious(tag.getBoolean("IsCrouching"));
         if (tag.contains("AnxiousCooldown")) this.anxiousCooldown = tag.getInt("AnxiousCooldown");
         if (tag.contains("CaringCooldown")) this.caringCooldown = tag.getInt("CaringCooldown");
-        if (tag.contains("IsReading")) this.setReading(tag.getBoolean("IsReading"));
-        if (tag.contains("ReadCooldown")) this.readCooldown = tag.getInt("ReadCooldown");
         if (tag.contains("IsNapping")) this.setNapping(tag.getBoolean("IsNapping"));
         if (tag.contains("NapCooldown")) this.napCooldown = tag.getInt("NapCooldown");
         if (tag.contains("IsWorking")) this.setWorking(tag.getBoolean("IsWorking"));

@@ -1,7 +1,6 @@
 package com.fernleaf.meanderingmobs.client.renderer;
 
 import com.fernleaf.meanderingmobs.client.model.ruffian.RuffianModel;
-import com.fernleaf.meanderingmobs.client.renderer.layer.RuffianReadingLayer;
 import com.fernleaf.meanderingmobs.client.renderer.layer.RuffianWorkingLayer;
 import com.fernleaf.meanderingmobs.server.entity.RuffianEntity;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
@@ -14,7 +13,6 @@ public class RuffianRenderer extends MobRenderer<RuffianEntity, RuffianModel<Ruf
     public RuffianRenderer(EntityRendererProvider.Context context) {
         super(context, new RuffianModel<>(context.bakeLayer(RuffianModel.LAYER_LOCATION)), 0.5F);
         this.addLayer(new RuffianWorkingLayer(this));
-        this.addLayer(new RuffianReadingLayer(this));
     }
 
     @Override

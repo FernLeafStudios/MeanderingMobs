@@ -3,7 +3,6 @@ package com.fernleaf.meanderingmobs.client.model.ruffian;
 import com.fernleaf.meanderingmobs.MeanderingMobs;
 import com.fernleaf.meanderingmobs.client.adapter.RuffianModelAdapter;
 import com.fernleaf.meanderingmobs.client.instance.RuffianIKInstance;
-import com.fernleaf.meanderingmobs.server.entity.RuffianEntity;
 import net.minecraft.client.model.HierarchicalModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
@@ -11,9 +10,10 @@ import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.LivingEntity;
 import org.jetbrains.annotations.NotNull;
 
-public class RuffianModel<T extends RuffianEntity> extends HierarchicalModel<T> {
+public class RuffianModel<T extends LivingEntity> extends HierarchicalModel<T> {
 
     public static final ModelLayerLocation LAYER_LOCATION =
             new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(MeanderingMobs.MODID, "ruffian"), "main");

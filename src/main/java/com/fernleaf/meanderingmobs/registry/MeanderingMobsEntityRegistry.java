@@ -127,14 +127,32 @@ public class MeanderingMobsEntityRegistry {
                             .updateInterval(3)
                             .build("rally_crystal")
             );
-
-    // Update 2 Mobs
     public static final DeferredHolder<EntityType<?>, EntityType<RuffianEntity>> RUFFIAN =
             ENTITIES.register("ruffian", () ->
                     EntityType.Builder.of(RuffianEntity::new, MobCategory.MONSTER)
-                            .sized(0.7F, 1.95F)
+                            .sized(0.7F, 1.2F)
                             .clientTrackingRange(10)
                             .build("ruffian")
+            );
+    public static final DeferredHolder<EntityType<?>, EntityType<HollowRuffianEntity>> HOLLOW_RUFFIAN =
+            ENTITIES.register("hollow_ruffian",
+                    () -> EntityType.Builder.of(HollowRuffianEntity::new, MobCategory.MONSTER)
+                            .sized(0.7F, 1.2F)
+                            .clientTrackingRange(10)
+                            .build("hollow_ruffian"));
+    public static final DeferredHolder<EntityType<?>, EntityType<OkapiEntity>> OKAPI =
+            ENTITIES.register("okapi", () ->
+                    EntityType.Builder.of(OkapiEntity::new, MobCategory.CREATURE)
+                            .sized(0.9F, 1.5F)
+                            .clientTrackingRange(8)
+                            .build("okapi")
+            );
+    public static final DeferredHolder<EntityType<?>, EntityType<WolverineEntity>> WOLVERINE =
+            ENTITIES.register("wolverine", () ->
+                    EntityType.Builder.of(WolverineEntity::new, MobCategory.CREATURE)
+                            .sized(0.6F, 0.6F)
+                            .clientTrackingRange(8)
+                            .build("wolverine")
             );
 
     // Update 3 Mobs
@@ -155,23 +173,6 @@ public class MeanderingMobsEntityRegistry {
                             .build("pilot_whale")
             );
 
-    // Update 5 Mobs
-    public static final DeferredHolder<EntityType<?>, EntityType<OkapiEntity>> OKAPI =
-            ENTITIES.register("okapi", () ->
-                    EntityType.Builder.of(OkapiEntity::new, MobCategory.CREATURE)
-                            .sized(0.9F, 1.5F)
-                            .clientTrackingRange(8)
-                            .build("okapi")
-            );
-
-    // Update 6 Mobs
-    public static final DeferredHolder<EntityType<?>, EntityType<WolverineEntity>> WOLVERINE =
-            ENTITIES.register("wolverine", () ->
-                    EntityType.Builder.of(WolverineEntity::new, MobCategory.CREATURE)
-                            .sized(0.6F, 0.6F)
-                            .clientTrackingRange(8)
-                            .build("wolverine")
-            );
 
     public static void register(IEventBus eventBus) {
         ENTITIES.register(eventBus);
@@ -184,6 +185,7 @@ public class MeanderingMobsEntityRegistry {
             event.put(AUKVULTURE.get(), AukvultureEntity.createAttributes().build());
             event.put(TEGU.get(), TeguEntity.createAttributes().build());
             event.put(RUFFIAN.get(), RuffianEntity.createAttributes().build());
+            event.put(HOLLOW_RUFFIAN.get(), HollowRuffianEntity.createAttributes().build());
             event.put(PARROT_FISH.get(), ParrotfishEntity.createAttributes().build());
             event.put(PORCUPINE.get(), PorcupineEntity.createAttributes().build());
             event.put(WHISP.get(), WhispEntity.createAttributes().build());
@@ -204,6 +206,7 @@ public class MeanderingMobsEntityRegistry {
             event.registerEntityRenderer(AUKVULTURE.get(), AukvultureRenderer::new);
             event.registerEntityRenderer(TEGU.get(), TeguRenderer::new);
             event.registerEntityRenderer(RUFFIAN.get(), RuffianRenderer::new);
+            event.registerEntityRenderer(HOLLOW_RUFFIAN.get(), HollowRuffianRenderer::new);
             event.registerEntityRenderer(PARROT_FISH.get(), ParrotfishRenderer::new);
             event.registerEntityRenderer(PORCUPINE.get(), PorcupineRenderer::new);
             event.registerEntityRenderer(WHISP.get(), WhispRenderer::new);

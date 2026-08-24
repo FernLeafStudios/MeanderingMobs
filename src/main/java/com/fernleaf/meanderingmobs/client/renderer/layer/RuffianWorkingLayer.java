@@ -26,7 +26,7 @@ public class RuffianWorkingLayer extends RenderLayer<RuffianEntity, RuffianModel
 
         ItemStack heldItem = entity.getItemBySlot(EquipmentSlot.MAINHAND);
 
-        if (heldItem.isEmpty() || entity.isReading() || entity.isNapping()) {
+        if (heldItem.isEmpty() || entity.isNapping()) {
             return;
         }
 

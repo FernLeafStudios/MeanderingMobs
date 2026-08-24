@@ -1,6 +1,7 @@
 package com.fernleaf.meanderingmobs.server.entity.ai.ruffian;
 
 import com.fernleaf.meanderingmobs.server.entity.RuffianEntity;
+import com.fernleaf.meanderingmobs.server.entity.ai.util.BlockPosUtil;
 import com.fernleaf.meanderingmobs.server.entity.ai.util.WorkstationRecipeUtil;
 import com.google.common.collect.ImmutableMap;
 import net.minecraft.core.BlockPos;
@@ -15,6 +16,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.ai.behavior.Behavior;
+import net.minecraft.world.entity.ai.behavior.BlockPosTracker;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
@@ -53,19 +55,18 @@ public class RuffianRepairBehavior extends Behavior<RuffianEntity> {
     @Override
     protected boolean checkExtraStartConditions(@NotNull ServerLevel level, RuffianEntity ruffian) {
         boolean isValidState = !ruffian.isTamed() || ruffian.getAiState() == 3;
-        if (!isValidState || ruffian.isNapping() || ruffian.isReading() || ruffian.isCrouchingAnxious()) {
+        if (!isValidState || ruffian.isNapping() || ruffian.isCrouchingAnxious()) {
             return false;
         }
 
-        this.chestPos = findStorageBlock(ruffian);
-        this.anvilPos = findAnvilBlock(ruffian);
+        this.chestPos = BlockPosUtil.findBlockInRadius(level, ruffian.blockPosition(), RUFFIAN_STORAGE, 6, 2);
+        this.anvilPos = BlockPosUtil.findBlockInRadius(level, ruffian.blockPosition(), BlockTags.ANVIL, 6, 2);
 
         return this.chestPos != null && this.anvilPos != null;
     }
 
     @Override
     protected boolean canStillUse(@NotNull ServerLevel level, @NotNull RuffianEntity ruffian, long gameTime) {
-        // Force the behavior to stay active as long as the Ruffian is holding an item during step 2!
         if (this.currentStep == 2 && !getActiveItem(ruffian).isEmpty()) {
             return true;
         }
@@ -117,7 +118,7 @@ public class RuffianRepairBehavior extends Behavior<RuffianEntity> {
                 if (tryConsumeMaterialAndRepair(level, ruffian, this.chestPos, this.anvilPos)) {
                     this.repairCooldown = 10;
                 } else {
-                    advanceStep(ruffian); // No materials left; deposit whatever progress was made
+                    advanceStep(ruffian);
                 }
             }
             return;
@@ -126,12 +127,12 @@ public class RuffianRepairBehavior extends Behavior<RuffianEntity> {
         // Step 2: Deposit tool back into chest
         if (this.currentStep == 2) {
             if (distSq <= 6.0D) {
-                // Persistent retry: keep trying every tick until the chest is free!
-                if (depositItemToChest(ruffian, this.chestPos)) {
+                ItemStack held = getActiveItem(ruffian);
+                if (WorkstationRecipeUtil.tryDepositToContainer(level, this.chestPos, held)) {
+                    setActiveItem(ruffian, ItemStack.EMPTY);
                     stop(level, ruffian, gameTime);
                 } else {
-                    // Refresh look target to face chest while waiting for player to close it
-                    ruffian.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new net.minecraft.world.entity.ai.behavior.BlockPosTracker(this.chestPos));
+                    ruffian.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new BlockPosTracker(this.chestPos));
                 }
             } else {
                 navigateToStepTarget(ruffian);
@@ -155,12 +156,12 @@ public class RuffianRepairBehavior extends Behavior<RuffianEntity> {
 
     @Override
     protected void stop(@NotNull ServerLevel level, @NotNull RuffianEntity ruffian, long gameTime) {
-        // Safety check: If behavior stops while still holding an active item, attempt deposit or drop item
         ItemStack held = getActiveItem(ruffian);
         if (!held.isEmpty()) {
-            if (this.chestPos == null || !depositItemToChest(ruffian, this.chestPos)) {
-                // If the chest is still occupied or missing when interrupted, drop item at feet so the tool isn't lost!
+            if (this.chestPos == null || !WorkstationRecipeUtil.tryDepositToContainer(level, this.chestPos, held)) {
                 ruffian.spawnAtLocation(held.copy());
+                setActiveItem(ruffian, ItemStack.EMPTY);
+            } else {
                 setActiveItem(ruffian, ItemStack.EMPTY);
             }
         }
@@ -170,40 +171,6 @@ public class RuffianRepairBehavior extends Behavior<RuffianEntity> {
         this.anvilPos = null;
         this.currentStep = 0;
         this.repairCooldown = 0;
-    }
-
-    private BlockPos findStorageBlock(RuffianEntity ruffian) {
-        BlockPos origin = ruffian.blockPosition();
-        BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos();
-
-        for (int x = -6; x <= 6; x++) {
-            for (int y = -2; y <= 2; y++) {
-                for (int z = -6; z <= 6; z++) {
-                    mutable.set(origin.getX() + x, origin.getY() + y, origin.getZ() + z);
-                    if (ruffian.level().getBlockState(mutable).is(RUFFIAN_STORAGE)) {
-                        return mutable.immutable();
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
-    private BlockPos findAnvilBlock(RuffianEntity ruffian) {
-        BlockPos origin = ruffian.blockPosition();
-        BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos();
-
-        for (int x = -6; x <= 6; x++) {
-            for (int y = -2; y <= 2; y++) {
-                for (int z = -6; z <= 6; z++) {
-                    mutable.set(origin.getX() + x, origin.getY() + y, origin.getZ() + z);
-                    if (ruffian.level().getBlockState(mutable).is(BlockTags.ANVIL)) {
-                        return mutable.immutable();
-                    }
-                }
-            }
-        }
-        return null;
     }
 
     private boolean grabDamagedToolFromChest(RuffianEntity ruffian, BlockPos pos) {
@@ -241,30 +208,6 @@ public class RuffianRepairBehavior extends Behavior<RuffianEntity> {
                 level.playSound(null, anvilPos, SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 0.8F, 1.1F);
                 level.sendParticles(ParticleTypes.HAPPY_VILLAGER, anvilPos.getX() + 0.5D, anvilPos.getY() + 1.0D, anvilPos.getZ() + 0.5D, 3, 0.2D, 0.2D, 0.2D, 0.0D);
                 return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean depositItemToChest(RuffianEntity ruffian, BlockPos pos) {
-        BlockEntity be = ruffian.level().getBlockEntity(pos);
-        ItemStack held = getActiveItem(ruffian);
-
-        if (be instanceof Container container && !held.isEmpty()) {
-            for (int i = 0; i < container.getContainerSize(); i++) {
-                ItemStack slotStack = container.getItem(i);
-
-                if (slotStack.isEmpty()) {
-                    container.setItem(i, held.copy());
-                    setActiveItem(ruffian, ItemStack.EMPTY);
-                    container.setChanged();
-                    return true;
-                } else if (ItemStack.isSameItemSameComponents(slotStack, held) && slotStack.getCount() + held.getCount() <= slotStack.getMaxStackSize()) {
-                    slotStack.grow(held.getCount());
-                    setActiveItem(ruffian, ItemStack.EMPTY);
-                    container.setChanged();
-                    return true;
-                }
             }
         }
         return false;

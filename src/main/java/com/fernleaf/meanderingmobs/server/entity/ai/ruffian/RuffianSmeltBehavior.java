@@ -1,6 +1,7 @@
 package com.fernleaf.meanderingmobs.server.entity.ai.ruffian;
 
 import com.fernleaf.meanderingmobs.server.entity.RuffianEntity;
+import com.fernleaf.meanderingmobs.server.entity.ai.util.BlockPosUtil;
 import com.fernleaf.meanderingmobs.server.entity.ai.util.WorkstationRecipeUtil;
 import com.google.common.collect.ImmutableMap;
 import net.minecraft.core.BlockPos;
@@ -8,7 +9,6 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
-import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -17,7 +17,6 @@ import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jetbrains.annotations.NotNull;
 
 public class RuffianSmeltBehavior extends Behavior<RuffianEntity> {
@@ -53,12 +52,12 @@ public class RuffianSmeltBehavior extends Behavior<RuffianEntity> {
     @Override
     protected boolean checkExtraStartConditions(@NotNull ServerLevel level, RuffianEntity ruffian) {
         boolean isValidState = !ruffian.isTamed() || ruffian.getAiState() == 3;
-        if (!isValidState || ruffian.isNapping() || ruffian.isReading() || ruffian.isCrouchingAnxious()) {
+        if (!isValidState || ruffian.isNapping() || ruffian.isCrouchingAnxious()) {
             return false;
         }
 
-        this.chestPos = findStorageBlock(ruffian);
-        this.stationPos = findWorkstationBlock(ruffian);
+        this.chestPos = BlockPosUtil.findBlockInRadius(level, ruffian.blockPosition(), RUFFIAN_STORAGE, 6, 2);
+        this.stationPos = BlockPosUtil.findBlockInRadius(level, ruffian.blockPosition(), RUFFIAN_WORKSTATION, 6, 2);
 
         return this.chestPos != null && this.stationPos != null;
     }
@@ -75,7 +74,6 @@ public class RuffianSmeltBehavior extends Behavior<RuffianEntity> {
         navigateToStepTarget(ruffian);
     }
 
-    @SuppressWarnings("collapsed")
     @Override
     protected void tick(@NotNull ServerLevel level, @NotNull RuffianEntity ruffian, long gameTime) {
         BlockPos target = (this.currentStep == 0 || this.currentStep == 2) ? this.chestPos : this.stationPos;
@@ -85,7 +83,7 @@ public class RuffianSmeltBehavior extends Behavior<RuffianEntity> {
 
         // Step 0: Grab raw ingredients OR fuel from chest
         if (this.currentStep == 0 && distSq <= 4.0D) {
-            if (grabFromChest(ruffian, this.chestPos)) {
+            if (grabFromChest(level, ruffian, this.chestPos)) {
                 advanceStep(ruffian);
             } else {
                 if (checkFurnaceOutput(ruffian, this.stationPos)) {
@@ -106,22 +104,19 @@ public class RuffianSmeltBehavior extends Behavior<RuffianEntity> {
             }
 
             if (!getActiveItem(ruffian).isEmpty()) {
-                if (insertIntoFurnace(ruffian, this.stationPos)) {
-                    stop(level, ruffian, gameTime);
-                } else {
-                    stop(level, ruffian, gameTime);
-                }
+                insertIntoFurnace(ruffian, this.stationPos);
+                stop(level, ruffian, gameTime);
             }
             return;
         }
 
         // Step 2: Deposit cooked output back into the chest
         if (this.currentStep == 2 && distSq <= 4.0D) {
-            if (depositItemToChest(ruffian, this.chestPos)) {
-                stop(level, ruffian, gameTime);
-            } else {
-                stop(level, ruffian, gameTime);
+            ItemStack held = getActiveItem(ruffian);
+            if (WorkstationRecipeUtil.tryDepositToContainer(level, this.chestPos, held)) {
+                setActiveItem(ruffian, ItemStack.EMPTY);
             }
+            stop(level, ruffian, gameTime);
         }
     }
 
@@ -148,66 +143,27 @@ public class RuffianSmeltBehavior extends Behavior<RuffianEntity> {
         this.carryingFuel = false;
     }
 
-    private BlockPos findStorageBlock(RuffianEntity ruffian) {
-        BlockPos origin = ruffian.blockPosition();
-        BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos();
+    private boolean grabFromChest(ServerLevel level, RuffianEntity ruffian, BlockPos pos) {
+        AbstractFurnaceBlockEntity furnace = getFurnace(ruffian, this.stationPos);
 
-        for (int x = -6; x <= 6; x++) {
-            for (int y = -2; y <= 2; y++) {
-                for (int z = -6; z <= 6; z++) {
-                    mutable.set(origin.getX() + x, origin.getY() + y, origin.getZ() + z);
-                    if (ruffian.level().getBlockState(mutable).is(RUFFIAN_STORAGE)) {
-                        return mutable.immutable();
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
-    private BlockPos findWorkstationBlock(RuffianEntity ruffian) {
-        BlockPos origin = ruffian.blockPosition();
-        BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos();
-
-        for (int x = -6; x <= 6; x++) {
-            for (int y = -2; y <= 2; y++) {
-                for (int z = -6; z <= 6; z++) {
-                    mutable.set(origin.getX() + x, origin.getY() + y, origin.getZ() + z);
-                    if (ruffian.level().getBlockState(mutable).is(RUFFIAN_WORKSTATION)) {
-                        return mutable.immutable();
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
-    private boolean grabFromChest(RuffianEntity ruffian, BlockPos pos) {
-        BlockEntity be = ruffian.level().getBlockEntity(pos);
-        if (be instanceof Container container) {
-            AbstractFurnaceBlockEntity furnace = getFurnace(ruffian, this.stationPos);
-            if (furnace != null && furnace.getItem(1).isEmpty()) {
-                int fuelSlot = findFuelSlot(container);
-                if (fuelSlot != -1) {
-                    ItemStack stack = container.getItem(fuelSlot);
-                    ItemStack taken = stack.split(Math.min(stack.getCount(), 8));
-                    setActiveItem(ruffian, taken);
-                    this.carryingFuel = true;
-                    container.setChanged();
-                    return true;
-                }
-            }
-
-            int slot = WorkstationRecipeUtil.findProcessableSlot(ruffian.level(), container);
-            if (slot != -1) {
-                ItemStack stack = container.getItem(slot);
-                ItemStack taken = stack.split(Math.min(stack.getCount(), 8));
-                setActiveItem(ruffian, taken);
-                this.carryingFuel = false;
-                container.setChanged();
+        // Extract fuel if furnace fuel slot is empty
+        if (furnace != null && furnace.getItem(1).isEmpty()) {
+            ItemStack fuel = WorkstationRecipeUtil.tryExtractFromContainer(level, pos, AbstractFurnaceBlockEntity::isFuel, 8);
+            if (!fuel.isEmpty()) {
+                setActiveItem(ruffian, fuel);
+                this.carryingFuel = true;
                 return true;
             }
         }
+
+        // Extract processable raw item
+        ItemStack processable = WorkstationRecipeUtil.tryExtractFromContainer(level, pos, stack -> WorkstationRecipeUtil.isProcessable(level, stack), 8);
+        if (!processable.isEmpty()) {
+            setActiveItem(ruffian, processable);
+            this.carryingFuel = false;
+            return true;
+        }
+
         return false;
     }
 
@@ -251,39 +207,6 @@ public class RuffianSmeltBehavior extends Behavior<RuffianEntity> {
             }
         }
         return false;
-    }
-
-    private boolean depositItemToChest(RuffianEntity ruffian, BlockPos pos) {
-        BlockEntity be = ruffian.level().getBlockEntity(pos);
-        ItemStack held = getActiveItem(ruffian);
-
-        if (be instanceof Container container && !held.isEmpty()) {
-            for (int i = 0; i < container.getContainerSize(); i++) {
-                ItemStack slotStack = container.getItem(i);
-                if (slotStack.isEmpty()) {
-                    container.setItem(i, held.copy());
-                    setActiveItem(ruffian, ItemStack.EMPTY);
-                    container.setChanged();
-                    return true;
-                } else if (ItemStack.isSameItemSameComponents(slotStack, held) && slotStack.getCount() + held.getCount() <= slotStack.getMaxStackSize()) {
-                    slotStack.grow(held.getCount());
-                    setActiveItem(ruffian, ItemStack.EMPTY);
-                    container.setChanged();
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    private int findFuelSlot(Container container) {
-        for (int i = 0; i < container.getContainerSize(); i++) {
-            ItemStack stack = container.getItem(i);
-            if (AbstractFurnaceBlockEntity.isFuel(stack)) {
-                return i;
-            }
-        }
-        return -1;
     }
 
     private AbstractFurnaceBlockEntity getFurnace(RuffianEntity ruffian, BlockPos pos) {

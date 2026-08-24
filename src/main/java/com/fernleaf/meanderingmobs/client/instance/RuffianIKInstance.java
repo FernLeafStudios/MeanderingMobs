@@ -3,6 +3,7 @@ package com.fernleaf.meanderingmobs.client.instance;
 import com.fernleaf.fernframe.proprio.util.IKMathUtils;
 import com.fernleaf.meanderingmobs.server.entity.RuffianEntity;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.LivingEntity;
 
 public class RuffianIKInstance {
 
@@ -24,15 +25,14 @@ public class RuffianIKInstance {
     public float bodyYOffset;
     public float playfulWiggle;
 
-    public void update(RuffianEntity entity, float limbSwing, float limbSwingAmount, float partialTick) {
-        boolean isPlaying = entity.isPlaying();
-        boolean isReading = entity.isReading();
-        boolean isNapping = entity.isNapping();
+    public void update(LivingEntity entity, float limbSwing, float limbSwingAmount, float partialTick) {
+        // Safely check for Ruffian play state without breaking Hollow Ruffians
+        boolean isPlaying = (entity instanceof RuffianEntity ruffian) && ruffian.isPlaying();
+        boolean isNapping = (entity instanceof RuffianEntity ruffian) && ruffian.isNapping();
 
         float age = IKMathUtils.getAge(entity, partialTabCorrection(partialTick));
 
         // Use limbSwingAmount for client-side movement evaluation
-        float speed = limbSwingAmount;
 
         // Standard reset targets
         float targetTorsoX = 0.0F;
@@ -50,12 +50,12 @@ public class RuffianIKInstance {
         float targetYOffset = 0.0F;
 
         // --- 1. IDLE BOP & BREATHING ---
-        if (!isNapping && !isReading) {
+        if (!isNapping) {
             // Subtle breathing bop (kept minimal so it doesn't sink)
             targetYOffset = Mth.sin(age * 0.08F) * 0.02F;
 
             // Jolly idle arm sway when stationary
-            if (speed < 0.1F && !isPlaying) {
+            if (limbSwingAmount < 0.1F && !isPlaying) {
                 targetLArmZ = Mth.cos(age * 0.08F) * 0.05F + 0.1F;
                 targetRArmZ = -Mth.cos(age * 0.08F) * 0.05F - 0.1F;
                 targetLArmX = Mth.sin(age * 0.06F) * 0.08F;

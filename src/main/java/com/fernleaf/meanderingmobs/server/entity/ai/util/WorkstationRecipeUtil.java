@@ -12,8 +12,64 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
 import java.util.Optional;
+import java.util.function.Predicate;
 
 public class WorkstationRecipeUtil {
+
+    /**
+     * Attempts to deposit an item stack into any container block.
+     * Merges with existing stacks first, then fills empty slots.
+     */
+    public static boolean tryDepositToContainer(Level level, BlockPos pos, ItemStack stackToDeposit) {
+        if (stackToDeposit.isEmpty()) return false;
+
+        BlockEntity be = level.getBlockEntity(pos);
+        if (be instanceof Container container) {
+            // Pass 1: Try merging with matching existing stacks
+            for (int i = 0; i < container.getContainerSize(); i++) {
+                ItemStack slotStack = container.getItem(i);
+                if (ItemStack.isSameItemSameComponents(slotStack, stackToDeposit)) {
+                    int maxInsert = Math.min(stackToDeposit.getCount(), slotStack.getMaxStackSize() - slotStack.getCount());
+                    if (maxInsert > 0) {
+                        slotStack.grow(maxInsert);
+                        stackToDeposit.shrink(maxInsert);
+                        container.setChanged();
+                        if (stackToDeposit.isEmpty()) return true;
+                    }
+                }
+            }
+
+            // Pass 2: Fill empty slots
+            for (int i = 0; i < container.getContainerSize(); i++) {
+                ItemStack slotStack = container.getItem(i);
+                if (slotStack.isEmpty()) {
+                    container.setItem(i, stackToDeposit.copy());
+                    stackToDeposit.setCount(0);
+                    container.setChanged();
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Extracts up to maxCount items matching a given predicate from a container block.
+     */
+    public static ItemStack tryExtractFromContainer(Level level, BlockPos pos, Predicate<ItemStack> filter, int maxCount) {
+        BlockEntity be = level.getBlockEntity(pos);
+        if (be instanceof Container container) {
+            for (int i = 0; i < container.getContainerSize(); i++) {
+                ItemStack stack = container.getItem(i);
+                if (!stack.isEmpty() && filter.test(stack)) {
+                    ItemStack extracted = container.removeItem(i, Math.min(stack.getCount(), maxCount));
+                    container.setChanged();
+                    return extracted;
+                }
+            }
+        }
+        return ItemStack.EMPTY;
+    }
 
     /**
      * Checks if an item stack can be processed by any cooking/smelting station.
@@ -52,7 +108,7 @@ public class WorkstationRecipeUtil {
 
         if (recipe.isPresent()) {
             ItemStack result = recipe.get().value().getResultItem(level.registryAccess()).copy();
-            result.setCount(1); // Force output to 1 item
+            result.setCount(1);
             return result;
         }
 
@@ -86,7 +142,7 @@ public class WorkstationRecipeUtil {
     }
 
     /**
-     * Finds a matching repair material (e.g., Diamond, Iron Ingot) inside a container for a damaged tool.
+     * Finds a matching repair material inside a container for a damaged tool.
      */
     public static int findRepairMaterialSlot(Container container, ItemStack toolStack) {
         if (toolStack.isEmpty() || !toolStack.isDamaged()) return -1;
@@ -102,7 +158,6 @@ public class WorkstationRecipeUtil {
 
     /**
      * Direct hand-to-furnace dump utility.
-     * Force-transfers whatever item is in the mob's hand directly into slot 0.
      */
     public static boolean forceDepositHandToFurnace(Level level, BlockPos pos, Mob mob) {
         ItemStack held = mob.getItemInHand(InteractionHand.MAIN_HAND);
