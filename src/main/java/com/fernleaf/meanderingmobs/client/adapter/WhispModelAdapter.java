@@ -12,9 +12,7 @@ public class WhispModelAdapter {
     private static final float LOWER_BASE_PITCH = IKMathUtils.toRadians(20.0f);
 
     public static void applyToModel(LivingEntity entity, HierarchicalModel<?> model, WhispIKInstance ik) {
-        ModelPartUtils.ifPresent(model.root(), whisp -> {
-            ModelPartUtils.addYOffsetBlocks(whisp, ik.breathingOffset);
-
+        ModelPartUtils.ifPresent(model.root(), whisp -> { ModelPartUtils.addYOffsetBlocks(whisp, ik.breathingOffset);
             ModelPartUtils.ifPresent(whisp, waist -> {
                 waist.xRot += ik.waistDragPitch;
                 ModelPartUtils.ifPresent(waist, lower -> lower.xRot += LOWER_BASE_PITCH + ik.lowerDragPitch + ik.lowerDangleOffset, "Body", "Lower");

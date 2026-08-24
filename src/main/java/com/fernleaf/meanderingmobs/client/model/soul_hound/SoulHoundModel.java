@@ -20,6 +20,7 @@ public class SoulHoundModel<T extends SoulHoundEntity> extends HierarchicalModel
 	public final ModelPart dawg;
 	public final ModelPart body;
 	public final ModelPart head;
+	public final ModelPart tail;
 	public final ModelPart right_front_leg;
 	public final ModelPart left_front_leg;
 	public final ModelPart left_back_leg;
@@ -32,6 +33,7 @@ public class SoulHoundModel<T extends SoulHoundEntity> extends HierarchicalModel
 		this.dawg = root.getChild("dawg");
 		this.body = this.dawg.getChild("body");
 		this.head = this.body.getChild("head");
+		this.tail = this.body.getChild("tail");
 		this.right_front_leg = this.dawg.getChild("right_front_leg");
 		this.left_front_leg = this.dawg.getChild("left_front_leg");
 		this.left_back_leg = this.dawg.getChild("left_back_leg");

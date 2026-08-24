@@ -17,6 +17,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.NotNull;
 
 public class RuffianReadBehavior extends Behavior<RuffianEntity> {
     private int readingTicks = 0;
@@ -31,7 +32,7 @@ public class RuffianReadBehavior extends Behavior<RuffianEntity> {
     }
 
     @Override
-    protected boolean checkExtraStartConditions(ServerLevel level, RuffianEntity ruffian) {
+    protected boolean checkExtraStartConditions(@NotNull ServerLevel level, RuffianEntity ruffian) {
         ItemStack mainHandItem = ruffian.getItemInHand(InteractionHand.MAIN_HAND);
         if (mainHandItem.is(Items.ENCHANTED_BOOK)) return true;
 
@@ -44,12 +45,12 @@ public class RuffianReadBehavior extends Behavior<RuffianEntity> {
     }
 
     @Override
-    protected boolean canStillUse(ServerLevel level, RuffianEntity ruffian, long gameTime) {
+    protected boolean canStillUse(@NotNull ServerLevel level, RuffianEntity ruffian, long gameTime) {
         return (ruffian.isReading() || !ruffian.getItemInHand(InteractionHand.MAIN_HAND).isEmpty()) && this.readingTicks < 200;
     }
 
     @Override
-    protected void start(ServerLevel level, RuffianEntity ruffian, long gameTime) {
+    protected void start(@NotNull ServerLevel level, RuffianEntity ruffian, long gameTime) {
         this.readingTicks = 0;
         this.upgraded = false;
 
@@ -60,7 +61,7 @@ public class RuffianReadBehavior extends Behavior<RuffianEntity> {
     }
 
     @Override
-    protected void tick(ServerLevel level, RuffianEntity ruffian, long gameTime) {
+    protected void tick(@NotNull ServerLevel level, RuffianEntity ruffian, long gameTime) {
         ItemStack mainHand = ruffian.getItemInHand(InteractionHand.MAIN_HAND);
 
         // Player directly gave them an Enchanted Book
@@ -99,7 +100,7 @@ public class RuffianReadBehavior extends Behavior<RuffianEntity> {
     }
 
     @Override
-    protected void stop(ServerLevel level, RuffianEntity ruffian, long gameTime) {
+    protected void stop(@NotNull ServerLevel level, RuffianEntity ruffian, long gameTime) {
         ruffian.setReading(false);
 
         ItemStack heldBook = ruffian.getItemInHand(InteractionHand.MAIN_HAND);

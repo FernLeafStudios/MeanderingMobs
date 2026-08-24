@@ -9,6 +9,7 @@ import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.NotNull;
 
 public class RuffianNapBehavior extends Behavior<RuffianEntity> {
     private int napTicks = 0;
@@ -20,7 +21,7 @@ public class RuffianNapBehavior extends Behavior<RuffianEntity> {
     }
 
     @Override
-    protected boolean checkExtraStartConditions(ServerLevel level, RuffianEntity ruffian) {
+    protected boolean checkExtraStartConditions(@NotNull ServerLevel level, RuffianEntity ruffian) {
         if (ruffian.isWorking() || !ruffian.getItemInHand(InteractionHand.MAIN_HAND).isEmpty()) return false; //[cite: 13]
         if (ruffian.isCrouchingAnxious() || ruffian.isPlaying() || ruffian.isReading()) return false; //[cite: 13]
         if (!ruffian.canNap()) return false; //[cite: 13]
@@ -33,14 +34,14 @@ public class RuffianNapBehavior extends Behavior<RuffianEntity> {
     }
 
     @Override
-    protected boolean canStillUse(ServerLevel level, RuffianEntity ruffian, long gameTime) {
+    protected boolean canStillUse(@NotNull ServerLevel level, RuffianEntity ruffian, long gameTime) {
         if (ruffian.isWorking() || ruffian.isCrouchingAnxious() || ruffian.isPlaying() || ruffian.isReading()) return false; //[cite: 13]
         if (ruffian.hurtTime > 0 || ruffian.isInWater()) return false; //[cite: 13]
         return ruffian.isNapping() && this.napTicks < 300; //[cite: 13]
     }
 
     @Override
-    protected void start(ServerLevel level, RuffianEntity ruffian, long gameTime) {
+    protected void start(@NotNull ServerLevel level, RuffianEntity ruffian, long gameTime) {
         this.napTicks = 0; //[cite: 13]
         ruffian.setNapping(true); //[cite: 13]
         ruffian.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
@@ -49,7 +50,7 @@ public class RuffianNapBehavior extends Behavior<RuffianEntity> {
     }
 
     @Override
-    protected void tick(ServerLevel level, RuffianEntity ruffian, long gameTime) {
+    protected void tick(@NotNull ServerLevel level, RuffianEntity ruffian, long gameTime) {
         this.napTicks++; //[cite: 13]
         ruffian.setSpeed(0.0F); //[cite: 13]
 
@@ -66,7 +67,7 @@ public class RuffianNapBehavior extends Behavior<RuffianEntity> {
     }
 
     @Override
-    protected void stop(ServerLevel level, RuffianEntity ruffian, long gameTime) {
+    protected void stop(@NotNull ServerLevel level, RuffianEntity ruffian, long gameTime) {
         ruffian.setNapping(false); //[cite: 13]
         this.napTicks = 0; //[cite: 13]
         ruffian.applyNapCooldown(600); //[cite: 13]

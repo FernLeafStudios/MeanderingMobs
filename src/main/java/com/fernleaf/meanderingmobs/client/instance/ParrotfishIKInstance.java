@@ -60,11 +60,11 @@ public class ParrotfishIKInstance {
 
 
         if (isCharging) {
-            if (totalSpeed < 0.25f) { // Wind-up / Coiling Phase (PRONOUNCED SQUISH)
+            if (totalSpeed < 0.25f) { // Wind-up / Coiling Phase
                 targetScrunch = 1.0f;     // Maximum accordion compress
                 targetFinTuck = -0.3f;
                 targetScaleZ = 0.65f;     // Squishes tighter along Z axis
-            } else { // Active Ram Phase (Pew-Pew Rocket Dash)
+            } else { // Active Ram Phase (PewPew Rocket Dash)
                 targetScrunch = 0.0f;
                 targetFinTuck = 1.0f;
                 targetScaleZ = 1.45f;     // Stretches dramatically during the rush

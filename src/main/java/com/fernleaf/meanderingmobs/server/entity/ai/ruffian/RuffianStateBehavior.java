@@ -9,6 +9,7 @@ import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.NotNull;
 
 public class RuffianStateBehavior extends Behavior<RuffianEntity> {
 
@@ -20,7 +21,7 @@ public class RuffianStateBehavior extends Behavior<RuffianEntity> {
     }
 
     @Override
-    protected boolean checkExtraStartConditions(ServerLevel level, RuffianEntity ruffian) {
+    protected boolean checkExtraStartConditions(@NotNull ServerLevel level, RuffianEntity ruffian) {
         if (!ruffian.isTamed() || ruffian.isPassenger()) return false;
         int state = ruffian.getAiState();
         if (state == 1) return true; // SIT
@@ -32,12 +33,12 @@ public class RuffianStateBehavior extends Behavior<RuffianEntity> {
     }
 
     @Override
-    protected boolean canStillUse(ServerLevel level, RuffianEntity ruffian, long gameTime) {
+    protected boolean canStillUse(@NotNull ServerLevel level, @NotNull RuffianEntity ruffian, long gameTime) {
         return checkExtraStartConditions(level, ruffian);
     }
 
     @Override
-    protected void tick(ServerLevel level, RuffianEntity ruffian, long gameTime) {
+    protected void tick(@NotNull ServerLevel level, RuffianEntity ruffian, long gameTime) {
         int state = ruffian.getAiState();
 
         // SIT STATE (State 1)

@@ -8,23 +8,17 @@ import net.minecraft.world.entity.LivingEntity;
 public class SoulHoundModelAdapter {
 
     public static void applyToModel(LivingEntity entity, SoulHoundModel<?> model, SoulHoundIKInstance ik) {
-        ModelPartUtils.ifPresent(model.root(), dawg -> {
-            // Apply torso pitch and vertical bounce
-            ModelPartUtils.ifPresent(dawg, body -> {
-                body.xRot += ik.bodyXRot;
-                ModelPartUtils.addYOffsetBlocks(body, ik.bodyYOffset);
+        // Torso pitch & bounce
+        model.body.xRot += ik.bodyXRot;
+        ModelPartUtils.addYOffsetBlocks(model.body, ik.bodyYOffset);
 
-                // Apply tail pitch / bobbing
-                ModelPartUtils.ifPresent(body, tail -> {
-                    tail.xRot += ik.tailXRot;
-                }, "tail");
-            }, "body");
+        // Tail dynamics
+        model.tail.xRot += ik.tailXRot;
 
-            // Apply quadruped leg swings
-            ModelPartUtils.ifPresent(dawg, leg -> leg.xRot += ik.rightFrontLegXRot, "right_front_leg");
-            ModelPartUtils.ifPresent(dawg, leg -> leg.xRot += ik.leftFrontLegXRot, "left_front_leg");
-            ModelPartUtils.ifPresent(dawg, leg -> leg.xRot += ik.rightBackLegXRot, "right_back_leg");
-            ModelPartUtils.ifPresent(dawg, leg -> leg.xRot += ik.leftBackLegXRot, "left_back_leg");
-        }, "dawg");
+        // Quadruped leg movement
+        model.right_front_leg.xRot += ik.rightFrontLegXRot;
+        model.left_front_leg.xRot += ik.leftFrontLegXRot;
+        model.right_back_leg.xRot += ik.rightBackLegXRot;
+        model.left_back_leg.xRot += ik.leftBackLegXRot;
     }
 }

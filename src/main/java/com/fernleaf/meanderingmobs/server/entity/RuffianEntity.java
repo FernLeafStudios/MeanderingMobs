@@ -1,7 +1,7 @@
 package com.fernleaf.meanderingmobs.server.entity;
 
 import com.fernleaf.fernframe.umweltlite.goals.engine.PersonalityEngine;
-import com.fernleaf.meanderingmobs.client.model.ruffian.RuffianRank;
+import com.fernleaf.meanderingmobs.client.model.ruffian.RuffianVariant;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsTagRegistry;
 import com.fernleaf.meanderingmobs.server.entity.ai.ruffian.*;
 import com.fernleaf.meanderingmobs.server.entity.ai.ruffian.brain.RuffianActivities;
@@ -46,9 +46,7 @@ import org.jetbrains.annotations.Nullable;
 @SuppressWarnings("deprecation")
 public class RuffianEntity extends MeanderingMobsTameableEntity {
 
-    private static final EntityDataAccessor<Integer> DATA_RANK =
-            SynchedEntityData.defineId(RuffianEntity.class, EntityDataSerializers.INT);
-    private static final EntityDataAccessor<Integer> DATA_COLOR =
+    private static final EntityDataAccessor<Integer> DATA_VARIANT_ID =
             SynchedEntityData.defineId(RuffianEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Boolean> DATA_IS_PLAYING =
             SynchedEntityData.defineId(RuffianEntity.class, EntityDataSerializers.BOOLEAN);
@@ -129,7 +127,7 @@ public class RuffianEntity extends MeanderingMobsTameableEntity {
     }
 
     private void registerBrainGoals(Brain<RuffianEntity> brain) {
-        // Core for Creatures
+        // Core Activity
         brain.addActivity(Activity.CORE, 0, ImmutableList.of(
                 new Swim(0.8F),
                 new LookAtTargetSink(45, 90),
@@ -137,13 +135,13 @@ public class RuffianEntity extends MeanderingMobsTameableEntity {
                 new RuffianStateBehavior()
         ));
 
-        // Chores for da babies
+        // Chores Activity
         brain.addActivity(RuffianActivities.CHORES.get(), 5, ImmutableList.of(
                 new RuffianSmeltBehavior(),
                 new RuffianRepairBehavior()
         ));
 
-        // Baby idling about
+        // Idle Activity
         brain.addActivity(Activity.IDLE, 10, ImmutableList.of(
                 new RuffianCaringBehavior(),
                 new RuffianHideBehavior(),
@@ -183,8 +181,7 @@ public class RuffianEntity extends MeanderingMobsTameableEntity {
     @Override
     protected void defineSynchedData(SynchedEntityData.@NotNull Builder builder) {
         super.defineSynchedData(builder);
-        builder.define(DATA_RANK, 0);
-        builder.define(DATA_COLOR, 0);
+        builder.define(DATA_VARIANT_ID, RuffianVariant.BLUE.id);
         builder.define(DATA_IS_PLAYING, false);
         builder.define(DATA_IS_CROUCHING, false);
         builder.define(DATA_IS_READING, false);
@@ -203,17 +200,19 @@ public class RuffianEntity extends MeanderingMobsTameableEntity {
         }
     }
 
+    public RuffianVariant getVariant() {
+        return RuffianVariant.byId(this.entityData.get(DATA_VARIANT_ID));
+    }
+
+    public void setVariant(RuffianVariant variant) {
+        this.entityData.set(DATA_VARIANT_ID, variant.id);
+    }
+
     public boolean canBecomeAnxious() { return this.anxiousCooldown <= 0; }
     public void applyAnxiousCooldown(int ticks) { this.anxiousCooldown = ticks; }
 
     public boolean canComfortOthers() { return this.caringCooldown <= 0; }
     public void applyCaringCooldown(int ticks) { this.caringCooldown = ticks; }
-
-    public int getRank() { return this.entityData.get(DATA_RANK); }
-    public void setRank(int rank) { this.entityData.set(DATA_RANK, rank); }
-
-    public int getColor() { return this.entityData.get(DATA_COLOR); }
-    public void setColor(int color) { this.entityData.set(DATA_COLOR, color); }
 
     public boolean isPlaying() { return this.entityData.get(DATA_IS_PLAYING); }
     public void setPlaying(boolean playing) { this.entityData.set(DATA_IS_PLAYING, playing); }
@@ -315,8 +314,7 @@ public class RuffianEntity extends MeanderingMobsTameableEntity {
     @Override
     public void addAdditionalSaveData(@NotNull CompoundTag tag) {
         super.addAdditionalSaveData(tag);
-        tag.putInt("Rank", this.getRank());
-        tag.putInt("Color", this.getColor());
+        tag.putInt("Variant", this.getVariant().id);
         tag.putBoolean("IsPlaying", this.isPlaying());
         tag.putBoolean("IsCrouching", this.isCrouchingAnxious());
         tag.putInt("AnxiousCooldown", this.anxiousCooldown);
@@ -333,8 +331,9 @@ public class RuffianEntity extends MeanderingMobsTameableEntity {
     @Override
     public void readAdditionalSaveData(@NotNull CompoundTag tag) {
         super.readAdditionalSaveData(tag);
-        if (tag.contains("Rank")) this.setRank(tag.getInt("Rank"));
-        if (tag.contains("Color")) this.setColor(tag.getInt("Color"));
+        if (tag.contains("Variant")) {
+            this.setVariant(RuffianVariant.byId(tag.getInt("Variant")));
+        }
         if (tag.contains("IsPlaying")) this.setPlaying(tag.getBoolean("IsPlaying"));
         if (tag.contains("IsCrouching")) this.setCrouchingAnxious(tag.getBoolean("IsCrouching"));
         if (tag.contains("AnxiousCooldown")) this.anxiousCooldown = tag.getInt("AnxiousCooldown");
@@ -356,15 +355,11 @@ public class RuffianEntity extends MeanderingMobsTameableEntity {
     public SpawnGroupData finalizeSpawn(@NotNull ServerLevelAccessor level, @NotNull DifficultyInstance difficulty, @NotNull MobSpawnType spawnType, @Nullable SpawnGroupData spawnData) {
         SpawnGroupData data = super.finalizeSpawn(level, difficulty, spawnType, spawnData);
         this.setPersistenceRequired();
-        this.setColor(this.random.nextInt(16));
 
-        if (spawnType != MobSpawnType.COMMAND && spawnType != MobSpawnType.SPAWN_EGG) {
-            if (this.random.nextFloat() < 0.20f) {
-                this.setRank(RuffianRank.LEADER.getId());
-            } else {
-                this.setRank(RuffianRank.SNATCHER.getId());
-            }
-        }
+        // Randomize among standard variants on spawn (0: BLUE, 1: YELLOW, 2: RED)
+        int variantIndex = this.random.nextInt(3);
+        this.setVariant(RuffianVariant.byId(variantIndex));
+
         return data;
     }
 

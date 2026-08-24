@@ -1,9 +1,9 @@
 package com.fernleaf.meanderingmobs.client.renderer.layer;
 
+import com.fernleaf.meanderingmobs.client.model.ruffian.RuffianModel;
 import com.fernleaf.meanderingmobs.server.entity.RuffianEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.model.HierarchicalModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
@@ -14,9 +14,9 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
-public class RuffianWorkingLayer extends RenderLayer<RuffianEntity, HierarchicalModel<RuffianEntity>> {
+public class RuffianWorkingLayer extends RenderLayer<RuffianEntity, RuffianModel<RuffianEntity>> {
 
-    public RuffianWorkingLayer(RenderLayerParent<RuffianEntity, HierarchicalModel<RuffianEntity>> renderer) {
+    public RuffianWorkingLayer(RenderLayerParent<RuffianEntity, RuffianModel<RuffianEntity>> renderer) {
         super(renderer);
     }
 
@@ -32,11 +32,23 @@ public class RuffianWorkingLayer extends RenderLayer<RuffianEntity, Hierarchical
 
         poseStack.pushPose();
 
-        // Safely fetch the right_arm bone across Snatcher or Leader models via the root ModelPart
-        HierarchicalModel<RuffianEntity> activeModel = this.getParentModel();
-        if (activeModel.root().hasChild("right_hand")) {
-            ModelPart rightArm = activeModel.root().getChild("right_hand");
-            rightArm.translateAndRotate(poseStack);
+        // Translate and rotate based on right_arm
+        RuffianModel<RuffianEntity> activeModel = this.getParentModel();
+        if (activeModel.root().hasChild("bone")) {
+            ModelPart bone = activeModel.root().getChild("bone");
+            if (bone.hasChild("body")) {
+                ModelPart body = bone.getChild("body");
+                if (body.hasChild("torso")) {
+                    ModelPart torso = body.getChild("torso");
+                    if (torso.hasChild("right_arm")) {
+                        ModelPart rightArm = torso.getChild("right_arm");
+                        bone.translateAndRotate(poseStack);
+                        body.translateAndRotate(poseStack);
+                        torso.translateAndRotate(poseStack);
+                        rightArm.translateAndRotate(poseStack);
+                    }
+                }
+            }
         }
 
         // Offsets positioning relative to the end of the hand

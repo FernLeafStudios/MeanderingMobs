@@ -81,7 +81,7 @@ public class RuffianRepairBehavior extends Behavior<RuffianEntity> {
     }
 
     @Override
-    protected void tick(@NotNull ServerLevel level, RuffianEntity ruffian, long gameTime) {
+    protected void tick(@NotNull ServerLevel level, @NotNull RuffianEntity ruffian, long gameTime) {
         BlockPos target = (this.currentStep == 0 || this.currentStep == 2) ? this.chestPos : this.anvilPos;
         if (target == null) return;
 
@@ -126,7 +126,7 @@ public class RuffianRepairBehavior extends Behavior<RuffianEntity> {
         // Step 2: Deposit tool back into chest
         if (this.currentStep == 2) {
             if (distSq <= 6.0D) {
-                // Persistent retry: keep trying every tick until chest is free!
+                // Persistent retry: keep trying every tick until the chest is free!
                 if (depositItemToChest(ruffian, this.chestPos)) {
                     stop(level, ruffian, gameTime);
                 } else {
@@ -154,12 +154,12 @@ public class RuffianRepairBehavior extends Behavior<RuffianEntity> {
     }
 
     @Override
-    protected void stop(@NotNull ServerLevel level, RuffianEntity ruffian, long gameTime) {
+    protected void stop(@NotNull ServerLevel level, @NotNull RuffianEntity ruffian, long gameTime) {
         // Safety check: If behavior stops while still holding an active item, attempt deposit or drop item
         ItemStack held = getActiveItem(ruffian);
         if (!held.isEmpty()) {
             if (this.chestPos == null || !depositItemToChest(ruffian, this.chestPos)) {
-                // If chest is still occupied or missing when interrupted, drop item at feet so tool isn't lost!
+                // If the chest is still occupied or missing when interrupted, drop item at feet so the tool isn't lost!
                 ruffian.spawnAtLocation(held.copy());
                 setActiveItem(ruffian, ItemStack.EMPTY);
             }

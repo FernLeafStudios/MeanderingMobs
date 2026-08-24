@@ -9,6 +9,7 @@ import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
@@ -23,7 +24,7 @@ public class RuffianHideBehavior extends Behavior<RuffianEntity> {
     }
 
     @Override
-    protected boolean checkExtraStartConditions(ServerLevel level, RuffianEntity ruffian) {
+    protected boolean checkExtraStartConditions(@NotNull ServerLevel level, RuffianEntity ruffian) {
         if (ruffian.isCrouchingAnxious() || !ruffian.canBecomeAnxious()) return false; //[cite: 12]
 
         float anxiety = ruffian.getPersonalityEngine().getTrait("anxiety"); //[cite: 12]
@@ -43,19 +44,19 @@ public class RuffianHideBehavior extends Behavior<RuffianEntity> {
     }
 
     @Override
-    protected boolean canStillUse(ServerLevel level, RuffianEntity ruffian, long gameTime) {
+    protected boolean canStillUse(@NotNull ServerLevel level, RuffianEntity ruffian, long gameTime) {
         return ruffian.isCrouchingAnxious() && this.hidePos != null; //[cite: 12]
     }
 
     @Override
-    protected void start(ServerLevel level, RuffianEntity ruffian, long gameTime) {
+    protected void start(@NotNull ServerLevel level, @NotNull RuffianEntity ruffian, long gameTime) {
         if (this.hidePos != null) {
             ruffian.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(this.hidePos, 1.2F, 1)); //[cite: 12]
         }
     }
 
     @Override
-    protected void tick(ServerLevel level, RuffianEntity ruffian, long gameTime) {
+    protected void tick(@NotNull ServerLevel level, @NotNull RuffianEntity ruffian, long gameTime) {
         if (this.hidePos == null) return; //[cite: 12]
 
         if (ruffian.blockPosition().closerToCenterThan(this.hidePos.getCenter(), 1.5D)) { //[cite: 12]
@@ -65,7 +66,7 @@ public class RuffianHideBehavior extends Behavior<RuffianEntity> {
     }
 
     @Override
-    protected void stop(ServerLevel level, RuffianEntity ruffian, long gameTime) {
+    protected void stop(@NotNull ServerLevel level, @NotNull RuffianEntity ruffian, long gameTime) {
         this.hidePos = null; //[cite: 12]
     }
 
