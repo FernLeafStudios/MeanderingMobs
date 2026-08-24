@@ -84,6 +84,23 @@ public class MeanderingMobsSpawnEvents {
                 RegisterSpawnPlacementsEvent.Operation.REPLACE
         );
 
+        event.register(
+                MeanderingMobsEntityRegistry.OKAPI.get(),
+                SpawnPlacementTypes.ON_GROUND,
+                Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                Mob::checkMobSpawnRules,
+                RegisterSpawnPlacementsEvent.Operation.REPLACE
+        );
+
+        event.register(
+                MeanderingMobsEntityRegistry.WOLVERINE.get(),
+                SpawnPlacementTypes.ON_GROUND,
+                Heightmap.Types.WORLD_SURFACE,
+                WolverineEntity::checkWolverineSpawnRules,
+                RegisterSpawnPlacementsEvent.Operation.REPLACE
+        );
+
+
         // --- Custom Vanilla Entity Spawn Overrides ---
 
         // Allay spawn rules

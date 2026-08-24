@@ -74,7 +74,13 @@ public class SoulOrbEntity extends ThrowableItemProjectile {
                     captureSuccess(target, serverLevel);
                 } else {
                     if (target instanceof Mob mob && this.getOwner() instanceof LivingEntity owner) {
-                        mob.setTarget(owner);
+                        if (owner instanceof Player player) {
+                            if (!player.isCreative() && !player.getAbilities().instabuild) {
+                                mob.setTarget(player);
+                            }
+                        } else {
+                            mob.setTarget(owner);
+                        }
                     }
                     shatter();
                 }

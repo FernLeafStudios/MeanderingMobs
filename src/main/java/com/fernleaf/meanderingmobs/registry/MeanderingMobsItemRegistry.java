@@ -1,10 +1,7 @@
 package com.fernleaf.meanderingmobs.registry;
 
 import com.fernleaf.meanderingmobs.MeanderingMobs;
-import com.fernleaf.meanderingmobs.server.item.ActiveSoulOrbItem;
-import com.fernleaf.meanderingmobs.server.item.PorcupineQuillItem;
-import com.fernleaf.meanderingmobs.server.item.SoulOrbItem;
-import com.fernleaf.meanderingmobs.server.item.TeguPouchItem;
+import com.fernleaf.meanderingmobs.server.item.*;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
@@ -12,6 +9,8 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.SwordItem;
+import net.minecraft.world.item.Tiers;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.common.DeferredSpawnEggItem;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -26,6 +25,11 @@ public class MeanderingMobsItemRegistry {
     public static final FoodProperties RAW_PARROT_FISH_FOOD = new FoodProperties.Builder()
             .nutrition(3)
             .saturationModifier(0.3F)
+            .build();
+
+    public static final FoodProperties COOKED_PARROT_FISH_FOOD = new FoodProperties.Builder()
+            .nutrition(6)
+            .saturationModifier(0.5F)
             .build();
 
     public static final DeferredHolder<Item, Item> RAW_PARROT_FISH = ITEMS.register("raw_parrotfish",
@@ -62,6 +66,11 @@ public class MeanderingMobsItemRegistry {
 
     public static final DeferredHolder<Item, Item> ADOPTION_CERTIFICATE = ITEMS.register("adoption_certificate",
             () -> new Item(new Item.Properties())
+    );
+
+    public static final DeferredHolder<Item, Item> CLAW_GLOVE = ITEMS.register("claw_glove",
+            () -> new ClawGloveItem(new Item.Properties()
+                    .attributes(SwordItem.createAttributes(Tiers.IRON, 2, -1.5F)))
     );
 
     // Spawn Eggs (Uses custom textures from assets/meanderingmobs/textures/item/spawn_egg/)

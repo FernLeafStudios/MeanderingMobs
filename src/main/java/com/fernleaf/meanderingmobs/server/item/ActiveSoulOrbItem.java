@@ -17,6 +17,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
 
@@ -27,7 +28,7 @@ public class ActiveSoulOrbItem extends Item {
     }
 
     @Override
-    public InteractionResult useOn(UseOnContext context) {
+    public @NotNull InteractionResult useOn(UseOnContext context) {
         Level level = context.getLevel();
         if (level.isClientSide()) {
             return InteractionResult.SUCCESS;
@@ -62,6 +63,7 @@ public class ActiveSoulOrbItem extends Item {
                 );
 
                 serverLevel.addFreshEntity(entity);
+
 
                 serverLevel.sendParticles(
                         ParticleTypes.GUST,

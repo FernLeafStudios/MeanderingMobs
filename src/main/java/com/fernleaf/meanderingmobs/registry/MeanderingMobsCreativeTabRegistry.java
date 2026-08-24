@@ -38,6 +38,9 @@ public class MeanderingMobsCreativeTabRegistry {
                         // Special Items
                         output.accept((MeanderingMobsItemRegistry.ADOPTION_CERTIFICATE.get()));
 
+                        // Weapons
+                        output.accept((MeanderingMobsItemRegistry.CLAW_GLOVE.get()));
+
                         // Spawn Eggs
                         output.accept(MeanderingMobsItemRegistry.AUKVULTURE_SPAWN_EGG.get());
                         output.accept(MeanderingMobsItemRegistry.PORCUPINE_SPAWN_EGG.get());

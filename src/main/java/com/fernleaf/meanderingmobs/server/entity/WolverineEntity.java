@@ -2,13 +2,17 @@ package com.fernleaf.meanderingmobs.server.entity;
 
 import com.fernleaf.meanderingmobs.server.entity.ai.TameableStateGoal;
 import com.fernleaf.meanderingmobs.server.entity.util.MeanderingMobsTameableEntity;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -26,6 +30,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.EnumSet;
@@ -143,6 +150,29 @@ public class WolverineEntity extends MeanderingMobsTameableEntity {
             this.mob.setTarget(this.attacker);
             super.start();
         }
+    }
+
+    public static boolean checkWolverineSpawnRules(
+            EntityType<WolverineEntity> type,
+            ServerLevelAccessor level,
+            MobSpawnType spawnType,
+            BlockPos pos,
+            RandomSource random) {
+
+        if (!level.getBlockState(pos).isAir() || !level.getBlockState(pos.above()).isAir()) {
+            return false;
+        }
+
+        if (level.getRawBrightness(pos, 0) < 8) {
+            return false;
+        }
+
+        BlockState stateBelow = level.getBlockState(pos.below());
+        return stateBelow.is(BlockTags.DIRT)
+                || stateBelow.is(BlockTags.SAND)
+                || stateBelow.is(BlockTags.SNOW)
+                || stateBelow.is(Blocks.GRAVEL)
+                || stateBelow.is(Blocks.STONE);
     }
 
     private static class WolverineOwnerHurtTargetGoal extends TargetGoal {
