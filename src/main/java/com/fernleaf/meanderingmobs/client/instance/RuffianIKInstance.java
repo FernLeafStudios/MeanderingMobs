@@ -32,8 +32,6 @@ public class RuffianIKInstance {
 
     // Secondary Dynamics
     public float breathingOffset;
-    public final SpringState hairSeg1 = new SpringState(0.0f, 0.0f);
-    public final SpringState hairSeg2 = new SpringState(0.0f, 0.0f);
     public final SpringState hairSeg3 = new SpringState(0.0f, 0.0f);
 
     public void update(LivingEntity entity, float limbSwing, float limbSwingAmount, float headPitch, float partialTick) {
@@ -49,24 +47,19 @@ public class RuffianIKInstance {
 
         if (isNapping) {
             this.rootXRot = 90.0f * Mth.DEG_TO_RAD;
-            // Push the entire model down cleanly flat to ground
-            this.rootYOffset = 10.0f; // Fine-tune this block unit to adjust exact ground depth
+            this.rootYOffset = 10.0f;
 
-            // Do NOT touch pelvic Y offset so the torso and pelvis stay anchored together
             this.pelvicYOffset = 0.0f;
             this.pelvicZOffset = 0.0f;
             this.torsoXRot = 0.0f;
             this.torsoZRot = 0.0f;
 
-            // Freeze leg walking motion
             this.leftLegXRot = 0.0f;
             this.rightLegXRot = 0.0f;
 
-            // Apply sprawled Y angle rotations
             this.leftLegYRot = 45.0f * Mth.DEG_TO_RAD;
             this.rightLegYRot = 20.0f * Mth.DEG_TO_RAD;
 
-            // Arms sprawled flat
             this.leftArmXRot = 0.2f;
             this.rightArmXRot = 0.2f;
             this.leftArmZRot = 1.35f;
@@ -80,18 +73,15 @@ public class RuffianIKInstance {
             this.leftLegYRot = 0.0f;
             this.rightLegYRot = 0.0f;
 
-            // Subtle breathing/sway while studying deeply
             float studySway = Mth.sin(age * 2.0f) * 0.02f;
-            this.torsoXRot = 0.35f; // Hunch upper body slightly forward
+            this.torsoXRot = 0.35f;
             this.torsoZRot = studySway;
 
-            // Clump hands inward tightly in front of the chest to hold the book
             this.leftArmXRot = -0.95f;
             this.rightArmXRot = -0.95f;
-            this.leftArmZRot = 0.45f;  // Pulled inward toward center
-            this.rightArmZRot = -0.45f; // Pulled inward toward center
+            this.leftArmZRot = 0.45f;
+            this.rightArmZRot = -0.45f;
 
-            // Stand still with minimal leg movement
             this.leftLegXRot = 0.0f;
             this.rightLegXRot = 0.0f;
         }
@@ -104,22 +94,18 @@ public class RuffianIKInstance {
             this.leftLegYRot = 0.0f;
             this.rightLegYRot = 0.0f;
 
-            // Relax internal body angles since root carries the main tilt
             this.torsoXRot = 0.10f;
             this.pelvicYOffset = -0.15f;
             this.pelvicZOffset = 0.0f;
 
-            // Arms reach up to shield head/face
             this.leftArmXRot = -1.10f;
             this.rightArmXRot = -1.10f;
             this.leftArmZRot = 0.30f;
             this.rightArmZRot = -0.30f;
 
-            // Keep feet angled relative to floor
             this.leftLegXRot = -0.2f;
             this.rightLegXRot = -0.2f;
 
-            // Tremble in fear
             this.torsoZRot = shiver;
         }
         else if (isPlaying) {
@@ -170,8 +156,7 @@ public class RuffianIKInstance {
 
         float hairLagTarget = -((velocityY * 0.6f) - (moveSpeed * (0.5f + (isPlaying ? 0.5f : 0.0f))) - (limbSwingAmount * 0.2f));
 
-        DynamicsUtils.updateSpring(this.hairSeg1, hairLagTarget, 5.0f, 3.5f, 0.05f);
-        DynamicsUtils.updateSpring(this.hairSeg2, this.hairSeg1.position * 0.7f, 4.0f, 3.0f, 0.05f);
-        DynamicsUtils.updateSpring(this.hairSeg3, this.hairSeg2.position * 0.7f, 3.0f, 2.5f, 0.05f);
+        // Physics spring isolated strictly to segment 3
+        DynamicsUtils.updateSpring(this.hairSeg3, hairLagTarget, 3.0f, 2.5f, 0.05f);
     }
 }

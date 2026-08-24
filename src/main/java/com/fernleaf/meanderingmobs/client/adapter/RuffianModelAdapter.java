@@ -35,23 +35,13 @@ public class RuffianModelAdapter {
                 ModelPartUtils.ifPresent(main2, main -> {
                     ModelPartUtils.ifPresent(main, body -> body.xRot += ik.breathingOffset, "body");
 
-                    ModelPartUtils.ifPresent(main, head -> {
-                        ModelPartUtils.ifPresent(head, hair -> {
-                            hair.xRot += ik.hairSeg1.position;
+                    ModelPartUtils.ifPresent(main, head -> ModelPartUtils.ifPresent(head, hair -> ModelPartUtils.ifPresent(hair, hair2 -> {
+                        float clampedPitch = Mth.clamp(head.xRot, -0.6F, 0.4F);
+                        hair2.xRot -= clampedPitch * 0.7F;
 
-                            ModelPartUtils.ifPresent(hair, hair2 -> {
-                                float clampedPitch = Mth.clamp(head.xRot, -0.6F, 0.4F);
-                                hair2.xRot -= clampedPitch * 0.7F;
-                                hair2.xRot += ik.hairSeg2.position;
-
-                                ModelPartUtils.ifPresent(hair2, hair3 -> hair3.xRot += ik.hairSeg3.position, "hair3");
-                            }, "hair2");
-
-                            float hairAbs = Mth.abs(ik.hairSeg1.position) * 0.2f;
-                            ModelPartUtils.ifPresent(hair, l -> l.zRot -= hairAbs, "left_hair");
-                            ModelPartUtils.ifPresent(hair, r -> r.zRot += hairAbs, "right_hair");
-                        }, "hair");
-                    }, "head");
+                        // Apply spring offset strictly to hair3; all child parts under hair3 inherit this
+                        ModelPartUtils.ifPresent(hair2, hair3 -> hair3.xRot += ik.hairSeg3.position, "hair3");
+                    }, "hair2"), "hair"), "head");
                 }, "main");
             }, "main2");
 
