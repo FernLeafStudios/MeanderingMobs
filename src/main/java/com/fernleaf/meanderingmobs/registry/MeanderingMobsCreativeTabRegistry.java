@@ -24,6 +24,8 @@ public class MeanderingMobsCreativeTabRegistry {
                         output.accept(MeanderingMobsItemRegistry.TEGU_SCALE.get());
                         output.accept(MeanderingMobsItemRegistry.TEGU_POUCH.get());
                         output.accept(MeanderingMobsItemRegistry.RAW_PARROT_FISH.get());
+                        output.accept(MeanderingMobsItemRegistry.COOKED_PARROT_FISH.get());
+                        output.accept(MeanderingMobsItemRegistry.WOLVERINE_FUR.get());
 
                         // Soul Tools & Tech
                         output.accept(MeanderingMobsItemRegistry.SOUL_ORB.get());
@@ -48,6 +50,9 @@ public class MeanderingMobsCreativeTabRegistry {
                         output.accept(MeanderingMobsItemRegistry.WHISP_SPAWN_EGG.get());
                         output.accept(MeanderingMobsItemRegistry.PARROTFISH_SPAWN_EGG.get());
                         output.accept(MeanderingMobsItemRegistry.SOULFLARE_SPAWN_EGG.get());
+                        output.accept(MeanderingMobsItemRegistry.OKAPI_SPAWN_EGG.get());
+                        output.accept(MeanderingMobsItemRegistry.WOLVERINE_SPAWN_EGG.get());
+                        output.accept(MeanderingMobsItemRegistry.SOUL_HOUND_SPAWN_EGG.get());
                     })
                     .build());
 

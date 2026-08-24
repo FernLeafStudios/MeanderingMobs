@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "meanderingmobs:item/spawn_egg/soul_hound_spawn_egg"
+  }
+}

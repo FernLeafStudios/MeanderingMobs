@@ -406,6 +406,14 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
             return;
         }
 
+        // Add this block so wild/unridden aukvultures swim naturally when in water
+        if (this.isInWater()) {
+            this.moveRelative(0.04F, travelVector);
+            this.move(MoverType.SELF, this.getDeltaMovement());
+            this.setDeltaMovement(this.getDeltaMovement().scale(0.85D));
+            return;
+        }
+
         this.setSpeed(0.25F);
         super.travel(travelVector);
     }
@@ -465,17 +473,20 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
     }
 
     private void handleRiderWaterTravel(Vec3 travelVector) {
-        this.moveRelative(0.008F, travelVector);
+        // Boost relative movement speed in water so it doesn't crawl like a snail
+        this.moveRelative(0.04F, travelVector);
         this.move(MoverType.SELF, this.getDeltaMovement());
         Vec3 motion = this.getDeltaMovement();
-        this.setDeltaMovement(motion.x * 0.75D, motion.y * 0.75D, motion.z * 0.75D);
+
+        // Dampen slightly less aggressively for smoother momentum
+        this.setDeltaMovement(motion.x * 0.85D, motion.y * 0.85D, motion.z * 0.85D);
 
         if (this.getFluidHeight(FluidTags.WATER) > 0.4D && !this.clientDiving) {
-            this.setDeltaMovement(this.getDeltaMovement().add(0, 0.02D, 0));
+            this.setDeltaMovement(this.getDeltaMovement().add(0, 0.03D, 0));
         }
 
         if (this.clientFlapping) {
-            this.takeoffCharge = Math.min(1.0F, this.takeoffCharge + 0.008F);
+            this.takeoffCharge = Math.min(1.0F, this.takeoffCharge + 0.015F);
             if (this.level().isClientSide() && this.getRandom().nextInt(3) == 0) {
                 this.level().addParticle(ParticleTypes.SPLASH, this.getX(), this.getY() + 0.2D, this.getZ(), 0, 0.1D, 0);
             }
@@ -483,10 +494,12 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
             this.takeoffCharge = Math.max(0.0F, this.takeoffCharge - 0.02F);
         }
 
+        // Allow launching directly out of water into flight when charge fills up
         if (this.takeoffCharge >= 1.0F && this.clientFlapping) {
             this.setFlying(true);
-            this.setDeltaMovement(this.getDeltaMovement().x, 0.75D, this.getDeltaMovement().z);
+            this.setDeltaMovement(this.getDeltaMovement().x, 0.9D, this.getDeltaMovement().z);
             this.hasImpulse = true;
+            this.takeoffCharge = 0.0F;
         }
 
         this.calculateEntityAnimation(true);

@@ -12,6 +12,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.animal.WaterAnimal;
 import net.minecraft.world.entity.animal.allay.Allay;
+import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Blocks;
@@ -46,6 +47,14 @@ public class MeanderingMobsSpawnEvents {
 
         event.register(
                 MeanderingMobsEntityRegistry.PARROT_FISH.get(),
+                SpawnPlacementTypes.IN_WATER,
+                Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                WaterAnimal::checkSurfaceWaterAnimalSpawnRules,
+                RegisterSpawnPlacementsEvent.Operation.REPLACE
+        );
+
+        event.register(
+                MeanderingMobsEntityRegistry.ANCHOVY.get(),
                 SpawnPlacementTypes.IN_WATER,
                 Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 WaterAnimal::checkSurfaceWaterAnimalSpawnRules,
@@ -97,6 +106,14 @@ public class MeanderingMobsSpawnEvents {
                 SpawnPlacementTypes.ON_GROUND,
                 Heightmap.Types.WORLD_SURFACE,
                 WolverineEntity::checkWolverineSpawnRules,
+                RegisterSpawnPlacementsEvent.Operation.REPLACE
+        );
+
+        event.register(
+                MeanderingMobsEntityRegistry.HOLLOW_RUFFIAN.get(),
+                SpawnPlacementTypes.ON_GROUND,
+                Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                HollowRuffianEntity::checkHollowRuffianSpawnRules,
                 RegisterSpawnPlacementsEvent.Operation.REPLACE
         );
 

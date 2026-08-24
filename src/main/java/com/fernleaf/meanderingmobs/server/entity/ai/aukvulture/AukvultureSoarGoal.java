@@ -31,7 +31,7 @@ public class AukvultureSoarGoal extends Goal {
 
         if (this.auk.isFlying()) return true;
 
-        // Ensure mob is on solid ground before trying to initiate takeoff
+        // Ensure the mob is on solid ground before trying to initiate takeoff
         return this.auk.onGround() && this.auk.getRandom().nextInt(160) == 0;
     }
 
@@ -104,7 +104,7 @@ public class AukvultureSoarGoal extends Goal {
     private void pickNewSoarTarget() {
         BlockPos currentBlock = this.auk.blockPosition();
 
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 15; i++) {
             int rx = currentBlock.getX() + this.auk.getRandom().nextInt(120) - 60;
             int rz = currentBlock.getZ() + this.auk.getRandom().nextInt(120) - 60;
 
@@ -118,13 +118,22 @@ public class AukvultureSoarGoal extends Goal {
             int targetY = groundY + 12 + this.auk.getRandom().nextInt(8);
             Vec3 candidatePos = new Vec3(rx, targetY, rz);
 
+            // 1. Check line-of-sight from current position to candidate position
             BlockHitResult hit = this.auk.level().clip(new ClipContext(
                     this.auk.position(), candidatePos, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this.auk
             ));
 
             if (hit.getType() == HitResult.Type.MISS) {
-                this.targetPos = candidatePos;
-                return;
+                // 2. Extra Safety: Check if there is a ceiling directly above the bird right now so it doesn't ram a tree instantly on takeoff
+                Vec3 upCheckEnd = this.auk.position().add(0, 6.0D, 0);
+                BlockHitResult ceilingHit = this.auk.level().clip(new ClipContext(
+                        this.auk.position(), upCheckEnd, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this.auk
+                ));
+
+                if (ceilingHit.getType() == HitResult.Type.MISS) {
+                    this.targetPos = candidatePos;
+                    return;
+                }
             }
         }
     }

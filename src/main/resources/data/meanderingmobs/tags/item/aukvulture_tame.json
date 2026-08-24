@@ -1,6 +1,7 @@
 {
   "values": [
-    "#c:raw_food/fish",
-    "meanderingmobs:raw_parrotfish"
+    "meanderingmobs:raw_parrotfish",
+    "minecraft:salmon",
+    "minecraft:cod"
   ]
 }

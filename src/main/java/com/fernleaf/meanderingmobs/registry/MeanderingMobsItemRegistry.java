@@ -36,6 +36,10 @@ public class MeanderingMobsItemRegistry {
             () -> new Item(new Item.Properties().food(RAW_PARROT_FISH_FOOD))
     );
 
+    public static final DeferredHolder<Item, Item> COOKED_PARROT_FISH = ITEMS.register("cooked_parrotfish",
+            () -> new Item(new Item.Properties().food(COOKED_PARROT_FISH_FOOD))
+    );
+
     public static final DeferredHolder<Item, Item> SOUL_ORB = ITEMS.register("soul_orb",
             () -> new SoulOrbItem(new Item.Properties().stacksTo(16))
     );
@@ -65,6 +69,10 @@ public class MeanderingMobsItemRegistry {
     );
 
     public static final DeferredHolder<Item, Item> ADOPTION_CERTIFICATE = ITEMS.register("adoption_certificate",
+            () -> new Item(new Item.Properties())
+    );
+
+    public static final DeferredHolder<Item, Item> WOLVERINE_FUR = ITEMS.register("wolverine_fur",
             () -> new Item(new Item.Properties())
     );
 
@@ -102,6 +110,21 @@ public class MeanderingMobsItemRegistry {
     public static final DeferredHolder<Item, Item> SOULFLARE_SPAWN_EGG = registerSpawnEgg(
             "soulflare",
             MeanderingMobsEntityRegistry.SOULFLARE
+    );
+
+    public static final DeferredHolder<Item, Item> OKAPI_SPAWN_EGG = registerSpawnEgg(
+            "okapi",
+            MeanderingMobsEntityRegistry.OKAPI
+    );
+
+    public static final DeferredHolder<Item, Item> WOLVERINE_SPAWN_EGG = registerSpawnEgg(
+            "wolverine",
+            MeanderingMobsEntityRegistry.WOLVERINE
+    );
+
+    public static final DeferredHolder<Item, Item> SOUL_HOUND_SPAWN_EGG = registerSpawnEgg(
+            "soul_hound",
+            MeanderingMobsEntityRegistry.SOUL_HOUND
     );
 
     /**

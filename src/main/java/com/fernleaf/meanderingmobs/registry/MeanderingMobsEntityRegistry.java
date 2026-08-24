@@ -1,6 +1,7 @@
 package com.fernleaf.meanderingmobs.registry;
 
 import com.fernleaf.meanderingmobs.MeanderingMobs;
+import com.fernleaf.meanderingmobs.client.model.anchovy.AnchovyModel;
 import com.fernleaf.meanderingmobs.client.model.aukvulture.AukvultureModel;
 import com.fernleaf.meanderingmobs.client.model.crystal.RallyCrystalModel;
 import com.fernleaf.meanderingmobs.client.model.okapi.OkapiModel;
@@ -154,6 +155,13 @@ public class MeanderingMobsEntityRegistry {
                             .clientTrackingRange(8)
                             .build("wolverine")
             );
+    public static final DeferredHolder<EntityType<?>, EntityType<AnchovyEntity>> ANCHOVY =
+            ENTITIES.register("anchovy", () ->
+                    EntityType.Builder.of(AnchovyEntity::new, MobCategory.WATER_CREATURE)
+                            .sized(0.4F, 0.4F)
+                            .clientTrackingRange(8)
+                            .build("anchovy")
+            );
 
     // Update 3 Mobs
     public static final DeferredHolder<EntityType<?>, EntityType<VampireEntity>> VAMPIRE =
@@ -196,6 +204,7 @@ public class MeanderingMobsEntityRegistry {
             event.put(PILOT_WHALE.get(), PilotWhaleEntity.createAttributes().build());
             event.put(OKAPI.get(), OkapiEntity.createAttributes().build());
             event.put(WOLVERINE.get(), WolverineEntity.createAttributes().build());
+            event.put(ANCHOVY.get(), AnchovyEntity.createAttributes().build());
         }
     }
 
@@ -220,6 +229,7 @@ public class MeanderingMobsEntityRegistry {
             event.registerEntityRenderer(PILOT_WHALE.get(), PilotWhaleRenderer::new);
             event.registerEntityRenderer(OKAPI.get(), OkapiRenderer::new);
             event.registerEntityRenderer(WOLVERINE.get(), WolverineRenderer::new);
+            event.registerEntityRenderer(ANCHOVY.get(), AnchovyRenderer::new);
         }
 
         @SubscribeEvent
@@ -238,6 +248,7 @@ public class MeanderingMobsEntityRegistry {
             event.registerLayerDefinition(RuffianModel.LAYER_LOCATION, RuffianModel::createBodyLayer);
             event.registerLayerDefinition(OkapiModel.LAYER_LOCATION, OkapiModel::createBodyLayer);
             event.registerLayerDefinition(WolverineModel.LAYER_LOCATION, WolverineModel::createBodyLayer);
+            event.registerLayerDefinition(AnchovyModel.LAYER_LOCATION, AnchovyModel::createBodyLayer);
 
             // Update 3
             event.registerLayerDefinition(RaspberryVampireModel.LAYER_LOCATION, RaspberryVampireModel::createBodyLayer);

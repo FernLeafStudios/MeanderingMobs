@@ -21,6 +21,7 @@
   "entity.meanderingmobs.parrotfish": "Bumphead Parrotfish",
   "item.meanderingmobs.parrotfish_spawn_egg": "Bumphead Parrotfish Spawn Egg",
   "item.meanderingmobs.raw_parrotfish": "Raw Parrotfish",
+  "item.meanderingmobs.cooked_parrotfish": "Coooked Parrotfish",
 
   "entity.meanderingmobs.soulflare": "Soulflare",
   "item.meanderingmobs.soulflare_spawn_egg": "Soulflare Spawn Egg",
@@ -28,7 +29,8 @@
   "item.meanderingmobs.soul_orb_active": "Active Soul Orb",
   "item.meanderingmobs.soul_rod": "Soul Rod",
 
-  "entity.meanderingmobs.soul_hound": "Soulhound",
+  "entity.meanderingmobs.soul_hound": "Soul Hound",
+  "item.meanderingmobs.soul_hound_spawn_egg": "Soul Hound Spawn Egg",
 
   "entity.meanderingmobs.rally_crystal": "Rally Crystal",
   "message.meanderingmobs.rally_crystal.emerge": "The air grows cold as souls rally...",
@@ -69,11 +71,14 @@
   "message.ruffian.work": "Ruffian is now working",
 
   "entity.meanderingmobs.okapi": "Okapi",
+  "item.meanderingmobs.okapi_spawn_egg": "Okapi Spawn Egg",
   "message.okapi.wander": "Okapi is now wandering",
   "message.okapi.sit": "Okapi is now staying",
   "message.okapi.follow": "Okapi is now following",
 
   "entity.meanderingmobs.wolverine": "Wolverine",
+  "item.meanderingmobs.wolverine_spawn_egg": "Wolverine Spawn Egg",
+  "item.meanderingmobs.wolverine_fur": "Wolverine Fur",
   "message.wolverine.wander": "Wolverine is now wandering",
   "message.wolverine.sit": "Wolverine is now staying",
   "message.wolverine.follow": "Wolverine is now following"

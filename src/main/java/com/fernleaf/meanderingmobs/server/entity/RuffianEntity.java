@@ -133,7 +133,8 @@ public class RuffianEntity extends MeanderingMobsTameableEntity {
         // Chores Activity
         brain.addActivity(RuffianActivities.CHORES.get(), 5, ImmutableList.of(
                 new RuffianSmeltBehavior(),
-                new RuffianRepairBehavior()
+                new RuffianRepairBehavior(),
+                new RuffianBrewBehavior()
         ));
 
         // Idle Activity

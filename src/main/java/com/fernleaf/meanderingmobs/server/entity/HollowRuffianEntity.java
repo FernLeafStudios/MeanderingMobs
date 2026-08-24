@@ -2,17 +2,25 @@ package com.fernleaf.meanderingmobs.server.entity;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
+import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.gameevent.DynamicGameEventListener;
 import net.minecraft.world.level.gameevent.EntityPositionSource;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -50,6 +58,14 @@ public class HollowRuffianEntity extends Monster implements VibrationSystem {
         this.goalSelector.addGoal(0, new FloatGoal(this));
         this.goalSelector.addGoal(1, new MeleeAttackGoal(this, 1.25D, false));
         this.goalSelector.addGoal(2, new WaterAvoidingRandomStrollGoal(this, 0.8D));
+        this.targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(
+                this,
+                LivingEntity.class,
+                10,
+                true,
+                false,
+                entity -> !(entity instanceof Monster) && entity.canBeSeenAsEnemy()
+        ));
     }
 
     @Override
@@ -90,14 +106,17 @@ public class HollowRuffianEntity extends Monster implements VibrationSystem {
 
         this.shriekCooldown = 100;
 
-        level.playSound(null, this.blockPosition(), net.minecraft.sounds.SoundEvents.SCULK_SHRIEKER_SHRIEK,
-                net.minecraft.sounds.SoundSource.HOSTILE, 1.5F, 1.0F);
-        level.sendParticles(net.minecraft.core.particles.ParticleTypes.SCULK_SOUL,
+        level.playSound(null, this.blockPosition(), SoundEvents.SCULK_SHRIEKER_SHRIEK,
+                SoundSource.HOSTILE, 1.5F, 1.0F);
+        level.sendParticles(ParticleTypes.SCULK_SOUL,
                 this.getX(), this.getEyeY(), this.getZ(), 15, 0.3, 0.5, 0.3, 0.05);
 
         net.minecraft.world.phys.AABB searchBox = this.getBoundingBox().inflate(36.0D);
         level.getEntitiesOfClass(Monster.class, searchBox, mob -> mob != this && mob.isAlive()).forEach(hostile -> {
-            // Double check target validity before alerting each mob
+            if (hostile instanceof Creeper) {
+                return;
+            }
+
             if (targetPlayer.canBeSeenAsEnemy()) {
                 hostile.setTarget(targetPlayer);
                 hostile.getNavigation().moveTo(targetPlayer, 1.25D);
@@ -110,6 +129,18 @@ public class HollowRuffianEntity extends Monster implements VibrationSystem {
         if (this.level() instanceof ServerLevel serverLevel) {
             consumer.accept(this.vibrationListener, serverLevel);
         }
+    }
+
+    public static boolean checkHollowRuffianSpawnRules(
+            EntityType<HollowRuffianEntity> type,
+            ServerLevelAccessor level,
+            MobSpawnType spawnType,
+            BlockPos pos,
+            RandomSource random) {
+
+        // Use checkMonsterSpawnRules which handles standard surface/cave monster spawning criteria properly
+        return level.getDifficulty() != net.minecraft.world.Difficulty.PEACEFUL
+                && Monster.checkMonsterSpawnRules(type, level, spawnType, pos, random);
     }
 
     // --- Vibration User Logic ---
@@ -149,9 +180,12 @@ public class HollowRuffianEntity extends Monster implements VibrationSystem {
             // Move to sound source
             HollowRuffianEntity.this.getNavigation().moveTo(pos.getX(), pos.getY(), pos.getZ(), 1.25D);
 
-            // If a player made noise within close range, shriek and summon the horde!
-            if (entity instanceof LivingEntity livingTarget && !(entity instanceof HollowRuffianEntity)) {
-                // Check if the target is a player and ignore them if they are in Creative or Spectator mode
+            // Only respond to valid living targets (players, etc.), ignoring monsters and non-enemies
+            if (entity instanceof LivingEntity livingTarget
+                    && !(livingTarget instanceof Monster)
+                    && livingTarget.canBeSeenAsEnemy()
+                    && !(entity instanceof HollowRuffianEntity)) {
+
                 if (livingTarget instanceof net.minecraft.world.entity.player.Player player) {
                     if (player.isCreative() || player.isSpectator()) {
                         return;
@@ -159,7 +193,7 @@ public class HollowRuffianEntity extends Monster implements VibrationSystem {
                 }
 
                 HollowRuffianEntity.this.setTarget(livingTarget);
-                if (distance <= 4.0F) { // Updated to match your expanded range!
+                if (distance <= 4.0F) {
                     HollowRuffianEntity.this.triggerSculkShriek(level, livingTarget);
                 }
             }
