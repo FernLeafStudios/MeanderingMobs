@@ -1,15 +1,24 @@
 package com.fernleaf.meanderingmobs.server.entity;
 
+import com.fernleaf.meanderingmobs.server.entity.ai.OwnerHurtByTargetGoal;
+import com.fernleaf.meanderingmobs.server.entity.ai.OwnerHurtTargetGoal;
 import com.fernleaf.meanderingmobs.server.entity.ai.TameableStateGoal;
+import com.fernleaf.meanderingmobs.server.entity.ai.wolverine.WolverineAttackGoal;
+import com.fernleaf.meanderingmobs.server.entity.ai.wolverine.WolverineClimbGoal;
 import com.fernleaf.meanderingmobs.server.entity.util.MeanderingMobsTameableEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.AnimationState;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
@@ -18,13 +27,12 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
-import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
-import net.minecraft.world.entity.ai.goal.target.TargetGoal;
-import net.minecraft.world.entity.ai.targeting.TargetingConditions;
+import net.minecraft.world.entity.ai.navigation.PathNavigation;
+import net.minecraft.world.entity.ai.navigation.WallClimberNavigation;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -34,8 +42,6 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.EnumSet;
 
 public class WolverineEntity extends MeanderingMobsTameableEntity {
 
@@ -49,28 +55,105 @@ public class WolverineEntity extends MeanderingMobsTameableEntity {
             ResourceLocation.fromNamespaceAndPath("meanderingmobs", "wolverine_hates")
     );
 
+    private static final EntityDataAccessor<Byte> DATA_FLAGS_ID =
+            SynchedEntityData.defineId(WolverineEntity.class, EntityDataSerializers.BYTE);
+
+    @Override
+    protected void defineSynchedData(SynchedEntityData.@NotNull Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(DATA_FLAGS_ID, (byte)0);
+    }
+
+    // Client Animation States
+    public final AnimationState idleAnimationState = new AnimationState();
+    public final AnimationState walkAnimationState = new AnimationState();
+    public final AnimationState runAnimationState = new AnimationState();
+    public final AnimationState attackAnimationState = new AnimationState();
+
     public WolverineEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
         super(entityType, level);
+    }
+
+    @Override
+    protected @NotNull PathNavigation createNavigation(@NotNull Level level) {
+        return new WallClimberNavigation(this, level);
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+
+        if (this.level().isClientSide()) {
+            this.setupAnimationStates();
+        }
+    }
+
+    @Override
+    public boolean onClimbable() {
+        return this.isClimbing();
+    }
+
+    public boolean isClimbing() {
+        return (this.entityData.get(DATA_FLAGS_ID) & 1) != 0;
+    }
+
+    public void setClimbing(boolean climbing) {
+        byte b0 = this.entityData.get(DATA_FLAGS_ID);
+        if (climbing) {
+            b0 = (byte)(b0 | 1);
+        } else {
+            b0 = (byte)(b0 & -2);
+        }
+        this.entityData.set(DATA_FLAGS_ID, b0);
+    }
+
+    private void setupAnimationStates() {
+        if (!this.isSprinting() && this.getDeltaMovement().horizontalDistanceSqr() < 1.0E-6D) {
+            this.idleAnimationState.startIfStopped(this.tickCount);
+        } else {
+            this.idleAnimationState.stop();
+        }
+
+        if (this.isSprinting()) {
+            this.runAnimationState.startIfStopped(this.tickCount);
+            this.walkAnimationState.stop();
+        } else if (this.getDeltaMovement().horizontalDistanceSqr() >= 1.0E-6D) {
+            this.walkAnimationState.startIfStopped(this.tickCount);
+            this.runAnimationState.stop();
+        } else {
+            this.walkAnimationState.stop();
+            this.runAnimationState.stop();
+        }
+    }
+
+    @Override
+    public void handleEntityEvent(byte id) {
+        if (id == 4) {
+            this.attackAnimationState.start(this.tickCount);
+        } else {
+            super.handleEntityEvent(id);
+        }
     }
 
     @Override
     protected void registerGoals() {
         // Core Movement & Action Goals
         this.goalSelector.addGoal(0, new FloatGoal(this));
-        this.goalSelector.addGoal(1, new TameableStateGoal(this));
-        this.goalSelector.addGoal(2, new MeleeAttackGoal(this, 1.25D, true));
-        this.goalSelector.addGoal(3, new WaterAvoidingRandomStrollGoal(this, 1.0D));
-        this.goalSelector.addGoal(4, new LookAtPlayerGoal(this, Player.class, 6.0F));
-        this.goalSelector.addGoal(5, new RandomLookAroundGoal(this));
+        this.goalSelector.addGoal(1, new WolverineClimbGoal(this));
+        this.goalSelector.addGoal(2, new TameableStateGoal(this));
+        this.goalSelector.addGoal(3, new WolverineAttackGoal(this, 1.25D, true));
+        this.goalSelector.addGoal(4, new WaterAvoidingRandomStrollGoal(this, 1.0D));
+        this.goalSelector.addGoal(5, new LookAtPlayerGoal(this, Player.class, 6.0F));
+        this.goalSelector.addGoal(6, new RandomLookAroundGoal(this));
 
         // Tamed Owner Protection Goals
-        this.targetSelector.addGoal(1, new WolverineOwnerHurtByTargetGoal(this));
-        this.targetSelector.addGoal(2, new WolverineOwnerHurtTargetGoal(this));
+        this.targetSelector.addGoal(1, new OwnerHurtByTargetGoal(this));
+        this.targetSelector.addGoal(2, new OwnerHurtTargetGoal(this));
 
         // Self Defense
         this.targetSelector.addGoal(3, new HurtByTargetGoal(this).setAlertOthers());
 
-        // Wild Aggression Tag Selector (Targets anything in #meanderingmobs:wolverine_hates when untamed)
+        // Wild Aggression Tag Selector
         this.targetSelector.addGoal(4, new NearestAttackableTargetGoal<>(
                 this,
                 LivingEntity.class,
@@ -98,15 +181,23 @@ public class WolverineEntity extends MeanderingMobsTameableEntity {
         ItemStack heldStack = player.getItemInHand(hand);
 
         if (!isTamed() && heldStack.is(WOLVERINE_TAMEABLE)) {
-            if (!player.getAbilities().instabuild) {
-                heldStack.shrink(1);
-            }
+            boolean isLowHealth = this.getHealth() <= (this.getMaxHealth() * 0.25F);
 
-            if (!this.level().isClientSide()) {
-                if (this.random.nextInt(3) == 0) {
-                    tame(player);
-                    this.level().broadcastEntityEvent(this, (byte) 7);
-                } else {
+            if (isLowHealth) {
+                if (!player.getAbilities().instabuild) {
+                    heldStack.shrink(1);
+                }
+
+                if (!this.level().isClientSide()) {
+                    if (this.random.nextInt(3) == 0) {
+                        tame(player);
+                        this.level().broadcastEntityEvent(this, (byte) 7); // Heart particles
+                    } else {
+                        this.level().broadcastEntityEvent(this, (byte) 6); // Smoke particles
+                    }
+                }
+            } else {
+                if (!this.level().isClientSide()) {
                     this.level().broadcastEntityEvent(this, (byte) 6);
                 }
             }
@@ -119,37 +210,6 @@ public class WolverineEntity extends MeanderingMobsTameableEntity {
         }
 
         return super.mobInteract(player, hand);
-    }
-
-    // --- Custom Owner Target Protection Goals ---
-
-    private static class WolverineOwnerHurtByTargetGoal extends TargetGoal {
-        private final WolverineEntity wolverine;
-        private LivingEntity attacker;
-
-        public WolverineOwnerHurtByTargetGoal(WolverineEntity wolverine) {
-            super(wolverine, false);
-            this.wolverine = wolverine;
-            this.setFlags(EnumSet.of(Flag.TARGET));
-        }
-
-        @Override
-        public boolean canUse() {
-            if (this.wolverine.isTamed() && this.wolverine.isSitting()) {
-                LivingEntity owner = this.wolverine.getOwner();
-                if (owner != null) {
-                    this.attacker = owner.getLastHurtByMob();
-                    return this.attacker != null && this.canAttack(this.attacker, TargetingConditions.DEFAULT);
-                }
-            }
-            return false;
-        }
-
-        @Override
-        public void start() {
-            this.mob.setTarget(this.attacker);
-            super.start();
-        }
     }
 
     public static boolean checkWolverineSpawnRules(
@@ -175,32 +235,15 @@ public class WolverineEntity extends MeanderingMobsTameableEntity {
                 || stateBelow.is(Blocks.STONE);
     }
 
-    private static class WolverineOwnerHurtTargetGoal extends TargetGoal {
-        private final WolverineEntity wolverine;
-        private LivingEntity target;
+    @Override
+    public void addAdditionalSaveData(@NotNull CompoundTag compound) {
+        super.addAdditionalSaveData(compound);
+        compound.putBoolean("IsClimbing", this.isClimbing());
+    }
 
-        public WolverineOwnerHurtTargetGoal(WolverineEntity wolverine) {
-            super(wolverine, false);
-            this.wolverine = wolverine;
-            this.setFlags(EnumSet.of(Flag.TARGET));
-        }
-
-        @Override
-        public boolean canUse() {
-            if (this.wolverine.isTamed() && this.wolverine.isSitting()) {
-                LivingEntity owner = this.wolverine.getOwner();
-                if (owner != null) {
-                    this.target = owner.getLastHurtMob();
-                    return this.target != null && this.canAttack(this.target, TargetingConditions.DEFAULT);
-                }
-            }
-            return false;
-        }
-
-        @Override
-        public void start() {
-            this.mob.setTarget(this.target);
-            super.start();
-        }
+    @Override
+    public void readAdditionalSaveData(@NotNull CompoundTag compound) {
+        super.readAdditionalSaveData(compound);
+        this.setClimbing(compound.getBoolean("IsClimbing"));
     }
 }

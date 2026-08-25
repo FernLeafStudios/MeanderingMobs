@@ -49,7 +49,7 @@ public class RuffianIKInstance {
 
         float targetYOffset = 0.0F;
 
-        // --- 1. IDLE BOP & BREATHING ---
+        // Idly bopping
         if (!isNapping) {
             // Subtle breathing bop (kept minimal so it doesn't sink)
             targetYOffset = Mth.sin(age * 0.08F) * 0.02F;
@@ -60,6 +60,12 @@ public class RuffianIKInstance {
                 targetRArmZ = -Mth.cos(age * 0.08F) * 0.05F - 0.1F;
                 targetLArmX = Mth.sin(age * 0.06F) * 0.08F;
                 targetRArmX = -Mth.sin(age * 0.06F) * 0.08F;
+            } else if (!isPlaying) {
+                // Lean torso forward (positive X rotation) proportional to how fast they are moving
+                targetTorsoX = limbSwingAmount * 0.35F;
+
+                // Slight head counter-balance so they look ahead while leaning forward
+                targetHeadX = -targetTorsoX * 0.5F;
             }
         }
 

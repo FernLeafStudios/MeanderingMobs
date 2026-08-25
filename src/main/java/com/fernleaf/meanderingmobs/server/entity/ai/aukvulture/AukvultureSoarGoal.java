@@ -17,6 +17,11 @@ public class AukvultureSoarGoal extends Goal {
     private int flightTimer = 0;
     private int cooldown = 0;
 
+    // Enhanced Stuck & Escape Counters
+    private Vec3 lastCheckPos = Vec3.ZERO;
+    private int stuckTicks = 0;
+    private int totalStuckTicks = 0; // Tracks total duration wedged in geometry
+
     public AukvultureSoarGoal(AukvultureEntity auk) {
         this.auk = auk;
         this.setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
@@ -31,7 +36,6 @@ public class AukvultureSoarGoal extends Goal {
 
         if (this.auk.isFlying()) return true;
 
-        // Ensure the mob is on solid ground before trying to initiate takeoff
         return this.auk.onGround() && this.auk.getRandom().nextInt(160) == 0;
     }
 
@@ -43,10 +47,13 @@ public class AukvultureSoarGoal extends Goal {
     @Override
     public void start() {
         this.flightTimer = 0;
+        this.stuckTicks = 0;
+        this.totalStuckTicks = 0;
+        this.lastCheckPos = this.auk.position();
+
         if (!this.auk.isFlying()) {
             this.auk.setFlying(true);
 
-            // Push outward from looking direction and upward to clear cliffs cleanly
             Vec3 forward = this.auk.getLookAngle();
             this.auk.setDeltaMovement(new Vec3(forward.x * 0.4D, 0.45D, forward.z * 0.4D));
             this.auk.hasImpulse = true;
@@ -68,7 +75,30 @@ public class AukvultureSoarGoal extends Goal {
             return;
         }
 
-        // Must remain airborne for at least 80 ticks (4s) before considering landing
+        // --- STUCK DETECTION ---
+        double xzDistanceSqr = currentPos.subtract(this.lastCheckPos).horizontalDistanceSqr();
+        if (xzDistanceSqr < 0.01D) {
+            this.stuckTicks++;
+            this.totalStuckTicks++;
+
+            // Fail-safe: Irrecoverably jammed in leaves for 3 seconds (60 ticks) -> Force Land
+            if (this.totalStuckTicks >= 60) {
+                this.stopAndCooldown();
+                return;
+            }
+
+            // Quick turn attempt after 10 ticks
+            if (this.stuckTicks >= 10) {
+                this.turnAroundFromObstacle();
+                this.stuckTicks = 0;
+            }
+        } else {
+            this.stuckTicks = 0;
+            this.totalStuckTicks = Math.max(0, this.totalStuckTicks - 2); // Decay accumulated stuck time on movement
+        }
+        this.lastCheckPos = currentPos;
+
+        // Landing Check after 80 ticks
         if (this.flightTimer > 80) {
             Vec3 downRayEnd = currentPos.subtract(0, 8.0D, 0);
             BlockHitResult groundHit = this.auk.level().clip(new ClipContext(
@@ -95,9 +125,17 @@ public class AukvultureSoarGoal extends Goal {
         }
     }
 
+    private void turnAroundFromObstacle() {
+        Vec3 backward = this.auk.getLookAngle().reverse();
+        this.targetPos = this.auk.position().add(backward.x * 25.0D, 6.0D, backward.z * 25.0D);
+        this.auk.setDeltaMovement(backward.x * 0.5D, 0.35D, backward.z * 0.5D);
+        this.auk.hasImpulse = true;
+        this.auk.getMoveControl().setWantedPosition(this.targetPos.x, this.targetPos.y, this.targetPos.z, 1.2D);
+    }
+
     private void stopAndCooldown() {
         this.auk.setFlying(false);
-        this.cooldown = 200 + this.auk.getRandom().nextInt(200); // 10-20 sec cooldown before next flight
+        this.cooldown = 200 + this.auk.getRandom().nextInt(200);
         this.stop();
     }
 
@@ -118,13 +156,11 @@ public class AukvultureSoarGoal extends Goal {
             int targetY = groundY + 12 + this.auk.getRandom().nextInt(8);
             Vec3 candidatePos = new Vec3(rx, targetY, rz);
 
-            // 1. Check line-of-sight from current position to candidate position
             BlockHitResult hit = this.auk.level().clip(new ClipContext(
                     this.auk.position(), candidatePos, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this.auk
             ));
 
             if (hit.getType() == HitResult.Type.MISS) {
-                // 2. Extra Safety: Check if there is a ceiling directly above the bird right now so it doesn't ram a tree instantly on takeoff
                 Vec3 upCheckEnd = this.auk.position().add(0, 6.0D, 0);
                 BlockHitResult ceilingHit = this.auk.level().clip(new ClipContext(
                         this.auk.position(), upCheckEnd, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this.auk

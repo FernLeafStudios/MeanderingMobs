@@ -3,6 +3,8 @@ package com.fernleaf.meanderingmobs.server.entity;
 import com.fernleaf.meanderingmobs.client.model.tegu.TeguVariant;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsItemRegistry;
 import com.fernleaf.meanderingmobs.server.data.VariantSpawnManager;
+import com.fernleaf.meanderingmobs.server.entity.ai.OwnerHurtByTargetGoal;
+import com.fernleaf.meanderingmobs.server.entity.ai.OwnerHurtTargetGoal;
 import com.fernleaf.meanderingmobs.server.entity.ai.TameableStateGoal;
 import com.fernleaf.meanderingmobs.server.entity.ai.tegu.TeguShedGoal;
 import com.fernleaf.meanderingmobs.server.entity.ai.tegu.TeguStealFromChestGoal;
@@ -92,6 +94,9 @@ public class TeguEntity extends MeanderingMobsTameableEntity {
         this.goalSelector.addGoal(6, new RandomLookAroundGoal(this));
 
         this.targetSelector.addGoal(1, new HurtByTargetGoal(this).setAlertOthers());
+
+        this.targetSelector.addGoal(1, new OwnerHurtByTargetGoal(this));
+        this.targetSelector.addGoal(2, new OwnerHurtTargetGoal(this));
     }
 
     @Override

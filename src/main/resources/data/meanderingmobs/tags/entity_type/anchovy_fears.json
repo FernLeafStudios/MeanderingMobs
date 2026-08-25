@@ -1,7 +1,27 @@
 {
   "values": [
-    "minecraft:player",
+    "minecraft:dolphin",
     "meanderingmobs:pilot_whale",
-    "meanderingmobs:parrotfish"
+    "meanderingmobs:parrotfish",
+    {
+      "id": "primal:shark",
+      "required": false
+    },
+    {
+      "id": "alexsmobs:hammerhead_shark",
+      "required": false
+    },
+    {
+      "id": "alexsmobs:frilled_shark",
+      "required": false
+    },
+    {
+      "id": "naturalist:great_white_shark",
+      "required": false
+    },
+    {
+      "id": "naturalist:whale",
+      "required": false
+    }
   ]
 }

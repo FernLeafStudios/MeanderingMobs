@@ -8,6 +8,30 @@
     "minecraft:cow",
     "minecraft:chicken",
     "minecraft:pig",
-    "minecraft:rabbit"
+    "minecraft:rabbit",
+    {
+      "id": "primal:deer",
+      "required": false
+    },
+    {
+      "id": "primal:lion",
+      "required": false
+    },
+    {
+      "id": "primal:bear",
+      "required": false
+    },
+    {
+      "id": "ecologics:squirrel",
+      "required": false
+    },
+    {
+      "id": "naturalist:boar",
+      "required": false
+    },
+    {
+      "id": "alexsmobs:moose",
+      "required": false
+    }
   ]
 }

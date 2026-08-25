@@ -4,7 +4,12 @@
     "#minecraft:skeletons",
     "#minecraft:raiders",
     "minecraft:zombie",
+    "minecraft:husk",
+    "minecraft:drowned",
+    "minecraft:slime",
     "minecraft:creeper",
-    "minecraft:spider"
+    "minecraft:spider",
+    "meanderingmobs:hollow_ruffian",
+    "minecraft:creeper"
   ]
 }

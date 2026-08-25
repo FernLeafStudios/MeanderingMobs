@@ -80,6 +80,10 @@ public abstract class MeanderingMobsTameableEntity extends MeanderingMobsEntity 
         setAiState(CommandState.FOLLOW.id);
     }
 
+    public boolean isSitting() {
+        return this.isTamed() && this.getCommandState() == CommandState.SIT;
+    }
+
     // --- AI Command States ---
     public int getAiState() {
         return this.entityData.get(DATA_AI_STATE);
