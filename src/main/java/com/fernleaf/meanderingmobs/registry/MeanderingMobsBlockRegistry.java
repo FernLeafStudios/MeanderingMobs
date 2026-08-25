@@ -1,6 +1,7 @@
 package com.fernleaf.meanderingmobs.registry;
 
 import com.fernleaf.meanderingmobs.MeanderingMobs;
+import com.fernleaf.meanderingmobs.server.block.AuroraBlock;
 import com.fernleaf.meanderingmobs.server.block.ChannelCrystalChainBlock;
 import com.fernleaf.meanderingmobs.server.block.ChannelCrystalClusterBlock;
 import com.fernleaf.meanderingmobs.server.block.ChannelCrystalLampBlock;
@@ -65,6 +66,19 @@ public class MeanderingMobsBlockRegistry {
     );
     public static final DeferredHolder<Item, BlockItem> CHANNEL_CRYSTAL_CLUSTER_ITEM = ITEMS.register("channel_crystal_cluster",
             () -> new BlockItem(CHANNEL_CRYSTAL_CLUSTER.get(), new Item.Properties())
+    );
+
+    // 4. Aurora Block
+    public static final DeferredHolder<Block, AuroraBlock> AURORA_BLOCK = BLOCKS.register("aurora_block",
+            () -> new AuroraBlock(BlockBehaviour.Properties.of()
+                    .strength(0.2F)
+                    .sound(SoundType.POWDER_SNOW)
+                    .noOcclusion()
+                    .noCollission()
+            )
+    );
+    public static final DeferredHolder<Item, BlockItem> AURORA_BLOCK_ITEM = ITEMS.register("aurora_block",
+            () -> new BlockItem(AURORA_BLOCK.get(), new Item.Properties())
     );
 
     public static void register(IEventBus eventBus) {
