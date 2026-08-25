@@ -1,6 +1,6 @@
 package com.fernleaf.meanderingmobs.server.entity.ai.soulflare;
 
-import com.fernleaf.meanderingmobs.server.entity.SoulFlareEntity;
+import com.fernleaf.meanderingmobs.server.entity.hostile.SoulFlareEntity;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.LivingEntity;

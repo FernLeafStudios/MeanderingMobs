@@ -2,7 +2,7 @@ package com.fernleaf.meanderingmobs.client.model.aukvulture;
 
 import com.fernleaf.meanderingmobs.MeanderingMobs;
 import com.fernleaf.meanderingmobs.client.animation.AukvultureAnimations;
-import com.fernleaf.meanderingmobs.server.entity.AukvultureEntity;
+import com.fernleaf.meanderingmobs.server.entity.tameable.AukvultureEntity;
 import net.minecraft.client.model.HierarchicalModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;

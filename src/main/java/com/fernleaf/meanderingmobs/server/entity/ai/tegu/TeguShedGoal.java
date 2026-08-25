@@ -1,7 +1,7 @@
 package com.fernleaf.meanderingmobs.server.entity.ai.tegu;
 
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsItemRegistry;
-import com.fernleaf.meanderingmobs.server.entity.TeguEntity;
+import com.fernleaf.meanderingmobs.server.entity.tameable.TeguEntity;
 import net.minecraft.world.entity.ai.goal.Goal;
 
 import java.util.EnumSet;

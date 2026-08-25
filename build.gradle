@@ -121,7 +121,7 @@ dependencies {
     implementation "io.github.llamalad7:mixinextras-neoforge:0.4.1"
     annotationProcessor "io.github.llamalad7:mixinextras-common:0.4.1"
 
-    // 2. FernFrame Core Library (Pulled from local Maven and embedded via JarInJar)
+    // 2. FernFrame Core Library
     jarJar(implementation("com.fernleaf.fernframe:fernframe:1.0.0")) {
         version {
             prefer('1.0.0')
@@ -133,7 +133,12 @@ dependencies {
 
     implementation "org.joml:joml:1.10.5"
 
-    // 4. Runtime performance testing (CurseMaven)
+    // 3. Mod Compatibility (Redomesticate)
+    // Compiles against API natively, loads at runtime in dev, but remains optional in production
+    compileOnly "curse.maven:redomesticate-1541881:8524088"
+    localRuntime "curse.maven:redomesticate-1541881:8524088"
+
+    // 4. Runtime performance testing
     localRuntime "maven.modrinth:sodium:mc1.21.1-0.8.13-beta.2-neoforge"
 }
 

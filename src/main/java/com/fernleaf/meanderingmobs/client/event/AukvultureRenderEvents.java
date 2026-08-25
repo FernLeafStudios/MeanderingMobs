@@ -3,7 +3,7 @@ package com.fernleaf.meanderingmobs.client.event;
 import com.fernleaf.meanderingmobs.MeanderingMobs;
 import com.fernleaf.meanderingmobs.client.renderer.AukvultureRenderer;
 import com.fernleaf.meanderingmobs.config.MeanderingMobsConfig;
-import com.fernleaf.meanderingmobs.server.entity.AukvultureEntity;
+import com.fernleaf.meanderingmobs.server.entity.tameable.AukvultureEntity;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;

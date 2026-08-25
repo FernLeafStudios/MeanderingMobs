@@ -2,7 +2,7 @@ package com.fernleaf.meanderingmobs.server.datagen;
 
 import com.fernleaf.meanderingmobs.MeanderingMobs;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsTagRegistry;
-import com.fernleaf.meanderingmobs.server.entity.TeguEntity;
+import com.fernleaf.meanderingmobs.server.entity.tameable.TeguEntity;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.tags.ItemTagsProvider;

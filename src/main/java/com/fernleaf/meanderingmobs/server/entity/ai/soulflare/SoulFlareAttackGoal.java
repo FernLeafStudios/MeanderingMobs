@@ -1,7 +1,7 @@
 package com.fernleaf.meanderingmobs.server.entity.ai.soulflare;
 
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsEntityRegistry;
-import com.fernleaf.meanderingmobs.server.entity.SoulFlareEntity;
+import com.fernleaf.meanderingmobs.server.entity.hostile.SoulFlareEntity;
 import com.fernleaf.meanderingmobs.server.entity.ai.util.AbstractTelegraphedAttackGoal;
 import com.fernleaf.meanderingmobs.server.entity.projectile.SoulFireballEntity;
 import net.minecraft.sounds.SoundEvents;

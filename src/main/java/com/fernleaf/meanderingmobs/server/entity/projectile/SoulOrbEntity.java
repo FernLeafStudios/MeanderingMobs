@@ -4,7 +4,7 @@ import com.fernleaf.meanderingmobs.config.MeanderingMobsConfig;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsEntityRegistry;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsItemRegistry;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsTagRegistry;
-import com.fernleaf.meanderingmobs.server.entity.WhispEntity;
+import com.fernleaf.meanderingmobs.server.entity.tameable.WhispEntity;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;

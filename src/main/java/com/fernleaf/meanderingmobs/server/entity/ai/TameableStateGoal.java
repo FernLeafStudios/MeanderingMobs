@@ -1,7 +1,8 @@
 package com.fernleaf.meanderingmobs.server.entity.ai;
 
-import com.fernleaf.meanderingmobs.server.entity.AukvultureEntity;
+import com.fernleaf.meanderingmobs.server.entity.tameable.AukvultureEntity;
 import com.fernleaf.meanderingmobs.server.entity.util.MeanderingMobsTameableEntity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
@@ -11,7 +12,7 @@ import java.util.EnumSet;
 public class TameableStateGoal extends Goal {
 
     private final MeanderingMobsTameableEntity mob;
-    private Player owner;
+    private LivingEntity owner;
     private int timeToRecalcPath;
 
     public TameableStateGoal(MeanderingMobsTameableEntity mob) {
@@ -32,15 +33,15 @@ public class TameableStateGoal extends Goal {
 
         // State 2: Follow
         if (state == MeanderingMobsTameableEntity.CommandState.FOLLOW) {
-            Player player = this.mob.getOwner();
-            if (player == null || player.isSpectator()) return false;
-            if (this.mob.distanceToSqr(player) < 6.25D) return false;
+            LivingEntity livingOwner = this.mob.getOwner();
+            if (livingOwner == null) return false;
+            if (livingOwner instanceof Player player && player.isSpectator()) return false;
+            if (this.mob.distanceToSqr(livingOwner) < 6.25D) return false;
 
-            this.owner = player;
+            this.owner = livingOwner;
             return true;
         }
 
-        // Ignore WORK and WANDER states so other goals can run
         return false;
     }
 
@@ -63,12 +64,14 @@ public class TameableStateGoal extends Goal {
     @Override
     public void start() {
         this.timeToRecalcPath = 0;
+        if (this.mob.getCommandState() == MeanderingMobsTameableEntity.CommandState.SIT) {
+            this.mob.getNavigation().stop();
+        }
     }
 
     @Override
     public void stop() {
         this.owner = null;
-        this.mob.getNavigation().stop();
     }
 
     @Override
@@ -81,8 +84,14 @@ public class TameableStateGoal extends Goal {
                 auk.setFlying(false);
                 auk.setNoGravity(false);
             }
+
+            // Hard kill momentum and pathing every single tick while sitting
             this.mob.getNavigation().stop();
-            this.mob.setDeltaMovement(Vec3.ZERO);
+            this.mob.getMoveControl().setWantedPosition(this.mob.getX(), this.mob.getY(), this.mob.getZ(), 0.0D);
+
+            // Kill residual drift velocity without breaking gravity
+            Vec3 currentMotion = this.mob.getDeltaMovement();
+            this.mob.setDeltaMovement(0.0D, currentMotion.y > 0 ? 0.0D : currentMotion.y, 0.0D);
             return;
         }
 
@@ -94,7 +103,6 @@ public class TameableStateGoal extends Goal {
                 this.timeToRecalcPath = 10;
                 double distanceSqr = this.mob.distanceToSqr(this.owner);
 
-                // Teleport if too far away (> 12-16 blocks)
                 if (distanceSqr >= 144.0D) {
                     teleportToOwner();
                 } else {

@@ -1,6 +1,6 @@
 package com.fernleaf.meanderingmobs.client.sound;
 
-import com.fernleaf.meanderingmobs.server.entity.AukvultureEntity;
+import com.fernleaf.meanderingmobs.server.entity.tameable.AukvultureEntity;
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;

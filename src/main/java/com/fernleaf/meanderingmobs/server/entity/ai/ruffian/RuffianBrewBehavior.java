@@ -1,6 +1,6 @@
 package com.fernleaf.meanderingmobs.server.entity.ai.ruffian;
 
-import com.fernleaf.meanderingmobs.server.entity.RuffianEntity;
+import com.fernleaf.meanderingmobs.server.entity.tameable.RuffianEntity;
 import com.fernleaf.meanderingmobs.server.entity.ai.util.BlockPosUtil;
 import com.fernleaf.meanderingmobs.server.entity.ai.util.WorkstationRecipeUtil;
 import com.google.common.collect.ImmutableMap;

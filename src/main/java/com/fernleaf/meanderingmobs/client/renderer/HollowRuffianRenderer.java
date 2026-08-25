@@ -2,7 +2,7 @@ package com.fernleaf.meanderingmobs.client.renderer;
 
 import com.fernleaf.meanderingmobs.MeanderingMobs;
 import com.fernleaf.meanderingmobs.client.model.ruffian.RuffianModel;
-import com.fernleaf.meanderingmobs.server.entity.HollowRuffianEntity;
+import com.fernleaf.meanderingmobs.server.entity.hostile.HollowRuffianEntity;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
 import net.minecraft.resources.ResourceLocation;

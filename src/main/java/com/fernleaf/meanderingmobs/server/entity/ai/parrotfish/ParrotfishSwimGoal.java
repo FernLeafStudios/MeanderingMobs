@@ -1,6 +1,6 @@
 package com.fernleaf.meanderingmobs.server.entity.ai.parrotfish;
 
-import com.fernleaf.meanderingmobs.server.entity.ParrotfishEntity;
+import com.fernleaf.meanderingmobs.server.entity.aquatic.ParrotfishEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.ai.goal.RandomSwimmingGoal;

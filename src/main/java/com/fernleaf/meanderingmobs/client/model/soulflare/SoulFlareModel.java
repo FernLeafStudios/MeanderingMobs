@@ -3,7 +3,7 @@ package com.fernleaf.meanderingmobs.client.model.soulflare;
 import com.fernleaf.meanderingmobs.MeanderingMobs;
 import com.fernleaf.meanderingmobs.client.adapter.SoulFlareModelAdapter;
 import com.fernleaf.meanderingmobs.client.instance.SoulFlareIKInstance;
-import com.fernleaf.meanderingmobs.server.entity.SoulFlareEntity;
+import com.fernleaf.meanderingmobs.server.entity.hostile.SoulFlareEntity;
 import net.minecraft.client.model.HierarchicalModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;

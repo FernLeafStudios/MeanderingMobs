@@ -1,6 +1,6 @@
 package com.fernleaf.meanderingmobs.server.entity.ai.anchovy;
 
-import com.fernleaf.meanderingmobs.server.entity.AnchovyEntity;
+import com.fernleaf.meanderingmobs.server.entity.aquatic.AnchovyEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.ai.goal.RandomSwimmingGoal;

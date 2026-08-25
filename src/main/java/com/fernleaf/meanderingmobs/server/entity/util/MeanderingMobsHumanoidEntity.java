@@ -9,7 +9,7 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
@@ -24,7 +24,7 @@ public abstract class MeanderingMobsHumanoidEntity extends MeanderingMobsTameabl
     protected final UmweltEngine umweltEngine;
     private boolean isProcessing = false;
 
-    protected MeanderingMobsHumanoidEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
+    protected MeanderingMobsHumanoidEntity(EntityType<? extends TamableAnimal> entityType, Level level) {
         super(entityType, level);
         this.umweltEngine = new UmweltEngine(this);
     }
@@ -97,10 +97,7 @@ public abstract class MeanderingMobsHumanoidEntity extends MeanderingMobsTameabl
                 return false;
             }
         }
-        if (entity instanceof MeanderingMobsHumanoidEntity humanoid && humanoid.isAllied() == this.isAllied()) {
-            return false;
-        }
-        return true;
+        return !(entity instanceof MeanderingMobsHumanoidEntity humanoid) || humanoid.isAllied() != this.isAllied();
     }
 
     // --- Persistence ---

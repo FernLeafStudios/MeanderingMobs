@@ -1,6 +1,6 @@
 package com.fernleaf.meanderingmobs.server.entity.ai.parrotfish;
 
-import com.fernleaf.meanderingmobs.server.entity.ParrotfishEntity;
+import com.fernleaf.meanderingmobs.server.entity.aquatic.ParrotfishEntity;
 import net.minecraft.world.entity.ai.goal.Goal;
 
 import java.util.EnumSet;

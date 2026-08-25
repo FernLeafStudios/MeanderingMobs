@@ -2,7 +2,7 @@ package com.fernleaf.meanderingmobs.client.renderer;
 
 import com.fernleaf.meanderingmobs.MeanderingMobs;
 import com.fernleaf.meanderingmobs.client.model.anchovy.AnchovyModel;
-import com.fernleaf.meanderingmobs.server.entity.AnchovyEntity;
+import com.fernleaf.meanderingmobs.server.entity.aquatic.AnchovyEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;

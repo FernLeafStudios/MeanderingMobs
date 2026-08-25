@@ -1,6 +1,6 @@
 package com.fernleaf.meanderingmobs.server.entity.ai.parrotfish;
 
-import com.fernleaf.meanderingmobs.server.entity.ParrotfishEntity;
+import com.fernleaf.meanderingmobs.server.entity.aquatic.ParrotfishEntity;
 import com.fernleaf.meanderingmobs.server.entity.ai.util.AbstractTelegraphedAttackGoal;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;

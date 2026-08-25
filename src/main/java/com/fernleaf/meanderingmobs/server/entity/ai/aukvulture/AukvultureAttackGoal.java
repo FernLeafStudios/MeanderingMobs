@@ -1,6 +1,6 @@
 package com.fernleaf.meanderingmobs.server.entity.ai.aukvulture;
 
-import com.fernleaf.meanderingmobs.server.entity.AukvultureEntity;
+import com.fernleaf.meanderingmobs.server.entity.tameable.AukvultureEntity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.goal.Goal;
 

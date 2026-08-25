@@ -2,7 +2,7 @@ package com.fernleaf.meanderingmobs.client.instance;
 
 import com.fernleaf.fernframe.proprio.util.DynamicsUtils;
 import com.fernleaf.fernframe.proprio.util.DynamicsUtils.SpringState;
-import com.fernleaf.meanderingmobs.server.entity.SoulFlareEntity;
+import com.fernleaf.meanderingmobs.server.entity.hostile.SoulFlareEntity;
 import net.minecraft.util.Mth;
 
 public class SoulFlareIKInstance {

@@ -1,7 +1,7 @@
 package com.fernleaf.meanderingmobs.client.instance;
 
 import com.fernleaf.fernframe.proprio.util.IKMathUtils;
-import com.fernleaf.meanderingmobs.server.entity.RuffianEntity;
+import com.fernleaf.meanderingmobs.server.entity.tameable.RuffianEntity;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 

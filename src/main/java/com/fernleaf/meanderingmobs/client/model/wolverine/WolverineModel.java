@@ -2,7 +2,7 @@ package com.fernleaf.meanderingmobs.client.model.wolverine;
 
 import com.fernleaf.meanderingmobs.MeanderingMobs;
 import com.fernleaf.meanderingmobs.client.animation.WolverineAnimations;
-import com.fernleaf.meanderingmobs.server.entity.WolverineEntity;
+import com.fernleaf.meanderingmobs.server.entity.tameable.WolverineEntity;
 import net.minecraft.client.model.HierarchicalModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;

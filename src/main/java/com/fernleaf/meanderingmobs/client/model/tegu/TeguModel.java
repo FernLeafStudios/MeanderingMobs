@@ -2,7 +2,7 @@ package com.fernleaf.meanderingmobs.client.model.tegu;
 
 import com.fernleaf.meanderingmobs.MeanderingMobs;
 import com.fernleaf.meanderingmobs.client.animation.TeguAnimations;
-import com.fernleaf.meanderingmobs.server.entity.TeguEntity;
+import com.fernleaf.meanderingmobs.server.entity.tameable.TeguEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.HierarchicalModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;

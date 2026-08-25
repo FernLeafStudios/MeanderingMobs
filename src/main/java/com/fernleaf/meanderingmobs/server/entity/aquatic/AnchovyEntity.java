@@ -1,4 +1,4 @@
-package com.fernleaf.meanderingmobs.server.entity;
+package com.fernleaf.meanderingmobs.server.entity.aquatic;
 
 import com.fernleaf.meanderingmobs.server.entity.ai.anchovy.AnchovyFleeGoal;
 import com.fernleaf.meanderingmobs.server.entity.ai.anchovy.AnchovySwimGoal;
@@ -29,7 +29,7 @@ public class AnchovyEntity extends MeanderingMobsAquaticEntity {
     public static AttributeSupplier.Builder createAttributes() {
         return Mob.createMobAttributes()
                 .add(Attributes.MAX_HEALTH, 3.0D)
-                .add(Attributes.MOVEMENT_SPEED, 0.45D) // Faster, darting movement
+                .add(Attributes.MOVEMENT_SPEED, 0.45D)
                 .add(Attributes.FOLLOW_RANGE, 12.0D);
     }
 

@@ -1,7 +1,7 @@
 package com.fernleaf.meanderingmobs.server.entity.ai.anchovy;
 
 import com.fernleaf.meanderingmobs.MeanderingMobs;
-import com.fernleaf.meanderingmobs.server.entity.AnchovyEntity;
+import com.fernleaf.meanderingmobs.server.entity.aquatic.AnchovyEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;

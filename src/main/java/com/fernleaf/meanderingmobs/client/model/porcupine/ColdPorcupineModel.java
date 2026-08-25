@@ -2,7 +2,7 @@ package com.fernleaf.meanderingmobs.client.model.porcupine;
 
 import com.fernleaf.meanderingmobs.MeanderingMobs;
 import com.fernleaf.meanderingmobs.client.animation.ColdPorcupineAnimations;
-import com.fernleaf.meanderingmobs.server.entity.PorcupineEntity;
+import com.fernleaf.meanderingmobs.server.entity.tameable.PorcupineEntity;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.HierarchicalModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;

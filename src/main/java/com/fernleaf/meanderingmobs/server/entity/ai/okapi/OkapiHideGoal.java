@@ -1,7 +1,7 @@
 package com.fernleaf.meanderingmobs.server.entity.ai.okapi;
 
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsTagRegistry;
-import com.fernleaf.meanderingmobs.server.entity.OkapiEntity;
+import com.fernleaf.meanderingmobs.server.entity.tameable.OkapiEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;

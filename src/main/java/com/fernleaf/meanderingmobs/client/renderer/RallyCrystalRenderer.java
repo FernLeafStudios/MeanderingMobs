@@ -2,7 +2,7 @@ package com.fernleaf.meanderingmobs.client.renderer;
 
 import com.fernleaf.meanderingmobs.MeanderingMobs;
 import com.fernleaf.meanderingmobs.client.model.crystal.RallyCrystalModel;
-import com.fernleaf.meanderingmobs.server.entity.RallyCrystalEntity;
+import com.fernleaf.meanderingmobs.server.entity.hostile.RallyCrystalEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.MultiBufferSource;

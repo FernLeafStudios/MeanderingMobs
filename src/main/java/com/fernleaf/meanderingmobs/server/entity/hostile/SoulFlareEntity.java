@@ -1,4 +1,4 @@
-package com.fernleaf.meanderingmobs.server.entity;
+package com.fernleaf.meanderingmobs.server.entity.hostile;
 
 import com.fernleaf.meanderingmobs.server.entity.ai.soulflare.SoulFlareAttackGoal;
 import com.fernleaf.meanderingmobs.server.entity.ai.soulflare.SoulFlareDefensiveGoal;
@@ -14,14 +14,8 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.goal.FloatGoal;
-import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
-import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
-import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
-import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.monster.Monster;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 
@@ -70,42 +64,27 @@ public class SoulFlareEntity extends MeanderingMobsHostileEntity {
         this.setOnCooldown(ticks > 0);
     }
 
-    @Override
-    public boolean fireImmune() { return true; }
-
-    @Override
-    public boolean displayFireAnimation() { return false; }
+    @Override public boolean fireImmune() { return true; }
+    @Override public boolean displayFireAnimation() { return false; }
 
     @Override
     protected void registerGoals() {
-        this.goalSelector.addGoal(1, new FloatGoal(this));
-        this.goalSelector.addGoal(2, new SoulFlareDefensiveGoal(this)); // High priority shield response
-        this.goalSelector.addGoal(3, new SoulFlareAttackGoal(this));    // Ranged attack goal
-        this.goalSelector.addGoal(4, new WaterAvoidingRandomStrollGoal(this, 1.0D));
-        this.goalSelector.addGoal(5, new LookAtPlayerGoal(this, Player.class, 8.0F));
-        this.goalSelector.addGoal(6, new RandomLookAroundGoal(this));
-
+        super.registerGoals();
+        this.goalSelector.addGoal(2, new SoulFlareDefensiveGoal(this));
+        this.goalSelector.addGoal(3, new SoulFlareAttackGoal(this));
         this.targetSelector.addGoal(1, new HurtByTargetGoal(this));
-        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
     }
 
     @Override
     public boolean hurt(@NotNull DamageSource source, float amount) {
         if (this.isSpinning() && !source.isDirect()) {
-            amount *= 0.25F; // Improved defensive mitigation
+            amount *= 0.25F;
         }
         return super.hurt(source, amount);
     }
 
-    @Override
-    protected SoundEvent getHurtSound(@NotNull DamageSource damageSource) {
-        return SoundEvents.BLAZE_HURT;
-    }
-
-    @Override
-    protected SoundEvent getDeathSound() {
-        return SoundEvents.BLAZE_DEATH;
-    }
+    @Override protected @NotNull SoundEvent getHurtSound(@NotNull DamageSource damageSource) { return SoundEvents.BLAZE_HURT; }
+    @Override protected @NotNull SoundEvent getDeathSound() { return SoundEvents.BLAZE_DEATH; }
 
     @Override
     public void aiStep() {

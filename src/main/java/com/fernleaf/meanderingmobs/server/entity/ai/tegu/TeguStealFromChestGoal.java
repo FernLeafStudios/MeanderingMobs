@@ -1,6 +1,6 @@
 package com.fernleaf.meanderingmobs.server.entity.ai.tegu;
 
-import com.fernleaf.meanderingmobs.server.entity.TeguEntity;
+import com.fernleaf.meanderingmobs.server.entity.tameable.TeguEntity;
 import com.fernleaf.meanderingmobs.server.entity.ai.util.AbstractBlockInteractionGoal;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;

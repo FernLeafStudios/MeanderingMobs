@@ -1,6 +1,6 @@
 package com.fernleaf.meanderingmobs.server.entity.ai.aukvulture;
 
-import com.fernleaf.meanderingmobs.server.entity.AukvultureEntity;
+import com.fernleaf.meanderingmobs.server.entity.tameable.AukvultureEntity;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.ai.control.MoveControl;

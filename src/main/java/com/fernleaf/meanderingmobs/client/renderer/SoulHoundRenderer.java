@@ -2,7 +2,7 @@ package com.fernleaf.meanderingmobs.client.renderer;
 
 import com.fernleaf.meanderingmobs.MeanderingMobs;
 import com.fernleaf.meanderingmobs.client.model.soul_hound.SoulHoundModel;
-import com.fernleaf.meanderingmobs.server.entity.SoulHoundEntity;
+import com.fernleaf.meanderingmobs.server.entity.hostile.SoulHoundEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.MultiBufferSource;

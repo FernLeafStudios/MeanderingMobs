@@ -1,5 +1,6 @@
-package com.fernleaf.meanderingmobs.server.entity;
+package com.fernleaf.meanderingmobs.server.entity.hostile;
 
+import com.fernleaf.meanderingmobs.server.entity.util.MeanderingMobsHostileEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
@@ -13,12 +14,11 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
-import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.gameevent.DynamicGameEventListener;
@@ -30,14 +30,13 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 @SuppressWarnings("deprecation")
-public class HollowRuffianEntity extends Monster implements VibrationSystem {
+public class HollowRuffianEntity extends MeanderingMobsHostileEntity implements VibrationSystem {
 
     private final VibrationSystem.Data vibrationData = new VibrationSystem.Data();
     private final VibrationSystem.User vibrationUser = new HollowRuffianVibrationUser();
     private final DynamicGameEventListener<VibrationSystem.Listener> vibrationListener =
             new DynamicGameEventListener<>(new VibrationSystem.Listener(this));
 
-    // Cooldown ticks to prevent constant processing spam (e.g., 20 ticks = 1 second)
     private int vibrationCooldown = 0;
     private int shriekCooldown = 0;
 
@@ -55,9 +54,8 @@ public class HollowRuffianEntity extends Monster implements VibrationSystem {
 
     @Override
     protected void registerGoals() {
-        this.goalSelector.addGoal(0, new FloatGoal(this));
+        super.registerGoals();
         this.goalSelector.addGoal(1, new MeleeAttackGoal(this, 1.25D, false));
-        this.goalSelector.addGoal(2, new WaterAvoidingRandomStrollGoal(this, 0.8D));
         this.targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(
                 this,
                 LivingEntity.class,
@@ -82,12 +80,8 @@ public class HollowRuffianEntity extends Monster implements VibrationSystem {
     public void tick() {
         super.tick();
 
-        if (this.vibrationCooldown > 0) {
-            this.vibrationCooldown--;
-        }
-        if (this.shriekCooldown > 0) {
-            this.shriekCooldown--;
-        }
+        if (this.vibrationCooldown > 0) this.vibrationCooldown--;
+        if (this.shriekCooldown > 0) this.shriekCooldown--;
 
         if (this.level() instanceof ServerLevel serverLevel) {
             VibrationSystem.Ticker.tick(serverLevel, this.vibrationData, this.vibrationUser);
@@ -96,13 +90,7 @@ public class HollowRuffianEntity extends Monster implements VibrationSystem {
 
     public void triggerSculkShriek(ServerLevel level, LivingEntity targetPlayer) {
         if (this.shriekCooldown > 0) return;
-
-        // Safety check: ensure target isn't a Creative/Spectator player or invulnerable target
-        if (targetPlayer instanceof net.minecraft.world.entity.player.Player player) {
-            if (player.isCreative() || player.isSpectator() || !player.canBeSeenAsEnemy()) {
-                return;
-            }
-        }
+        if (targetPlayer instanceof Player player && !this.isValidPlayerTarget(player)) return;
 
         this.shriekCooldown = 100;
 
@@ -111,17 +99,13 @@ public class HollowRuffianEntity extends Monster implements VibrationSystem {
         level.sendParticles(ParticleTypes.SCULK_SOUL,
                 this.getX(), this.getEyeY(), this.getZ(), 15, 0.3, 0.5, 0.3, 0.05);
 
-        net.minecraft.world.phys.AABB searchBox = this.getBoundingBox().inflate(36.0D);
-        level.getEntitiesOfClass(Monster.class, searchBox, mob -> mob != this && mob.isAlive()).forEach(hostile -> {
-            if (hostile instanceof Creeper) {
-                return;
-            }
-
-            if (targetPlayer.canBeSeenAsEnemy()) {
-                hostile.setTarget(targetPlayer);
-                hostile.getNavigation().moveTo(targetPlayer, 1.25D);
-            }
-        });
+        level.getEntitiesOfClass(Monster.class, this.getBoundingBox().inflate(36.0D), mob -> mob != this && mob.isAlive())
+                .forEach(hostile -> {
+                    if (!(hostile instanceof Creeper) && targetPlayer.canBeSeenAsEnemy()) {
+                        hostile.setTarget(targetPlayer);
+                        hostile.getNavigation().moveTo(targetPlayer, 1.25D);
+                    }
+                });
     }
 
     @Override
@@ -137,59 +121,36 @@ public class HollowRuffianEntity extends Monster implements VibrationSystem {
             MobSpawnType spawnType,
             BlockPos pos,
             RandomSource random) {
-
-        // Use checkMonsterSpawnRules which handles standard surface/cave monster spawning criteria properly
         return level.getDifficulty() != net.minecraft.world.Difficulty.PEACEFUL
                 && Monster.checkMonsterSpawnRules(type, level, spawnType, pos, random);
     }
 
-    // --- Vibration User Logic ---
     private class HollowRuffianVibrationUser implements VibrationSystem.User {
         private final PositionSource positionSource = new EntityPositionSource(HollowRuffianEntity.this, HollowRuffianEntity.this.getEyeHeight());
 
         @Override
-        public int getListenerRadius() {
-            return 16;
-        }
+        public int getListenerRadius() { return 16; }
 
         @Override
-        public @NotNull PositionSource getPositionSource() {
-            return this.positionSource;
-        }
+        public @NotNull PositionSource getPositionSource() { return this.positionSource; }
 
         @Override
         public boolean canReceiveVibration(@NotNull ServerLevel level, @NotNull BlockPos pos, @NotNull Holder<GameEvent> gameEvent, @Nullable GameEvent.Context context) {
-            // 1. Check cooldown
-            if (HollowRuffianEntity.this.vibrationCooldown > 0) {
-                return false;
-            }
+            if (HollowRuffianEntity.this.vibrationCooldown > 0) return false;
+            if (context != null && context.sourceEntity() == HollowRuffianEntity.this) return false;
 
-            // 2. Ignore self-generated noises
-            if (context != null && context.sourceEntity() == HollowRuffianEntity.this) {
-                return false;
-            }
-
-            // 3. IGNORE THROWING/SHOOTING EVENTS (forces it to listen to the impact instead!)
             return !gameEvent.is(GameEvent.PROJECTILE_SHOOT) && !gameEvent.is(GameEvent.ITEM_INTERACT_START);
         }
 
         @Override
         public void onReceiveVibration(@NotNull ServerLevel level, @NotNull BlockPos pos, @NotNull Holder<GameEvent> gameEvent, @Nullable Entity entity, @Nullable Entity projectileOwner, float distance) {
             HollowRuffianEntity.this.vibrationCooldown = 30;
-
-            // Move to sound source
             HollowRuffianEntity.this.getNavigation().moveTo(pos.getX(), pos.getY(), pos.getZ(), 1.25D);
 
-            // Only respond to valid living targets (players, etc.), ignoring monsters and non-enemies
-            if (entity instanceof LivingEntity livingTarget
-                    && !(livingTarget instanceof Monster)
-                    && livingTarget.canBeSeenAsEnemy()
-                    && !(entity instanceof HollowRuffianEntity)) {
+            if (entity instanceof LivingEntity livingTarget && !(livingTarget instanceof Monster) && livingTarget.canBeSeenAsEnemy()) {
 
-                if (livingTarget instanceof net.minecraft.world.entity.player.Player player) {
-                    if (player.isCreative() || player.isSpectator()) {
-                        return;
-                    }
+                if (livingTarget instanceof Player player && !HollowRuffianEntity.this.isValidPlayerTarget(player)) {
+                    return;
                 }
 
                 HollowRuffianEntity.this.setTarget(livingTarget);

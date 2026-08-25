@@ -2,7 +2,7 @@ package com.fernleaf.meanderingmobs.client.renderer;
 
 import com.fernleaf.meanderingmobs.client.model.tegu.TeguModel;
 import com.fernleaf.meanderingmobs.client.renderer.layer.TeguItemLayer;
-import com.fernleaf.meanderingmobs.server.entity.TeguEntity;
+import com.fernleaf.meanderingmobs.server.entity.tameable.TeguEntity;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
 import net.minecraft.resources.ResourceLocation;

@@ -4,7 +4,7 @@ import com.fernleaf.fernframe.umweltlite.goals.api.engine.EmotionAPI;
 import com.fernleaf.fernframe.umweltlite.goals.api.engine.PersonalityAPI;
 import com.fernleaf.fernframe.umweltlite.goals.api.engine.UmweltAPI;
 import com.fernleaf.fernframe.umweltlite.goals.engine.EmotionalMap;
-import com.fernleaf.meanderingmobs.server.entity.AukvultureEntity;
+import com.fernleaf.meanderingmobs.server.entity.tameable.AukvultureEntity;
 import net.minecraft.world.phys.AABB;
 
 import java.util.List;

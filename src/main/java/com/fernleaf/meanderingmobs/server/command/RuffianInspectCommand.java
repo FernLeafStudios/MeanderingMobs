@@ -1,6 +1,6 @@
 package com.fernleaf.meanderingmobs.server.command;
 
-import com.fernleaf.meanderingmobs.server.entity.RuffianEntity;
+import com.fernleaf.meanderingmobs.server.entity.tameable.RuffianEntity;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.ChatFormatting;

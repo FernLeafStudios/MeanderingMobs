@@ -1,7 +1,7 @@
 package com.fernleaf.meanderingmobs.client.renderer;
 
 import com.fernleaf.meanderingmobs.client.model.wolverine.WolverineModel;
-import com.fernleaf.meanderingmobs.server.entity.WolverineEntity;
+import com.fernleaf.meanderingmobs.server.entity.tameable.WolverineEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;

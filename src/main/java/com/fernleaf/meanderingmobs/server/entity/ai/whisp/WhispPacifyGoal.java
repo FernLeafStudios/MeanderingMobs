@@ -2,7 +2,7 @@ package com.fernleaf.meanderingmobs.server.entity.ai.whisp;
 
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsEffectsRegistry;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsTagRegistry;
-import com.fernleaf.meanderingmobs.server.entity.WhispEntity;
+import com.fernleaf.meanderingmobs.server.entity.tameable.WhispEntity;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.goal.Goal;

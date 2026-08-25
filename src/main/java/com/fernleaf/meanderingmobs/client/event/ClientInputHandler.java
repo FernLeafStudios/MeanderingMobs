@@ -3,7 +3,7 @@ package com.fernleaf.meanderingmobs.client.event;
 import com.fernleaf.meanderingmobs.MeanderingMobs;
 import com.fernleaf.meanderingmobs.network.AukvultureInputPacket;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsKeybindsRegistry;
-import com.fernleaf.meanderingmobs.server.entity.AukvultureEntity;
+import com.fernleaf.meanderingmobs.server.entity.tameable.AukvultureEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.neoforged.api.distmarker.Dist;

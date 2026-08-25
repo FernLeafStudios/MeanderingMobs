@@ -1,6 +1,6 @@
 package com.fernleaf.meanderingmobs.server.entity.ai.tegu;
 
-import com.fernleaf.meanderingmobs.server.entity.TeguEntity;
+import com.fernleaf.meanderingmobs.server.entity.tameable.TeguEntity;
 import net.minecraft.world.entity.LivingEntity;
 
 public class TeguOwnerHurtByTargetGoal extends net.minecraft.world.entity.ai.goal.target.TargetGoal {

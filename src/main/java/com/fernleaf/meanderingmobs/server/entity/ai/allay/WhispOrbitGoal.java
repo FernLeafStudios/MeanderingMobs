@@ -1,6 +1,6 @@
 package com.fernleaf.meanderingmobs.server.entity.ai.allay;
 
-import com.fernleaf.meanderingmobs.server.entity.WhispEntity;
+import com.fernleaf.meanderingmobs.server.entity.tameable.WhispEntity;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.animal.allay.Allay;
 import net.minecraft.world.phys.Vec3;

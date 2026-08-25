@@ -1,7 +1,7 @@
 package com.fernleaf.meanderingmobs.client.renderer;
 
 import com.fernleaf.meanderingmobs.client.model.whisp.*;
-import com.fernleaf.meanderingmobs.server.entity.WhispEntity;
+import com.fernleaf.meanderingmobs.server.entity.tameable.WhispEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.HierarchicalModel;
 import net.minecraft.client.renderer.MultiBufferSource;

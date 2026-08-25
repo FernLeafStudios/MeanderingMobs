@@ -1,7 +1,7 @@
 package com.fernleaf.meanderingmobs.client.instance;
 
 import com.fernleaf.fernframe.proprio.util.IKMathUtils;
-import com.fernleaf.meanderingmobs.server.entity.ParrotfishEntity;
+import com.fernleaf.meanderingmobs.server.entity.aquatic.ParrotfishEntity;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;

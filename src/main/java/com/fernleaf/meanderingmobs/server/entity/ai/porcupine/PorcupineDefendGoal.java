@@ -1,9 +1,10 @@
 package com.fernleaf.meanderingmobs.server.entity.ai.porcupine;
 
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsTagRegistry;
-import com.fernleaf.meanderingmobs.server.entity.PorcupineEntity;
+import com.fernleaf.meanderingmobs.server.entity.tameable.PorcupineEntity;
 import com.fernleaf.meanderingmobs.server.entity.util.MeanderingMobsTameableEntity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.OwnableEntity;
 import net.minecraft.world.entity.ai.goal.Goal;
 
 import java.util.EnumSet;
@@ -31,6 +32,7 @@ public class PorcupineDefendGoal extends Goal {
                 entity -> entity.isAlive()
                         && !entity.isSpectator()
                         && !this.porcupine.isOwner(entity)
+                        && !isFriendly(entity) // <--- Safe check added here!
                         && (entity.getType().is(MeanderingMobsTagRegistry.EntityTypes.PORCUPINE_HATES)
                         || (this.porcupine.isTamed() && entity.getLastHurtByMob() == this.porcupine.getOwner()))
         );
@@ -43,12 +45,37 @@ public class PorcupineDefendGoal extends Goal {
         return false;
     }
 
+    /**
+     * Helper check to ensure Porcupines ignore allied pets and fellow tamed mobs.
+     */
+    private boolean isFriendly(LivingEntity entity) {
+        // Ignore self
+        if (entity == this.porcupine) return true;
+
+        // If the porcupine is tamed, ignore entities owned by the exact same owner
+        if (this.porcupine.isTamed() && entity instanceof OwnableEntity ownable) {
+            if (this.porcupine.getOwnerUUID() != null && this.porcupine.getOwnerUUID().equals(ownable.getOwnerUUID())) {
+                return true;
+            }
+        }
+
+        // Ignore any other tamed MeanderingMobs entity to prevent friendly fire
+        if (entity instanceof MeanderingMobsTameableEntity tameable && tameable.isTamed()) {
+            return true;
+        }
+
+        return false;
+    }
+
     @Override
     public boolean canContinueToUse() {
         if (this.porcupine.isSheared() || this.porcupine.getCommandState() == MeanderingMobsTameableEntity.CommandState.SIT) {
             return false;
         }
-        return this.currentTarget != null && this.currentTarget.isAlive() && this.porcupine.distanceToSqr(this.currentTarget) < 64.0D;
+        return this.currentTarget != null
+                && this.currentTarget.isAlive()
+                && !isFriendly(this.currentTarget)
+                && this.porcupine.distanceToSqr(this.currentTarget) < 64.0D;
     }
 
     @Override

@@ -1,4 +1,4 @@
-package com.fernleaf.meanderingmobs.server.entity;
+package com.fernleaf.meanderingmobs.server.entity.hostile;
 
 import com.fernleaf.meanderingmobs.server.entity.util.MeanderingMobsHostileEntity;
 import net.minecraft.core.BlockPos;
@@ -8,11 +8,11 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.goal.*;
+import net.minecraft.world.entity.ai.goal.LeapAtTargetGoal;
+import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.monster.AbstractSkeleton;
 import net.minecraft.world.entity.monster.Monster;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
@@ -28,14 +28,9 @@ public class SoulHoundEntity extends MeanderingMobsHostileEntity {
 
     @Override
     protected void registerGoals() {
-        this.goalSelector.addGoal(1, new FloatGoal(this));
+        super.registerGoals();
         this.goalSelector.addGoal(2, new LeapAtTargetGoal(this, 0.4F));
         this.goalSelector.addGoal(3, new MeleeAttackGoal(this, 1.2D, true));
-        this.goalSelector.addGoal(4, new WaterAvoidingRandomStrollGoal(this, 1.0D));
-        this.goalSelector.addGoal(5, new LookAtPlayerGoal(this, Player.class, 8.0F));
-        this.goalSelector.addGoal(6, new RandomLookAroundGoal(this));
-
-        this.targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(this, Player.class, true));
         this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, AbstractSkeleton.class, true));
     }
 
@@ -63,9 +58,7 @@ public class SoulHoundEntity extends MeanderingMobsHostileEntity {
             BlockPos pos,
             RandomSource random
     ) {
-        BlockState stateBelow = level.getBlockState(pos.below());
-        boolean isSoulBlock = stateBelow.is(Blocks.SOUL_SAND) || stateBelow.is(Blocks.SOUL_SOIL);
-        return isSoulBlock && level.getBlockState(pos).isAir() && level.getBlockState(pos.above()).isAir();
+        return checkSoulBlockSpawnRules(level, pos);
     }
 
     @Override

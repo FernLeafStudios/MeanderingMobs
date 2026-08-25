@@ -1,6 +1,6 @@
 package com.fernleaf.meanderingmobs.server.entity.ai.wolverine;
 
-import com.fernleaf.meanderingmobs.server.entity.WolverineEntity;
+import com.fernleaf.meanderingmobs.server.entity.tameable.WolverineEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.ai.goal.Goal;

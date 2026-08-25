@@ -1,7 +1,7 @@
 package com.fernleaf.meanderingmobs.network;
 
 import com.fernleaf.meanderingmobs.MeanderingMobs;
-import com.fernleaf.meanderingmobs.server.entity.AukvultureEntity;
+import com.fernleaf.meanderingmobs.server.entity.tameable.AukvultureEntity;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;

@@ -1,7 +1,7 @@
 package com.fernleaf.meanderingmobs.client.model.crystal;
 
 import com.fernleaf.meanderingmobs.MeanderingMobs;
-import com.fernleaf.meanderingmobs.server.entity.RallyCrystalEntity;
+import com.fernleaf.meanderingmobs.server.entity.hostile.RallyCrystalEntity;
 import net.minecraft.client.model.HierarchicalModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;

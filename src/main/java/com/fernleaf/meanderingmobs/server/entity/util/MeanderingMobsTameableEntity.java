@@ -1,27 +1,49 @@
 package com.fernleaf.meanderingmobs.server.entity.util;
 
+import com.evandev.redomesticate.api.ICommandableMob;
+import com.fernleaf.meanderingmobs.compat.redomesticate.RedomesticateCompat;
+import com.fernleaf.meanderingmobs.compat.redomesticate.goal.FeatherOnAStickGoal;
+import com.fernleaf.meanderingmobs.server.entity.ai.OwnerHurtByTargetGoal;
+import com.fernleaf.meanderingmobs.server.entity.ai.OwnerHurtTargetGoal;
+import com.fernleaf.meanderingmobs.server.entity.ai.StateAwareWaterAvoidingRandomStrollGoal;
+import com.fernleaf.meanderingmobs.server.entity.ai.TameableStateGoal;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.ai.goal.FloatGoal;
+import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
+import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public abstract class MeanderingMobsTameableEntity extends MeanderingMobsEntity {
+public abstract class MeanderingMobsTameableEntity extends TamableAnimal implements OwnableEntity, ICommandableMob {
 
     protected static final EntityDataAccessor<Optional<UUID>> DATA_OWNER_UUID =
             SynchedEntityData.defineId(MeanderingMobsTameableEntity.class, EntityDataSerializers.OPTIONAL_UUID);
     protected static final EntityDataAccessor<Integer> DATA_AI_STATE =
             SynchedEntityData.defineId(MeanderingMobsTameableEntity.class, EntityDataSerializers.INT);
+    protected static final EntityDataAccessor<Integer> DATA_VARIANT_ID =
+            SynchedEntityData.defineId(MeanderingMobsTameableEntity.class, EntityDataSerializers.INT);
+    protected static final EntityDataAccessor<Integer> DATA_COSPLAY =
+            SynchedEntityData.defineId(MeanderingMobsTameableEntity.class, EntityDataSerializers.INT);
+    protected static final EntityDataAccessor<Boolean> DATA_CHARMED =
+            SynchedEntityData.defineId(MeanderingMobsTameableEntity.class, EntityDataSerializers.BOOLEAN);
 
     public enum CommandState {
         WANDER(0),
@@ -40,7 +62,7 @@ public abstract class MeanderingMobsTameableEntity extends MeanderingMobsEntity 
         }
     }
 
-    protected MeanderingMobsTameableEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
+    protected MeanderingMobsTameableEntity(EntityType<? extends TamableAnimal> entityType, Level level) {
         super(entityType, level);
     }
 
@@ -49,9 +71,13 @@ public abstract class MeanderingMobsTameableEntity extends MeanderingMobsEntity 
         super.defineSynchedData(builder);
         builder.define(DATA_OWNER_UUID, Optional.empty());
         builder.define(DATA_AI_STATE, CommandState.WANDER.id);
+        builder.define(DATA_VARIANT_ID, 0);
+        builder.define(DATA_COSPLAY, 0);
+        builder.define(DATA_CHARMED, false);
     }
 
-    // --- Ownership Getters/Setters ---
+    // --- OwnableEntity Implementation ---
+    @Override
     @Nullable
     public UUID getOwnerUUID() {
         return this.entityData.get(DATA_OWNER_UUID).orElse(null);
@@ -61,18 +87,19 @@ public abstract class MeanderingMobsTameableEntity extends MeanderingMobsEntity 
         this.entityData.set(DATA_OWNER_UUID, Optional.ofNullable(uuid));
     }
 
+    @Override
+    @Nullable
+    public LivingEntity getOwner() {
+        UUID ownerUUID = getOwnerUUID();
+        return ownerUUID == null ? null : this.level().getPlayerByUUID(ownerUUID);
+    }
+
     public boolean isTamed() {
         return getOwnerUUID() != null;
     }
 
-    public boolean isOwner(LivingEntity entity) {
+    public boolean isOwner(Entity entity) {
         return entity != null && entity.getUUID().equals(getOwnerUUID());
-    }
-
-    @Nullable
-    public Player getOwner() {
-        UUID ownerUUID = getOwnerUUID();
-        return ownerUUID == null ? null : this.level().getPlayerByUUID(ownerUUID);
     }
 
     public void tame(Player player) {
@@ -80,8 +107,34 @@ public abstract class MeanderingMobsTameableEntity extends MeanderingMobsEntity 
         setAiState(CommandState.FOLLOW.id);
     }
 
+    // --- Consolidated Sitting Checks ---
     public boolean isSitting() {
         return this.isTamed() && this.getCommandState() == CommandState.SIT;
+    }
+
+    // --- Generic Variant & Cosplay Accessors ---
+    public int getVariantId() {
+        return this.entityData.get(DATA_VARIANT_ID);
+    }
+
+    public void setVariantId(int variantId) {
+        this.entityData.set(DATA_VARIANT_ID, variantId);
+    }
+
+    public int getCosplay() {
+        return this.entityData.get(DATA_COSPLAY);
+    }
+
+    public void setCosplay(int cosplay) {
+        this.entityData.set(DATA_COSPLAY, cosplay);
+    }
+
+    public boolean isCharmed() {
+        return this.entityData.get(DATA_CHARMED);
+    }
+
+    public void setCharmed(boolean charmed) {
+        this.entityData.set(DATA_CHARMED, charmed);
     }
 
     // --- AI Command States ---
@@ -91,6 +144,36 @@ public abstract class MeanderingMobsTameableEntity extends MeanderingMobsEntity 
 
     public void setAiState(int state) {
         this.entityData.set(DATA_AI_STATE, state);
+
+        boolean sitting = (state == CommandState.SIT.id);
+
+        super.setOrderedToSit(sitting);
+        this.setInSittingPose(sitting);
+
+        // Flush current navigation paths immediately on state change
+        this.getNavigation().stop();
+        if (sitting) {
+            this.setTarget(null);
+        }
+    }
+
+    @Override
+    public void setOrderedToSit(boolean sitting) {
+        super.setOrderedToSit(sitting);
+        this.setInSittingPose(sitting);
+
+        if (sitting) {
+            if (this.getAiState() != CommandState.SIT.id) {
+                this.entityData.set(DATA_AI_STATE, CommandState.SIT.id);
+            }
+            this.getNavigation().stop();
+            this.setTarget(null);
+        } else {
+            // Only default to FOLLOW if the mob was previously sitting
+            if (this.getAiState() == CommandState.SIT.id) {
+                this.entityData.set(DATA_AI_STATE, CommandState.FOLLOW.id);
+            }
+        }
     }
 
     public CommandState getCommandState() {
@@ -99,7 +182,6 @@ public abstract class MeanderingMobsTameableEntity extends MeanderingMobsEntity 
 
     public void cycleAiState(Player player, String messageNamespace) {
         if (!this.level().isClientSide()) {
-            // Correct sequence: 0 (Wander) -> 1 (Sit) -> 2 (Follow) -> 0
             int nextState = (getAiState() + 1) % 3;
             setAiState(nextState);
 
@@ -109,7 +191,6 @@ public abstract class MeanderingMobsTameableEntity extends MeanderingMobsEntity 
                 default -> "wander";
             };
 
-            // Formats strictly to: message.aukvulture.sit / follow / wander
             player.displayClientMessage(
                     Component.translatable("message." + messageNamespace + "." + stateName),
                     true
@@ -117,11 +198,41 @@ public abstract class MeanderingMobsTameableEntity extends MeanderingMobsEntity 
         }
     }
 
-    // --- Data Persistence ---
+    // --- Generic Player Utility Helpers ---
+    public void triggerHornGlowPulse(double radius) {
+        if (!this.level().isClientSide()) {
+            AABB scanArea = this.getBoundingBox().inflate(radius, 8.0D, radius);
+            List<LivingEntity> nearbyMobs = this.level().getEntitiesOfClass(
+                    LivingEntity.class,
+                    scanArea,
+                    e -> e != this && e != this.getControllingPassenger() && e.isAlive()
+            );
+            for (LivingEntity mob : nearbyMobs) {
+                mob.addEffect(new MobEffectInstance(MobEffects.GLOWING, 200, 0, false, true));
+            }
+        }
+    }
+
+    // --- Default Interaction Handling ---
+    @Override
+    public @NotNull InteractionResult mobInteract(@NotNull Player player, @NotNull InteractionHand hand) {
+        // Subclasses can delegate default owner commands to super.mobInteract
+        if (isTamed() && isOwner(player) && hand == InteractionHand.MAIN_HAND && player.getItemInHand(hand).isEmpty()) {
+            this.cycleAiState(player, this.getType().getDescriptionId());
+            return InteractionResult.sidedSuccess(this.level().isClientSide());
+        }
+        return super.mobInteract(player, hand);
+    }
+
+    // --- Universal Persistence ---
     @Override
     public void addAdditionalSaveData(@NotNull CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         tag.putInt("AiState", getAiState());
+        tag.putInt("Variant", getVariantId());
+        tag.putInt("Cosplay", getCosplay());
+        tag.putBoolean("Charmed", isCharmed());
+
         UUID owner = getOwnerUUID();
         if (owner != null) {
             tag.putUUID("Owner", owner);
@@ -131,12 +242,11 @@ public abstract class MeanderingMobsTameableEntity extends MeanderingMobsEntity 
     @Override
     public void readAdditionalSaveData(@NotNull CompoundTag tag) {
         super.readAdditionalSaveData(tag);
-        if (tag.contains("AiState")) {
-            setAiState(tag.getInt("AiState"));
-        }
-        if (tag.hasUUID("Owner")) {
-            setOwnerUUID(tag.getUUID("Owner"));
-        }
+        if (tag.contains("AiState")) setAiState(tag.getInt("AiState"));
+        if (tag.contains("Variant")) setVariantId(tag.getInt("Variant"));
+        if (tag.contains("Cosplay")) setCosplay(tag.getInt("Cosplay"));
+        if (tag.contains("Charmed")) setCharmed(tag.getBoolean("Charmed"));
+        if (tag.hasUUID("Owner")) setOwnerUUID(tag.getUUID("Owner"));
     }
 
     @Override
@@ -147,5 +257,86 @@ public abstract class MeanderingMobsTameableEntity extends MeanderingMobsEntity 
     @Override
     public boolean requiresCustomPersistence() {
         return this.isTamed() || super.requiresCustomPersistence();
+    }
+
+    // --- Redomesticate API Compat ---
+    @Override
+    public void redomesticate$setCommand(int command) {
+        CommandState nextState = switch (command) {
+            case 1 -> CommandState.SIT;
+            case 2 -> CommandState.FOLLOW;
+            default -> CommandState.WANDER;
+        };
+
+
+        this.setAiState(nextState.id);
+    }
+
+    @Override
+    public int redomesticate$getCommand() {
+        return this.getAiState();
+    }
+
+    @Override
+    public boolean redomesticate$isStayingStill() {
+        return this.isSitting();
+    }
+
+    @Override
+    public boolean redomesticate$isFollowingOwner() {
+        return this.isTamed() && this.getCommandState() == CommandState.FOLLOW;
+    }
+
+    @Override
+    public boolean redomesticate$isValidAttackTarget(LivingEntity target) {
+        if (target == null || !target.isAlive()) return false;
+        if (this.isOwner(target)) return false;
+
+        if (target instanceof OwnableEntity ownable && ownable.getOwnerUUID() != null) {
+            return !ownable.getOwnerUUID().equals(this.getOwnerUUID());
+        }
+
+        return true;
+    }
+
+    @Override
+    protected void registerGoals() {
+        super.registerGoals();
+
+        // 1. Core State & Movement (Highest Priority)
+        this.goalSelector.addGoal(0, new FloatGoal(this));
+        this.goalSelector.addGoal(2, new TameableStateGoal(this));
+
+        // 2. State-Aware Wandering
+        this.goalSelector.addGoal(5, new StateAwareWaterAvoidingRandomStrollGoal(this, 1.0D));
+
+        // 3. Ambient Looking (Disabled while sitting)
+        this.goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 6.0F) {
+            @Override public boolean canUse() { return !MeanderingMobsTameableEntity.this.isSitting() && super.canUse(); }
+        });
+        this.goalSelector.addGoal(7, new RandomLookAroundGoal(this) {
+            @Override public boolean canUse() { return !MeanderingMobsTameableEntity.this.isSitting() && super.canUse(); }
+        });
+
+        // 4. Combat / Retaliation
+        this.targetSelector.addGoal(1, new OwnerHurtByTargetGoal(this));
+        this.targetSelector.addGoal(2, new OwnerHurtTargetGoal(this));
+
+        // 5. Cross-Mod Integrations
+        if (RedomesticateCompat.isLoaded()) {
+            this.goalSelector.addGoal(3, new FeatherOnAStickGoal(this));
+        }
+    }
+
+    // --- Default Breeding Disabled ---
+    @Override
+    public boolean isFood(@NotNull ItemStack stack) {
+        return false;
+    }
+
+    @Nullable
+    @Override
+    public AgeableMob getBreedOffspring(@NotNull ServerLevel level, @NotNull AgeableMob partner) {
+        return null;
     }
 }

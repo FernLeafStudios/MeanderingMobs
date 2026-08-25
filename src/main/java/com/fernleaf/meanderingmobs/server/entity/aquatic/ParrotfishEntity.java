@@ -1,6 +1,5 @@
-package com.fernleaf.meanderingmobs.server.entity;
+package com.fernleaf.meanderingmobs.server.entity.aquatic;
 
-import com.fernleaf.meanderingmobs.MeanderingMobs;
 import com.fernleaf.meanderingmobs.client.model.parrotfish.ParrotfishVariant;
 import com.fernleaf.meanderingmobs.server.data.VariantSpawnManager;
 import com.fernleaf.meanderingmobs.server.entity.ai.parrotfish.ParrotfishCocoonGoal;
@@ -50,8 +49,6 @@ public class ParrotfishEntity extends MeanderingMobsAquaticEntity {
             SynchedEntityData.defineId(ParrotfishEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> DATA_IS_EATING =
             SynchedEntityData.defineId(ParrotfishEntity.class, EntityDataSerializers.BOOLEAN);
-    private static final EntityDataAccessor<Integer> DATA_VARIANT_ID =
-            SynchedEntityData.defineId(ParrotfishEntity.class, EntityDataSerializers.INT);
 
     private int stunnedTicks = 0;
     private int eatCoralCooldown = 0;
@@ -81,17 +78,16 @@ public class ParrotfishEntity extends MeanderingMobsAquaticEntity {
         builder.define(DATA_IS_CHARGING, false);
         builder.define(DATA_IS_STUNNED, false);
         builder.define(DATA_IS_EATING, false);
-        builder.define(DATA_VARIANT_ID, ParrotfishVariant.BUMPHEAD.id);
+        this.setVariantId(ParrotfishVariant.BUMPHEAD.id);
     }
 
     public ParrotfishVariant getVariant() {
-        return ParrotfishVariant.byId(this.entityData.get(DATA_VARIANT_ID));
+        return ParrotfishVariant.byId(this.getVariantId());
     }
 
     public void setVariant(ParrotfishVariant variant) {
-        this.entityData.set(DATA_VARIANT_ID, variant.id);
+        this.setVariantId(variant.id);
     }
-
 
     @Override
     protected @NotNull PathNavigation createNavigation(@NotNull Level level) {
@@ -116,7 +112,6 @@ public class ParrotfishEntity extends MeanderingMobsAquaticEntity {
         if (this.eatCoralCooldown > 0) this.eatCoralCooldown--;
         if (this.cocoonCooldown > 0) this.cocoonCooldown--;
 
-        // Drop invalid targets
         if (!this.level().isClientSide()) {
             LivingEntity target = this.getTarget();
             if (target != null && (!target.isAlive() || (target instanceof Player p && (p.isCreative() || p.isSpectator())))) {
@@ -124,12 +119,6 @@ public class ParrotfishEntity extends MeanderingMobsAquaticEntity {
             }
         }
 
-        // Out of water gravity
-        if (!this.isInWater() && !this.onGround()) {
-            this.setDeltaMovement(this.getDeltaMovement().add(0.0D, -0.05D, 0.0D));
-        }
-
-        // Stun state particles
         if (this.isStunned()) {
             this.stunnedTicks--;
             if (this.level().isClientSide() && this.random.nextInt(3) == 0) {
@@ -149,11 +138,10 @@ public class ParrotfishEntity extends MeanderingMobsAquaticEntity {
             this.level().playSound(player, this, SoundEvents.GROWING_PLANT_CROP, SoundSource.NEUTRAL, 1.0F, 0.8F);
             if (!this.level().isClientSide()) {
                 this.setCocoon(false);
-                this.cocoonCooldown = 12000; // 10 minute cooldown before reforming cocoon
+                this.cocoonCooldown = 12000;
                 item.hurtAndBreak(1, player, LivingEntity.getSlotForHand(hand));
                 this.spawnAtLocation(new ItemStack(Items.SLIME_BALL, this.random.nextInt(3) + 1));
 
-                // Only aggro on survival/adventure players
                 if (!player.isCreative() && !player.isSpectator()) {
                     this.setTarget(player);
                 }
@@ -211,7 +199,6 @@ public class ParrotfishEntity extends MeanderingMobsAquaticEntity {
         super.addAdditionalSaveData(compound);
         compound.putBoolean("HasCocoon", this.hasCocoon());
         compound.putInt("CocoonCooldown", this.cocoonCooldown);
-        compound.putInt("Variant", this.getVariant().id);
     }
 
     @Override
@@ -219,9 +206,6 @@ public class ParrotfishEntity extends MeanderingMobsAquaticEntity {
         super.readAdditionalSaveData(compound);
         this.setCocoon(compound.getBoolean("HasCocoon"));
         this.cocoonCooldown = compound.getInt("CocoonCooldown");
-        if (compound.contains("Variant")) {
-            this.setVariant(ParrotfishVariant.byId(compound.getInt("Variant")));
-        }
     }
 
     @SuppressWarnings("deprecation")

@@ -1,7 +1,7 @@
 package com.fernleaf.meanderingmobs.client.renderer.layer;
 
 import com.fernleaf.meanderingmobs.client.model.parrotfish.ParrotfishModel;
-import com.fernleaf.meanderingmobs.server.entity.ParrotfishEntity;
+import com.fernleaf.meanderingmobs.server.entity.aquatic.ParrotfishEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;

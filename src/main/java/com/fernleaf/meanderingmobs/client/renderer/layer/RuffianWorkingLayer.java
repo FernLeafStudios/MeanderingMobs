@@ -1,7 +1,7 @@
 package com.fernleaf.meanderingmobs.client.renderer.layer;
 
 import com.fernleaf.meanderingmobs.client.model.ruffian.RuffianModel;
-import com.fernleaf.meanderingmobs.server.entity.RuffianEntity;
+import com.fernleaf.meanderingmobs.server.entity.tameable.RuffianEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.ModelPart;

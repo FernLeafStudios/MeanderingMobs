@@ -1,8 +1,9 @@
 package com.fernleaf.meanderingmobs.server.entity.ai.ruffian;
 
-import com.fernleaf.meanderingmobs.server.entity.RuffianEntity;
+import com.fernleaf.meanderingmobs.server.entity.tameable.RuffianEntity;
 import com.google.common.collect.ImmutableMap;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
@@ -26,8 +27,10 @@ public class RuffianStateBehavior extends Behavior<RuffianEntity> {
         int state = ruffian.getAiState();
         if (state == 1) return true; // SIT
         if (state == 2) { // FOLLOW
-            Player owner = ruffian.getOwner();
-            return owner != null && !owner.isSpectator() && ruffian.distanceToSqr(owner) > 6.25D;
+            LivingEntity owner = ruffian.getOwner();
+            if (owner == null) return false;
+            if (owner instanceof Player player && player.isSpectator()) return false;
+            return ruffian.distanceToSqr(owner) > 6.25D;
         }
         return false;
     }
@@ -51,7 +54,7 @@ public class RuffianStateBehavior extends Behavior<RuffianEntity> {
 
         // FOLLOW STATE (State 2)
         if (state == 2) {
-            Player owner = ruffian.getOwner();
+            LivingEntity owner = ruffian.getOwner();
             if (owner == null) return;
 
             double distSqr = ruffian.distanceToSqr(owner);

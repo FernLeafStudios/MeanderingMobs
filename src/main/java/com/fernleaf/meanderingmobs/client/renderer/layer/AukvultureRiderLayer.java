@@ -2,7 +2,7 @@ package com.fernleaf.meanderingmobs.client.renderer.layer;
 
 import com.fernleaf.meanderingmobs.client.model.aukvulture.AukvultureModel;
 import com.fernleaf.meanderingmobs.client.renderer.AukvultureRenderer;
-import com.fernleaf.meanderingmobs.server.entity.AukvultureEntity;
+import com.fernleaf.meanderingmobs.server.entity.tameable.AukvultureEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;

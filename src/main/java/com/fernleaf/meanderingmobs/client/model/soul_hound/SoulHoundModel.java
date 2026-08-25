@@ -3,7 +3,7 @@ package com.fernleaf.meanderingmobs.client.model.soul_hound;
 import com.fernleaf.meanderingmobs.MeanderingMobs;
 import com.fernleaf.meanderingmobs.client.adapter.SoulHoundModelAdapter;
 import com.fernleaf.meanderingmobs.client.instance.SoulHoundIKInstance;
-import com.fernleaf.meanderingmobs.server.entity.SoulHoundEntity;
+import com.fernleaf.meanderingmobs.server.entity.hostile.SoulHoundEntity;
 import net.minecraft.client.model.HierarchicalModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;

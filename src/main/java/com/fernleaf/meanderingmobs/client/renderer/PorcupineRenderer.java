@@ -4,7 +4,7 @@ import com.fernleaf.meanderingmobs.client.model.porcupine.ColdPorcupineModel;
 import com.fernleaf.meanderingmobs.client.model.porcupine.PorcupineVariant;
 import com.fernleaf.meanderingmobs.client.model.porcupine.TemperatePorcupineModel;
 import com.fernleaf.meanderingmobs.client.model.porcupine.WarmPorcupineModel;
-import com.fernleaf.meanderingmobs.server.entity.PorcupineEntity;
+import com.fernleaf.meanderingmobs.server.entity.tameable.PorcupineEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.HierarchicalModel;
 import net.minecraft.client.renderer.MultiBufferSource;

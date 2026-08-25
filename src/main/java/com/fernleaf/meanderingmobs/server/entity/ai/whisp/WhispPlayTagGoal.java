@@ -3,7 +3,7 @@ package com.fernleaf.meanderingmobs.server.entity.ai.whisp;
 import com.fernleaf.meanderingmobs.config.MeanderingMobsConfig;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsSoundsRegistry;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsTagRegistry;
-import com.fernleaf.meanderingmobs.server.entity.WhispEntity;
+import com.fernleaf.meanderingmobs.server.entity.tameable.WhispEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;

@@ -1,4 +1,4 @@
-package com.fernleaf.meanderingmobs.server.entity;
+package com.fernleaf.meanderingmobs.server.entity.tameable;
 
 import com.fernleaf.meanderingmobs.server.entity.util.MeanderingMobsEntity;
 import net.minecraft.world.entity.EntityType;

@@ -1,4 +1,4 @@
-package com.fernleaf.meanderingmobs.server.entity;
+package com.fernleaf.meanderingmobs.server.entity.hostile;
 
 import com.fernleaf.meanderingmobs.MeanderingMobs;
 import com.fernleaf.meanderingmobs.server.data.RallyWaveManager;
@@ -27,8 +27,6 @@ import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
@@ -38,6 +36,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
+@SuppressWarnings("deprecation")
 public class RallyCrystalEntity extends MeanderingMobsHostileEntity {
 
     private static final EntityDataAccessor<Boolean> IS_SINKING = SynchedEntityData.defineId(RallyCrystalEntity.class, EntityDataSerializers.BOOLEAN);
@@ -51,14 +50,13 @@ public class RallyCrystalEntity extends MeanderingMobsHostileEntity {
 
     private RallyWavePattern activePattern = null;
 
-    private static final double DETECTION_RADIUS = 12.0;
-    private static final double MOB_CLEANUP_RADIUS_SQR = 64.0 * 64.0; // 64 Block Despawn Radius
+    private static final double DETECTION_RADIUS_SQR = 12.0 * 12.0;
+    private static final double MOB_CLEANUP_RADIUS_SQR = 64.0 * 64.0;
 
     public RallyCrystalEntity(EntityType<? extends Monster> entityType, Level level) {
         super(entityType, level);
     }
 
-    @SuppressWarnings("unused")
     public static AttributeSupplier.Builder createAttributes() {
         return Monster.createMonsterAttributes()
                 .add(Attributes.MAX_HEALTH, 20.0D)
@@ -68,28 +66,13 @@ public class RallyCrystalEntity extends MeanderingMobsHostileEntity {
 
     @Override
     protected void registerGoals() {
-        // Stationary entity
+        // Override base goals - Stationary entity
     }
 
-    @Override
-    public boolean isPushable() {
-        return false;
-    }
-
-    @Override
-    protected void doPush(@NotNull Entity entity) {
-        // Stationary
-    }
-
-    @Override
-    public boolean canCollideWith(@NotNull Entity entity) {
-        return true;
-    }
-
-    @Override
-    public boolean isPickable() {
-        return true;
-    }
+    @Override public boolean isPushable() { return false; }
+    @Override protected void doPush(@NotNull Entity entity) {}
+    @Override public boolean canCollideWith(@NotNull Entity entity) { return true; }
+    @Override public boolean isPickable() { return true; }
 
     @Override
     protected void defineSynchedData(SynchedEntityData.@NotNull Builder builder) {
@@ -98,7 +81,6 @@ public class RallyCrystalEntity extends MeanderingMobsHostileEntity {
         builder.define(SINK_TICKS, 0);
     }
 
-    // Custom Natural Spawn predicate check
     public static boolean checkRallyCrystalSpawnRules(
             EntityType<RallyCrystalEntity> entityType,
             ServerLevelAccessor level,
@@ -106,11 +88,7 @@ public class RallyCrystalEntity extends MeanderingMobsHostileEntity {
             BlockPos pos,
             RandomSource random
     ) {
-        BlockState stateBelow = level.getBlockState(pos.below());
-        boolean isSoulBlock = stateBelow.is(Blocks.SOUL_SAND) || stateBelow.is(Blocks.SOUL_SOIL);
-        return isSoulBlock
-                && level.getBlockState(pos).isAir()
-                && level.getBlockState(pos.above()).isAir()
+        return checkSoulBlockSpawnRules(level, pos)
                 && checkMonsterSpawnRules(entityType, level, spawnType, pos, random);
     }
 
@@ -145,24 +123,18 @@ public class RallyCrystalEntity extends MeanderingMobsHostileEntity {
             return;
         }
 
-        // 1. Clean active mobs: check if dead, despawned, or exited 64-block radius
         this.activeWaveMobs.removeIf(uuid -> {
             Entity entity = serverLevel.getEntity(uuid);
-            if (entity == null || !entity.isAlive()) {
-                return true; // Entity despawned, unloaded, or dead
-            }
-            return this.distanceToSqr(entity) > MOB_CLEANUP_RADIUS_SQR; // Beyond 64 blocks
+            return entity == null || !entity.isAlive() || this.distanceToSqr(entity) > MOB_CLEANUP_RADIUS_SQR;
         });
 
-        // 2. Cooldown timer
         if (this.waveCooldown > 0) {
             this.waveCooldown--;
             return;
         }
 
-        // 3. Player Proximity Detection
         Player nearbyPlayer = serverLevel.players().stream()
-                .filter(p -> !p.isSpectator() && !p.isCreative() && p.distanceToSqr(this) <= (DETECTION_RADIUS * DETECTION_RADIUS))
+                .filter(p -> this.isValidPlayerTarget(p) && p.distanceToSqr(this) <= DETECTION_RADIUS_SQR)
                 .findFirst()
                 .orElse(null);
 
@@ -175,7 +147,6 @@ public class RallyCrystalEntity extends MeanderingMobsHostileEntity {
             this.messageSent = true;
         }
 
-        // 4. Wave Management
         if (this.activeWaveMobs.isEmpty()) {
             if (this.activePattern == null) {
                 RallyWaveManager.getRandomPattern(this.random).ifPresent(p -> this.activePattern = p);
@@ -193,7 +164,7 @@ public class RallyCrystalEntity extends MeanderingMobsHostileEntity {
                 int nextWave = this.currentWave + 1;
                 if (this.spawnWave(serverLevel, nextWave, nearbyPlayer)) {
                     this.currentWave = nextWave;
-                    this.waveCooldown = 100; // 5 seconds
+                    this.waveCooldown = 100;
                 }
             } else {
                 this.setSinking(true);
@@ -208,7 +179,6 @@ public class RallyCrystalEntity extends MeanderingMobsHostileEntity {
         if (waveIndex >= this.activePattern.waves().size()) return false;
 
         RallyWavePattern.WaveEntry waveEntry = this.activePattern.waves().get(waveIndex);
-
         List<EntityType<?>> selectableTypes = new ArrayList<>();
 
         if (waveEntry.entityId().isPresent()) {
