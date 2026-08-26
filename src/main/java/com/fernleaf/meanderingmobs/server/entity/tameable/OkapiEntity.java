@@ -1,23 +1,26 @@
 package com.fernleaf.meanderingmobs.server.entity.tameable;
 
+import com.fernleaf.meanderingmobs.client.model.aukvulture.AukvultureVariant;
+import com.fernleaf.meanderingmobs.client.model.okapi.OkapiVariant;
 import com.fernleaf.meanderingmobs.config.MeanderingMobsConfig;
+import com.fernleaf.meanderingmobs.server.data.VariantSpawnManager;
 import com.fernleaf.meanderingmobs.server.entity.ai.okapi.OkapiAlertGoal;
 import com.fernleaf.meanderingmobs.server.entity.ai.okapi.OkapiBrowseGoal;
 import com.fernleaf.meanderingmobs.server.entity.ai.okapi.OkapiHideGoal;
 import com.fernleaf.meanderingmobs.server.entity.util.MeanderingMobsTameableEntity;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.TamableAnimal;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.Animal;
@@ -26,8 +29,12 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
+
+import javax.annotation.Nullable;
 
 public class OkapiEntity extends MeanderingMobsTameableEntity {
 
@@ -44,6 +51,7 @@ public class OkapiEntity extends MeanderingMobsTameableEntity {
         builder.define(DATA_ALERT, false);
     }
 
+    @Override
     protected void registerGoals() {
         super.registerGoals();
         this.goalSelector.addGoal(2, new OkapiHideGoal(this));
@@ -60,6 +68,8 @@ public class OkapiEntity extends MeanderingMobsTameableEntity {
 
     public void setAlertState(boolean alert) { this.entityData.set(DATA_ALERT, alert); }
     public boolean isAlert() { return this.entityData.get(DATA_ALERT); }
+    public OkapiVariant getVariant() { return OkapiVariant.byId(this.getVariantId()); }
+    public void setVariant(OkapiVariant variant) { this.setVariantId(variant.id); }
 
     @Override
     public @NotNull InteractionResult mobInteract(@NotNull Player player, @NotNull InteractionHand hand) {
@@ -92,27 +102,10 @@ public class OkapiEntity extends MeanderingMobsTameableEntity {
     @Override
     protected void tickRidden(@NotNull Player player, @NotNull Vec3 travelVector) {
         super.tickRidden(player, travelVector);
-        setRot(player.getYRot(), player.getXRot() * 0.5F);
-        yRotO = yBodyRot = yHeadRot = getYRot();
 
         if (!level().isClientSide() && player.isUsingItem() && player.getUseItem().is(Items.GOAT_HORN) && player.getTicksUsingItem() % 10 == 0) {
             triggerHornGlowPulse(24.0D);
         }
-    }
-
-    @Override
-    protected @NotNull Vec3 getRiddenInput(Player player, @NotNull Vec3 deltaIn) {
-        return new Vec3(player.xxa * 0.6F, 0.0D, player.zza <= 0.0F ? player.zza * 0.3F : player.zza);
-    }
-
-    @Override
-    protected float getRiddenSpeed(@NotNull Player player) {
-        return (float) getAttributeValue(Attributes.MOVEMENT_SPEED);
-    }
-
-    @Override
-    public LivingEntity getControllingPassenger() {
-        return getFirstPassenger() instanceof LivingEntity living ? living : null;
     }
 
     public void triggerHornGlowPulse(double radius) {
@@ -123,5 +116,13 @@ public class OkapiEntity extends MeanderingMobsTameableEntity {
                     e -> e != this && e != getControllingPassenger() && e.isAlive()
             ).forEach(mob -> mob.addEffect(new MobEffectInstance(MobEffects.GLOWING, 200, 0, false, true)));
         }
+    }
+
+    @Override
+    public @NotNull SpawnGroupData finalizeSpawn(@NotNull ServerLevelAccessor level, @NotNull DifficultyInstance difficulty, @NotNull MobSpawnType spawnType, @Nullable SpawnGroupData spawnData) {
+        SpawnGroupData data = super.finalizeSpawn(level, difficulty, spawnType, spawnData);
+        Holder<Biome> biome = level.getBiome(blockPosition());
+        setVariant(OkapiVariant.byId(VariantSpawnManager.getVariantForSpawn(this, biome)));
+        return data;
     }
 }

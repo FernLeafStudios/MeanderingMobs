@@ -46,6 +46,10 @@ public class OkapiHideGoal extends Goal {
         if (this.okapi.isTamed() || this.okapi.isVehicle() || this.chaser == null || !this.chaser.isAlive()) {
             return false;
         }
+        // Also drop tracking if the player switches to creative/spectator mid-goal
+        if (this.chaser instanceof Player player && (player.isCreative() || player.isSpectator())) {
+            return false;
+        }
         return this.okapi.distanceToSqr(this.chaser) < 144.0D && this.coverTarget != null;
     }
 
@@ -58,7 +62,11 @@ public class OkapiHideGoal extends Goal {
                     if (entity == this.okapi || !entity.isAlive()) return false;
                     if (entity.getType().is(MeanderingMobsTagRegistry.EntityTypes.ALERT_OKAPI)) return true;
                     if (entity instanceof Player player) {
-                        return !player.isShiftKeyDown() && !player.isSpectator();
+                        // Ignore creative and spectator players, plus crouching players[cite: 36]
+                        if (player.isCreative() || player.isSpectator()) {
+                            return false;
+                        }
+                        return !player.isShiftKeyDown();
                     }
                     return false;
                 }
@@ -70,7 +78,6 @@ public class OkapiHideGoal extends Goal {
     public void tick() {
         if (this.chaser == null) return;
 
-        // Vector math inspired by WhispPlayTagGoal
         Vec3 okapiPos = this.okapi.position();
         Vec3 chaserPos = this.chaser.position();
         Vec3 fleeDir = okapiPos.subtract(chaserPos).multiply(1.0D, 0.0D, 1.0D);
@@ -80,13 +87,11 @@ public class OkapiHideGoal extends Goal {
         }
         fleeDir = fleeDir.normalize();
 
-        // Face away from the player smoothly
         float targetYaw = (float) (Mth.atan2(fleeDir.z, fleeDir.x) * (180.0D / Math.PI)) - 90.0F;
         this.okapi.setYRot(Mth.rotLerp(0.2F, this.okapi.getYRot(), targetYaw));
         this.okapi.yBodyRot = this.okapi.getYRot();
         this.okapi.yHeadRot = this.okapi.getYRot();
 
-        // Push toward cover location via navigation
         if (this.coverTarget != null) {
             this.okapi.getNavigation().moveTo(this.coverTarget.x, this.coverTarget.y, this.coverTarget.z, 2.0D);
         }

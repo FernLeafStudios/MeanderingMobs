@@ -1,0 +1,9 @@
+{
+  "entity": "meanderingmobs:okapi",
+  "rules": [
+    {
+      "biome": "minecraft:lush_caves",
+      "variant": 1
+    }
+  ]
+}

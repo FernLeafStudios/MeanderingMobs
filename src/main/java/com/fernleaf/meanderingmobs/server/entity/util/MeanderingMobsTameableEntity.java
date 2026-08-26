@@ -18,6 +18,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
@@ -25,6 +26,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -222,6 +224,33 @@ public abstract class MeanderingMobsTameableEntity extends TamableAnimal impleme
             return InteractionResult.sidedSuccess(this.level().isClientSide());
         }
         return super.mobInteract(player, hand);
+    }
+
+    @Override
+    public LivingEntity getControllingPassenger() {
+        return this.getFirstPassenger() instanceof LivingEntity living ? living : null;
+    }
+
+    @Override
+    protected void tickRidden(@NotNull Player player, @NotNull Vec3 travelVector) {
+        super.tickRidden(player, travelVector);
+        this.setRot(player.getYRot(), player.getXRot() * 0.5F);
+        this.yRotO = this.yBodyRot = this.yHeadRot = this.getYRot();
+    }
+
+    @Override
+    protected @NotNull Vec3 getRiddenInput(Player player, @NotNull Vec3 deltaIn) {
+        return new Vec3(player.xxa * 0.6F, 0.0D, player.zza <= 0.0F ? player.zza * 0.3F : player.zza);
+    }
+
+    @Override
+    protected float getRiddenSpeed(@NotNull Player player) {
+        return (float) this.getAttributeValue(Attributes.MOVEMENT_SPEED);
+    }
+
+    @Override
+    protected @NotNull Vec3 getPassengerAttachmentPoint(@NotNull Entity passenger, EntityDimensions dimensions, float scale) {
+        return new Vec3(0.0D, dimensions.height() * 0.75D + 0.35D, 0.0D);
     }
 
     // --- Universal Persistence ---

@@ -99,16 +99,10 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
         builder.define(DATA_LONE_WANDERER, true);
         builder.define(DATA_NAVIGATION_OWNER, Optional.empty());
         builder.define(IS_ATTACKING, false);
-        this.setVariantId(AukvultureVariant.DEFAULT.id);
     }
 
     public AukvultureVariant getVariant() { return AukvultureVariant.byId(this.getVariantId()); }
     public void setVariant(AukvultureVariant variant) { this.setVariantId(variant.id); }
-
-    @Override
-    public LivingEntity getControllingPassenger() {
-        return this.getFirstPassenger() instanceof LivingEntity living ? living : null;
-    }
 
     public void handleClientInput(boolean flapping, boolean diving) {
         this.clientFlapping = flapping;
@@ -248,8 +242,8 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
     @Override public boolean causeFallDamage(float f, float m, @NotNull DamageSource s) { return false; }
 
     @Override
-    public @NotNull Vec3 getPassengerRidingPosition(@NotNull Entity passenger) {
-        return new Vec3(getX(), getY() + 1.85D, getZ());
+    protected @NotNull Vec3 getPassengerAttachmentPoint(@NotNull Entity passenger, EntityDimensions dimensions, float scale) {
+        return new Vec3(0.0D, dimensions.height() * 0.925D, 0.0D);
     }
 
     @Override

@@ -10,26 +10,6 @@ import net.minecraft.world.phys.Vec3;
 @SuppressWarnings("unused")
 public class WhispIKInstance {
 
-    public enum WhispProceduralState {
-        NONE(0, 0),
-        HAPPY_BOUNCE(1, 15);
-
-        public final int id;
-        public final int duration;
-
-        WhispProceduralState(int id, int duration) {
-            this.id = id;
-            this.duration = duration;
-        }
-
-        public static WhispProceduralState fromId(int id) {
-            for (WhispProceduralState state : values()) {
-                if (state.id == id) return state;
-            }
-            return NONE;
-        }
-    }
-
     public float breathingOffset;
     public float waistDragPitch;
     public float lowerDragPitch;

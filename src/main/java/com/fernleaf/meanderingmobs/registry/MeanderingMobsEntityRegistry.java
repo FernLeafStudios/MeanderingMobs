@@ -4,6 +4,9 @@ import com.fernleaf.meanderingmobs.MeanderingMobs;
 import com.fernleaf.meanderingmobs.client.model.anchovy.AnchovyModel;
 import com.fernleaf.meanderingmobs.client.model.aukvulture.AukvultureModel;
 import com.fernleaf.meanderingmobs.client.model.crystal.RallyCrystalModel;
+import com.fernleaf.meanderingmobs.client.model.deerfox.DeerfoxModel;
+import com.fernleaf.meanderingmobs.client.model.guttertank.GuttertankModel;
+import com.fernleaf.meanderingmobs.client.model.okapi.FlaghornModel;
 import com.fernleaf.meanderingmobs.client.model.okapi.OkapiModel;
 import com.fernleaf.meanderingmobs.client.model.parrotfish.ParrotfishModel;
 import com.fernleaf.meanderingmobs.client.model.pilot_whale.PilotWhaleModel;
@@ -168,8 +171,19 @@ public class MeanderingMobsEntityRegistry {
                             .clientTrackingRange(8)
                             .build("anchovy")
             );
+    public static final DeferredHolder<EntityType<?>, EntityType<GuttertankEntity>> GUTTERTANK =
+            ENTITIES.register("guttertank", () ->
+                    EntityType.Builder.of(GuttertankEntity::new, MobCategory.CREATURE)
+                            .sized(3.0F, 3.0F)
+                            .build("guttertank"));
 
-    // Update 3 Mobs
+    public static final DeferredHolder<EntityType<?>, EntityType<DeerfoxEntity>> DEERFOX =
+            ENTITIES.register("deerfox", () ->
+                    EntityType.Builder.of(DeerfoxEntity::new, MobCategory.CREATURE)
+                            .sized(1.5F, 2.0F)
+                            .build("deerfox"));
+
+    // Structure Update Mobs
     public static final DeferredHolder<EntityType<?>, EntityType<VampireEntity>> VAMPIRE =
             ENTITIES.register("vampire", () ->
                     EntityType.Builder.of(VampireEntity::new, MobCategory.MONSTER)
@@ -178,7 +192,7 @@ public class MeanderingMobsEntityRegistry {
                             .build("vampire")
             );
 
-    // Update 4 Mobs
+    // Random Update Mobs
     public static final DeferredHolder<EntityType<?>, EntityType<PilotWhaleEntity>> PILOT_WHALE =
             ENTITIES.register("pilot_whale", () ->
                     EntityType.Builder.of(PilotWhaleEntity::new, MobCategory.WATER_CREATURE)
@@ -211,6 +225,8 @@ public class MeanderingMobsEntityRegistry {
             event.put(OKAPI.get(), OkapiEntity.createAttributes().build());
             event.put(WOLVERINE.get(), WolverineEntity.createAttributes().build());
             event.put(ANCHOVY.get(), AnchovyEntity.createAttributes().build());
+            event.put(GUTTERTANK.get(), GuttertankEntity.createAttributes().build());
+            event.put(DEERFOX.get(), DeerfoxEntity.createAttributes().build());
         }
     }
 
@@ -236,6 +252,8 @@ public class MeanderingMobsEntityRegistry {
             event.registerEntityRenderer(OKAPI.get(), OkapiRenderer::new);
             event.registerEntityRenderer(WOLVERINE.get(), WolverineRenderer::new);
             event.registerEntityRenderer(ANCHOVY.get(), AnchovyRenderer::new);
+            event.registerEntityRenderer(GUTTERTANK.get(),GuttertankRenderer::new);
+            event.registerEntityRenderer(DEERFOX.get(),DeerfoxRenderer::new);
         }
 
         @SubscribeEvent
@@ -253,8 +271,11 @@ public class MeanderingMobsEntityRegistry {
             event.registerLayerDefinition(RallyCrystalModel.LAYER_LOCATION, RallyCrystalModel::createBodyLayer);
             event.registerLayerDefinition(RuffianModel.LAYER_LOCATION, RuffianModel::createBodyLayer);
             event.registerLayerDefinition(OkapiModel.LAYER_LOCATION, OkapiModel::createBodyLayer);
+            event.registerLayerDefinition(FlaghornModel.LAYER_LOCATION, FlaghornModel::createBodyLayer);
             event.registerLayerDefinition(WolverineModel.LAYER_LOCATION, WolverineModel::createBodyLayer);
             event.registerLayerDefinition(AnchovyModel.LAYER_LOCATION, AnchovyModel::createBodyLayer);
+            event.registerLayerDefinition(GuttertankModel.LAYER_LOCATION, GuttertankModel::createBodyLayer);
+            event.registerLayerDefinition(DeerfoxModel.LAYER_LOCATION, DeerfoxModel::createBodyLayer);
 
             // Update 3
             event.registerLayerDefinition(RaspberryVampireModel.LAYER_LOCATION, RaspberryVampireModel::createBodyLayer);

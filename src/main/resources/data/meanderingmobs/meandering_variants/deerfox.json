@@ -1,0 +1,9 @@
+{
+  "entity": "meanderingmobs:deerfox",
+  "rules": [
+    {
+      "biome_tag": "c:is_taiga",
+      "variant": 1
+    }
+  ]
+}

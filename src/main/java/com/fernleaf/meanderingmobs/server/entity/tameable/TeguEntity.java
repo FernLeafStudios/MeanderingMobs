@@ -66,7 +66,6 @@ public class TeguEntity extends MeanderingMobsTameableEntity {
     protected void defineSynchedData(SynchedEntityData.@NotNull Builder builder) {
         super.defineSynchedData(builder);
         builder.define(DATA_MOUTH_ITEM, ItemStack.EMPTY);
-        this.setVariantId(TeguVariant.MARBLED.id);
     }
 
     protected void registerGoals() {

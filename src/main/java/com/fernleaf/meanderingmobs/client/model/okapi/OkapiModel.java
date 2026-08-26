@@ -1,5 +1,6 @@
 package com.fernleaf.meanderingmobs.client.model.okapi;
 
+import com.fernleaf.fernframe.proprio.util.ModelPartUtils;
 import com.fernleaf.meanderingmobs.client.adapter.OkapiModelAdapter;
 import com.fernleaf.meanderingmobs.client.instance.OkapiIKInstance;
 import net.minecraft.client.model.HierarchicalModel;
@@ -43,9 +44,11 @@ public class OkapiModel<T extends LivingEntity> extends HierarchicalModel<T> {
         this.ear_right = this.head.getChild("ear_right");
         this.tongue = this.head.getChild("tongue");
         this.tonguetip = this.tongue.getChild("tonguetip");
+
         this.body = this.okapi.getChild("body");
         this.torso = this.body.getChild("torso");
         this.tail = this.torso.getChild("tail");
+
         this.front_leg_right = this.body.getChild("front_leg_right");
         this.front_leg_left = this.body.getChild("front_leg_left");
         this.hind_leg_right = this.body.getChild("hind_leg_right");
