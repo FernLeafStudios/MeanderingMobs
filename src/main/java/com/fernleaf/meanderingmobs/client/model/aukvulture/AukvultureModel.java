@@ -129,12 +129,14 @@ public class AukvultureModel<T extends AukvultureEntity> extends HierarchicalMod
 
 	@Override
 	public void setupAnim(T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
-		// 1. Reset all model parts to default bind pose
 		this.root().getAllParts().forEach(ModelPart::resetPose);
 
 		// 2. Exclusive State Evaluation
 		if (entity.attackAnimationState.isStarted()) {
 			this.animate(entity.attackAnimationState, AukvultureAnimations.attack, ageInTicks, 1.0f);
+		}
+		else if (entity.sitAnimationState.isStarted()) {
+			this.animate(entity.sitAnimationState, AukvultureAnimations.sit, ageInTicks, 1.0f);
 		}
 		else if (entity.landingAnimationState.isStarted()) {
 			this.animate(entity.landingAnimationState, AukvultureAnimations.landing, ageInTicks, 1.0f);

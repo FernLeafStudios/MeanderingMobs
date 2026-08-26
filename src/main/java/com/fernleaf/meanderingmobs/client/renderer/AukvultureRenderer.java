@@ -21,14 +21,13 @@ public class AukvultureRenderer extends MobRenderer<AukvultureEntity, Aukvulture
     }
 
     @Override
-    protected void setupRotations(AukvultureEntity entity, @NotNull PoseStack poseStack, float ageInTicks, float rotationYaw, float partialTicks, float scale) {
+    protected void setupRotations(@NotNull AukvultureEntity entity, @NotNull PoseStack poseStack, float ageInTicks, float rotationYaw, float partialTicks, float scale) {
         super.setupRotations(entity, poseStack, ageInTicks, rotationYaw, partialTicks, scale);
 
-        // Center matrix transformation relative to bounding box height pivot
-        double centerY = entity.getBbHeight() * 0.5D;
-        poseStack.translate(0.0D, centerY, 0.0D);
-
         if (entity.isFlying()) {
+            double centerY = entity.getBbHeight() * 0.5D;
+            poseStack.translate(0.0D, centerY, 0.0D);
+
             float interpolatedPitch = Mth.rotLerp(partialTicks, entity.xRotO, entity.getXRot());
             float interpolatedRoll = Mth.rotLerp(partialTicks, entity.prevRollAngle, entity.rollAngle);
 
@@ -38,9 +37,9 @@ public class AukvultureRenderer extends MobRenderer<AukvultureEntity, Aukvulture
             if (Math.abs(interpolatedPitch) > 0.01F) {
                 poseStack.mulPose(Axis.XP.rotationDegrees(Mth.clamp(interpolatedPitch, -60.0F, 60.0F)));
             }
-        }
 
-        poseStack.translate(0.0D, -centerY, 0.0D);
+            poseStack.translate(0.0D, -centerY, 0.0D);
+        }
     }
 
     @Override

@@ -43,6 +43,7 @@ public class WolverineEntity extends MeanderingMobsTameableEntity {
     public final AnimationState walkAnimationState = new AnimationState();
     public final AnimationState runAnimationState = new AnimationState();
     public final AnimationState attackAnimationState = new AnimationState();
+    public final AnimationState sitAnimationState = new AnimationState();
 
     public WolverineEntity(EntityType<? extends TamableAnimal> entityType, Level level) {
         super(entityType, level);
@@ -74,6 +75,18 @@ public class WolverineEntity extends MeanderingMobsTameableEntity {
     }
 
     private void setupAnimationStates() {
+        // 2. Handle sitting animation state
+        if (this.isSitting()) {
+            this.sitAnimationState.startIfStopped(this.tickCount);
+            this.idleAnimationState.stop();
+            this.walkAnimationState.stop();
+            this.runAnimationState.stop();
+            return; // Early return so walking/idle don't re-trigger while sitting
+        } else {
+            this.sitAnimationState.stop();
+        }
+
+        // 3. Normal movement animation state logic
         boolean moving = getDeltaMovement().horizontalDistanceSqr() >= 1.0E-6D;
 
         if (!isSprinting() && !moving) idleAnimationState.startIfStopped(tickCount);

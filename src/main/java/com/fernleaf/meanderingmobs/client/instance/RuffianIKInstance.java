@@ -26,13 +26,13 @@ public class RuffianIKInstance {
     public float playfulWiggle;
 
     public void update(LivingEntity entity, float limbSwing, float limbSwingAmount, float partialTick) {
-        // Safely check for Ruffian play state without breaking Hollow Ruffians
+        // Unique phase offset per entity instance (0 to ~6.28 radians)
+        float phaseOffset = (entity.getId() * 0.157F) % Mth.TWO_PI;
+
         boolean isPlaying = (entity instanceof RuffianEntity ruffian) && ruffian.isPlaying();
         boolean isNapping = (entity instanceof RuffianEntity ruffian) && ruffian.isNapping();
 
         float age = IKMathUtils.getAge(entity, partialTabCorrection(partialTick));
-
-        // Use limbSwingAmount for client-side movement evaluation
 
         // Standard reset targets
         float targetTorsoX = 0.0F;
@@ -51,27 +51,23 @@ public class RuffianIKInstance {
 
         // Idly bopping
         if (!isNapping) {
-            // Subtle breathing bop (kept minimal so it doesn't sink)
-            targetYOffset = Mth.sin(age * 0.08F) * 0.02F;
+            // Subtle breathing bop with phase offset
+            targetYOffset = Mth.sin((age * 0.08F) + phaseOffset) * 0.02F;
 
             // Jolly idle arm sway when stationary
             if (limbSwingAmount < 0.1F && !isPlaying) {
-                targetLArmZ = Mth.cos(age * 0.08F) * 0.05F + 0.1F;
-                targetRArmZ = -Mth.cos(age * 0.08F) * 0.05F - 0.1F;
-                targetLArmX = Mth.sin(age * 0.06F) * 0.08F;
-                targetRArmX = -Mth.sin(age * 0.06F) * 0.08F;
+                targetLArmZ = Mth.cos((age * 0.08F) + phaseOffset) * 0.05F + 0.1F;
+                targetRArmZ = -Mth.cos((age * 0.08F) + phaseOffset) * 0.05F - 0.1F;
+                targetLArmX = Mth.sin((age * 0.06F) + phaseOffset) * 0.08F;
+                targetRArmX = -Mth.sin((age * 0.06F) + phaseOffset) * 0.08F;
             } else if (!isPlaying) {
-                // Lean torso forward (positive X rotation) proportional to how fast they are moving
                 targetTorsoX = limbSwingAmount * 0.35F;
-
-                // Slight head counter-balance so they look ahead while leaning forward
                 targetHeadX = -targetTorsoX * 0.5F;
             }
         }
 
         // --- 2. NARUTO RUN / PLAYFUL STATE ---
         if (isPlaying) {
-            // Naruto run pose
             targetTorsoX = 0.45F;
             targetHeadX = -0.35F;
 
@@ -83,11 +79,11 @@ public class RuffianIKInstance {
             targetRArmY = 0.2F;
             targetRArmZ = -0.15F;
 
-            // Playful wiggle overlay
-            this.playfulWiggle = Mth.sin(age * 0.4F) * 0.25F;
+            // Playful wiggle overlay with phase offset
+            this.playfulWiggle = Mth.sin((age * 0.4F) + phaseOffset) * 0.25F;
             targetTorsoZ = this.playfulWiggle;
-            targetLArmZ += Mth.cos(age * 0.4F) * 0.3F;
-            targetRArmZ -= Mth.cos(age * 0.4F) * 0.3F;
+            targetLArmZ += Mth.cos((age * 0.4F) + phaseOffset) * 0.3F;
+            targetRArmZ -= Mth.cos((age * 0.4F) + phaseOffset) * 0.3F;
         } else {
             this.playfulWiggle = 0.0F;
         }

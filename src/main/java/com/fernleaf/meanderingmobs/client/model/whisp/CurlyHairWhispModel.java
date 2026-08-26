@@ -26,8 +26,6 @@ public class CurlyHairWhispModel<T extends LivingEntity> extends HierarchicalMod
     private final ModelPart head;
     private final ModelPart hair;
 
-    private final WhispIKInstance ikInstance = new WhispIKInstance();
-
     public CurlyHairWhispModel(ModelPart root) {
         this.root = root;
         this.whisp = root.getChild("Whisp");
@@ -69,11 +67,14 @@ public class CurlyHairWhispModel<T extends LivingEntity> extends HierarchicalMod
         this.root().getAllParts().forEach(ModelPart::resetPose);
 
         float partialTick = ageInTicks - (float) entity.tickCount;
-        this.ikInstance.update(entity, limbSwing, limbSwingAmount, netHeadYaw, headPitch, partialTick);
+
+        // Create or retrieve per-entity instance instead of using a model field!
+        WhispIKInstance ikInstance = new WhispIKInstance();
+        ikInstance.update(entity, limbSwing, limbSwingAmount, netHeadYaw, headPitch, partialTick);
 
         this.head.yRot = netHeadYaw * ((float) Math.PI / 180F);
         this.head.xRot = headPitch * ((float) Math.PI / 180F);
 
-        WhispModelAdapter.applyToModel(entity, this, this.ikInstance);
+        WhispModelAdapter.applyToModel(entity, this, ikInstance);
     }
 }

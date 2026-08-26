@@ -69,6 +69,7 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
     public final AnimationState idle2AnimationState = new AnimationState();
     public final AnimationState walk2FlyAnimationState = new AnimationState();
     public final AnimationState landingAnimationState = new AnimationState();
+    public final AnimationState sitAnimationState = new AnimationState();
 
     public AukvultureEntity(EntityType<? extends TamableAnimal> type, Level level) {
         super(type, level);
@@ -176,6 +177,7 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
         idle2AnimationState.stop();
         walkAnimationState.stop();
         landingAnimationState.stop();
+        sitAnimationState.stop();
     }
 
     @Override
@@ -434,20 +436,31 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
 
         if (isCurrentlyFlying) {
             walk2FlyAnimationState.stop();
+            sitAnimationState.stop();
             flyAnimationState.startIfStopped(tickCount);
         } else {
             landingAnimationState.stop();
-            if (getDeltaMovement().horizontalDistanceSqr() > 1.0E-5D) {
+
+            // Handle Sitting Pose Priority
+            if (isSitting()) {
                 idleAnimationState.stop();
                 idle2AnimationState.stop();
-                walkAnimationState.startIfStopped(tickCount);
-            } else {
                 walkAnimationState.stop();
-                if (tickCount % 300 == 0 && getRandom().nextFloat() < 0.4F) {
+                sitAnimationState.startIfStopped(tickCount);
+            } else {
+                sitAnimationState.stop();
+                if (getDeltaMovement().horizontalDistanceSqr() > 1.0E-5D) {
                     idleAnimationState.stop();
-                    idle2AnimationState.startIfStopped(tickCount);
-                } else if (!idle2AnimationState.isStarted()) {
-                    idleAnimationState.startIfStopped(tickCount);
+                    idle2AnimationState.stop();
+                    walkAnimationState.startIfStopped(tickCount);
+                } else {
+                    walkAnimationState.stop();
+                    if (tickCount % 300 == 0 && getRandom().nextFloat() < 0.4F) {
+                        idleAnimationState.stop();
+                        idle2AnimationState.startIfStopped(tickCount);
+                    } else if (!idle2AnimationState.isStarted()) {
+                        idleAnimationState.startIfStopped(tickCount);
+                    }
                 }
             }
         }

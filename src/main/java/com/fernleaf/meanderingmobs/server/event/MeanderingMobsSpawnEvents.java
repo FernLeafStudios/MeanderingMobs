@@ -2,6 +2,8 @@ package com.fernleaf.meanderingmobs.server.event;
 
 import com.fernleaf.meanderingmobs.MeanderingMobs;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsEntityRegistry;
+import com.fernleaf.meanderingmobs.server.block.GuttertankPattern;
+import com.fernleaf.meanderingmobs.server.block.RuffianPattern;
 import com.fernleaf.meanderingmobs.server.data.VariantSpawnManager;
 import com.fernleaf.meanderingmobs.server.entity.ai.allay.WhispOrbitGoal;
 import com.fernleaf.meanderingmobs.server.entity.hostile.HollowRuffianEntity;
@@ -14,10 +16,12 @@ import com.fernleaf.meanderingmobs.server.entity.tameable.WolverineEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.animal.WaterAnimal;
 import net.minecraft.world.entity.animal.allay.Allay;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Blocks;
@@ -27,6 +31,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent;
+import net.neoforged.neoforge.event.level.BlockEvent;
 
 @EventBusSubscriber(modid = MeanderingMobs.MODID)
 public class MeanderingMobsSpawnEvents {
@@ -176,6 +181,36 @@ public class MeanderingMobsSpawnEvents {
                     }
                 }
             }
+        }
+    }
+
+    @SubscribeEvent
+    public static void onBlockPlace(BlockEvent.EntityPlaceEvent event) {
+        if (event.getLevel().isClientSide()) return;
+
+        if (event.getPlacedBlock().is(BlockTags.WOOL) ||
+                event.getPlacedBlock().is(Blocks.CARVED_PUMPKIN) ||
+                event.getPlacedBlock().is(Blocks.JACK_O_LANTERN)) {
+
+            Player player = event.getEntity() instanceof Player p ? p : null;
+
+            RuffianPattern.trySpawnRuffian(
+                    (net.minecraft.world.level.Level) event.getLevel(),
+                    event.getPos(),
+                    MeanderingMobsEntityRegistry.RUFFIAN.get(),
+                    player
+            );
+        }
+
+        if (event.getPlacedBlock().is(Blocks.CARVED_PUMPKIN) || event.getPlacedBlock().is(Blocks.JACK_O_LANTERN)) {
+            Player player = event.getEntity() instanceof Player p ? p : null;
+
+            GuttertankPattern.trySpawnGuttertank(
+                    (net.minecraft.world.level.Level) event.getLevel(),
+                    event.getPos(),
+                    MeanderingMobsEntityRegistry.GUTTERTANK.get(),
+                    player
+            );
         }
     }
 }

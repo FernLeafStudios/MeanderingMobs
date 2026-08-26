@@ -9,6 +9,7 @@ import com.fernleaf.meanderingmobs.server.entity.ai.ruffian.brain.RuffianMemoryM
 import com.fernleaf.meanderingmobs.server.entity.util.MeanderingMobsTameableEntity;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -27,10 +28,7 @@ import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.behavior.LookAtTargetSink;
-import net.minecraft.world.entity.ai.behavior.MoveToTargetSink;
-import net.minecraft.world.entity.ai.behavior.RandomStroll;
-import net.minecraft.world.entity.ai.behavior.Swim;
+import net.minecraft.world.entity.ai.behavior.*;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.player.Player;
@@ -109,7 +107,11 @@ public class RuffianEntity extends MeanderingMobsTameableEntity {
                 new RuffianIdleBehavior(),
                 new RuffianPlayBehavior(),
                 new RuffianAttemptRideBehavior(),
-                RandomStroll.stroll(1.0F)
+                new RunOne<>(ImmutableList.of(
+                        Pair.of(RandomStroll.stroll(0.6F), 2),
+                        Pair.of(SetEntityLookTarget.create(EntityType.PLAYER, 8.0F), 2),
+                        Pair.of(new DoNothing(30, 60), 3)
+                ))
         ));
 
         brain.setCoreActivities(ImmutableSet.of(Activity.CORE));

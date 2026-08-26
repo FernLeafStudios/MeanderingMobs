@@ -35,14 +35,13 @@ public class WhispPacifyGoal extends Goal {
             List<Mob> nearbyMobs = this.whisp.level().getEntitiesOfClass(
                     Mob.class,
                     auraArea,
-                    entity -> entity.isAlive() && (
-                            entity.getType().is(MeanderingMobsTagRegistry.EntityTypes.WHISP_INFLICT_PACIFISM)
-                                    || entity.getTarget() != null // Also affects any active aggressive mob nearby
-                    )
+                    entity -> entity.isAlive()
+                            && !(entity instanceof WhispEntity)
+                            && (entity.getType().is(MeanderingMobsTagRegistry.EntityTypes.WHISP_INFLICT_PACIFISM)
+                            || entity.getTarget() != null)
             );
 
             for (Mob mob : nearbyMobs) {
-                // 600 ticks = 30 seconds duration
                 mob.addEffect(new MobEffectInstance(
                         MeanderingMobsEffectsRegistry.WHIMSICAL, 600, 0, false, true
                 ));

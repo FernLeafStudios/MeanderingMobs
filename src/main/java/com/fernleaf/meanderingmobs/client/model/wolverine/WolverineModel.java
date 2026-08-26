@@ -115,6 +115,7 @@ public class WolverineModel<T extends Entity> extends HierarchicalModel<T> {
             this.animate(wolverineEntity.walkAnimationState, WolverineAnimations.Walk, ageInTicks);
             this.animate(wolverineEntity.runAnimationState, WolverineAnimations.Run, ageInTicks);
             this.animate(wolverineEntity.attackAnimationState, WolverineAnimations.Attack, ageInTicks);
+            this.animate(wolverineEntity.sitAnimationState, WolverineAnimations.Sit, ageInTicks);
         }
     }
 }

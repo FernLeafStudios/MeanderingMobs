@@ -27,8 +27,6 @@ public class RuffianModel<T extends LivingEntity> extends HierarchicalModel<T> {
     public final ModelPart leftWheel;
     public final ModelPart rightWheel;
 
-    private final RuffianIKInstance ik = new RuffianIKInstance();
-
     public RuffianModel(ModelPart root) {
         this.root = root;
         this.bone = root.getChild("bone");
@@ -104,9 +102,11 @@ public class RuffianModel<T extends LivingEntity> extends HierarchicalModel<T> {
         // Base waddle
         this.torso.zRot = Mth.cos(limbSwing * 0.6662F) * 0.1F * limbSwingAmount;
 
-        // Update IK & Apply via adapter
+        // Create per-entity IK instance to prevent shared model state pollution
+        RuffianIKInstance ik = new RuffianIKInstance();
         float partialTick = ageInTicks - (float) entity.tickCount;
-        this.ik.update(entity, limbSwing, limbSwingAmount, partialTick);
-        RuffianModelAdapter.applyToModel(entity, this, this.ik);
+        ik.update(entity, limbSwing, limbSwingAmount, partialTick);
+
+        RuffianModelAdapter.applyToModel(entity, this, ik);
     }
 }
