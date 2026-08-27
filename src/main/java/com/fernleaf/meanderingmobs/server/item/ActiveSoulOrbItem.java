@@ -24,17 +24,12 @@ import java.util.Optional;
 public class ActiveSoulOrbItem extends Item {
 
     public ActiveSoulOrbItem(Properties properties) {
-        super(properties.stacksTo(1)); // Ensures max stack size is strictly 1
+        super(properties.stacksTo(1));
     }
 
     @Override
     public @NotNull InteractionResult useOn(UseOnContext context) {
         Level level = context.getLevel();
-        if (level.isClientSide()) {
-            return InteractionResult.SUCCESS;
-        }
-
-        Player player = context.getPlayer();
         ItemStack stack = context.getItemInHand();
         CustomData customData = stack.get(DataComponents.CUSTOM_DATA);
 
@@ -42,15 +37,21 @@ public class ActiveSoulOrbItem extends Item {
             return InteractionResult.FAIL;
         }
 
+        // Return SUCCESS on client to trigger hand swing animation cleanly
+        if (level.isClientSide()) {
+            return InteractionResult.SUCCESS;
+        }
+
         CompoundTag tag = customData.copyTag();
-        BlockPos clickedPos = context.getClickedPos();
-        Direction face = context.getClickedFace();
-        BlockPos spawnPos = clickedPos.relative(face);
-
-        ServerLevel serverLevel = (ServerLevel) level;
-
         Optional<EntityType<?>> entityType = EntityType.by(tag);
+
         if (entityType.isPresent()) {
+            ServerLevel serverLevel = (ServerLevel) level;
+            Player player = context.getPlayer();
+            BlockPos clickedPos = context.getClickedPos();
+            Direction face = context.getClickedFace();
+            BlockPos spawnPos = clickedPos.relative(face);
+
             Entity entity = entityType.get().create(serverLevel);
             if (entity != null) {
                 entity.load(tag);
@@ -64,7 +65,6 @@ public class ActiveSoulOrbItem extends Item {
 
                 serverLevel.addFreshEntity(entity);
 
-
                 serverLevel.sendParticles(
                         ParticleTypes.GUST,
                         spawnPos.getX() + 0.5D, spawnPos.getY() + 0.5D, spawnPos.getZ() + 0.5D,
@@ -77,7 +77,8 @@ public class ActiveSoulOrbItem extends Item {
                         1.0F, 0.8F
                 );
 
-                if (player != null && !player.getAbilities().instabuild) {
+                // Consume the item properly in both creative and survival sync
+                if (player == null || !player.getAbilities().instabuild) {
                     stack.shrink(1);
                 }
 

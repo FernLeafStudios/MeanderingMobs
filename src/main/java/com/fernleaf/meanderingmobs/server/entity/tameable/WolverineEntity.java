@@ -2,6 +2,7 @@ package com.fernleaf.meanderingmobs.server.entity.tameable;
 
 import com.fernleaf.meanderingmobs.server.entity.ai.wolverine.WolverineAttackGoal;
 import com.fernleaf.meanderingmobs.server.entity.ai.wolverine.WolverineClimbGoal;
+import com.fernleaf.meanderingmobs.server.entity.ai.wolverine.WolverineRaidBeehiveGoal;
 import com.fernleaf.meanderingmobs.server.entity.util.MeanderingMobsTameableEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
@@ -112,6 +113,7 @@ public class WolverineEntity extends MeanderingMobsTameableEntity {
 
     protected void registerGoals() {
         super.registerGoals();
+        this.goalSelector.addGoal(1, new WolverineRaidBeehiveGoal(this));
         this.goalSelector.addGoal(2, new WolverineClimbGoal(this));
         this.goalSelector.addGoal(3, new WolverineAttackGoal(this, 1.25D, true));
         this.targetSelector.addGoal(3, new HurtByTargetGoal(this).setAlertOthers());

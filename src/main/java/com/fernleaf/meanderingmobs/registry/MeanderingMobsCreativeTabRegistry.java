@@ -23,6 +23,7 @@ public class MeanderingMobsCreativeTabRegistry {
                         output.accept(MeanderingMobsItemRegistry.PORCUPINE_QUILL.get());
                         output.accept(MeanderingMobsItemRegistry.TEGU_SCALE.get());
                         output.accept(MeanderingMobsItemRegistry.TEGU_POUCH.get());
+                        output.accept(MeanderingMobsItemRegistry.WHISP_ESSENCE.get());
                         output.accept(MeanderingMobsItemRegistry.RAW_PARROT_FISH.get());
                         output.accept(MeanderingMobsItemRegistry.COOKED_PARROT_FISH.get());
                         output.accept(MeanderingMobsItemRegistry.WOLVERINE_FUR.get());

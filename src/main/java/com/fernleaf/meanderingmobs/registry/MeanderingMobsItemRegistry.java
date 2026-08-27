@@ -87,6 +87,10 @@ public class MeanderingMobsItemRegistry {
             () -> new Item(new Item.Properties())
     );
 
+    public static final DeferredHolder<Item, Item> WHISP_ESSENCE = ITEMS.register("whisp_essence",
+            () -> new Item(new Item.Properties())
+    );
+
     public static final DeferredHolder<Item, Item> CLAW_GLOVE = ITEMS.register("claw_glove",
             () -> new ClawGloveItem(new Item.Properties()
                     .attributes(SwordItem.createAttributes(Tiers.IRON, 2, -1.5F)))

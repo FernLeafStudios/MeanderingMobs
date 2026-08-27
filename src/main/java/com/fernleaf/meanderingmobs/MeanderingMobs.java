@@ -42,6 +42,7 @@ public class MeanderingMobs {
         MeanderingMobsBlockRegistry.register(modEventBus);
         MeanderingMobsBlockEntityRegistry.register(modEventBus);
         MeanderingMobsEffectsRegistry.register(modEventBus);
+        MeanderingMobsPotionRegistry.register(modEventBus);
         MeanderingMobsSoundsRegistry.SOUND_EVENTS.register(modEventBus);
         MeanderingMobsCreativeTabRegistry.register(modEventBus);
         RuffianMemoryModuleTypes.register(modEventBus);

@@ -84,6 +84,7 @@ public class WhispEntity extends MeanderingMobsTameableEntity {
 
     protected void registerGoals() {
         super.registerGoals();
+        this.goalSelector.addGoal(1, new WhispDanceJukeboxGoal(this));
         this.goalSelector.addGoal(2, new WhispPlayTagGoal(this));
         this.goalSelector.addGoal(3, new WhispPacifyGoal(this));
         this.goalSelector.addGoal(4, new StateAwareWaterAvoidingRandomFlyingGoal(this, 1.0D));
