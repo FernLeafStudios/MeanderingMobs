@@ -1,0 +1,20 @@
+{
+  "structures": [
+    {
+      "structure": "meanderingmobs:totem_shrine",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "spacing": 24,
+    "separation": 8,
+    "salt": 14285731,
+    "frequency": 0.2,
+    "frequency_reduction_method": "legacy_type_1",
+    "exclusion_zone": {
+      "other_set": "minecraft:villages",
+      "chunk_count": 10
+    }
+  }
+}

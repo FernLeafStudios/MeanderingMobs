@@ -1,20 +1,20 @@
 package com.fernleaf.meanderingmobs.server.entity.tameable;
 
-import com.fernleaf.meanderingmobs.client.model.aukvulture.AukvultureVariant;
 import com.fernleaf.meanderingmobs.client.model.okapi.OkapiVariant;
 import com.fernleaf.meanderingmobs.config.MeanderingMobsConfig;
+import com.fernleaf.meanderingmobs.registry.MeanderingMobsEntityRegistry;
 import com.fernleaf.meanderingmobs.server.data.VariantSpawnManager;
 import com.fernleaf.meanderingmobs.server.entity.ai.okapi.OkapiAlertGoal;
 import com.fernleaf.meanderingmobs.server.entity.ai.okapi.OkapiBrowseGoal;
 import com.fernleaf.meanderingmobs.server.entity.ai.okapi.OkapiHideGoal;
+import com.fernleaf.meanderingmobs.server.entity.decoy.OkapiCloneEntity;
 import com.fernleaf.meanderingmobs.server.entity.util.MeanderingMobsTameableEntity;
 import net.minecraft.core.Holder;
-import net.minecraft.core.registries.Registries;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.TagKey;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -25,8 +25,6 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -38,8 +36,8 @@ import javax.annotation.Nullable;
 
 public class OkapiEntity extends MeanderingMobsTameableEntity {
 
-    public static final TagKey<Item> OKAPI_TAMEABLE = TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath("meanderingmobs", "okapi_tame"));
     private static final EntityDataAccessor<Boolean> DATA_ALERT = SynchedEntityData.defineId(OkapiEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> DATA_HIDING = SynchedEntityData.defineId(OkapiEntity.class, EntityDataSerializers.BOOLEAN);
 
     public OkapiEntity(EntityType<? extends TamableAnimal> entityType, Level level) {
         super(entityType, level);
@@ -49,6 +47,7 @@ public class OkapiEntity extends MeanderingMobsTameableEntity {
     protected void defineSynchedData(SynchedEntityData.@NotNull Builder builder) {
         super.defineSynchedData(builder);
         builder.define(DATA_ALERT, false);
+        builder.define(DATA_HIDING, false);
     }
 
     @Override
@@ -68,20 +67,48 @@ public class OkapiEntity extends MeanderingMobsTameableEntity {
 
     public void setAlertState(boolean alert) { this.entityData.set(DATA_ALERT, alert); }
     public boolean isAlert() { return this.entityData.get(DATA_ALERT); }
+
+    public void setHiding(boolean hiding) { this.entityData.set(DATA_HIDING, hiding); }
+    public boolean isHiding() { return this.entityData.get(DATA_HIDING); }
+
     public OkapiVariant getVariant() { return OkapiVariant.byId(this.getVariantId()); }
     public void setVariant(OkapiVariant variant) { this.setVariantId(variant.id); }
 
+    public void startHidingSequence() {
+        if (level() instanceof ServerLevel serverLevel && !isHiding()) {
+            setHiding(true);
+
+            serverLevel.sendParticles(ParticleTypes.CAMPFIRE_COSY_SMOKE, getX(), getY() + 0.5D, getZ(), 30, 0.5D, 0.5D, 0.5D, 0.05D);
+
+            for (int i = 0; i < 3; i++) {
+                OkapiCloneEntity clone = MeanderingMobsEntityRegistry.OKAPI_CLONE.get().create(level());
+                if (clone != null) {
+                    double offsetX = (random.nextDouble() - 0.5D) * 8.0D;
+                    double offsetZ = (random.nextDouble() - 0.5D) * 8.0D;
+                    float randomYaw = random.nextFloat() * 360.0F;
+
+                    clone.moveTo(getX() + offsetX, getY(), getZ() + offsetZ, randomYaw, 0.0F);
+                    clone.setYHeadRot(randomYaw);
+                    clone.setYBodyRot(randomYaw);
+                    clone.setVariant(getVariant());
+
+                    level().addFreshEntity(clone);
+                }
+            }
+        }
+    }
+
     @Override
     public @NotNull InteractionResult mobInteract(@NotNull Player player, @NotNull InteractionHand hand) {
-        ItemStack stack = player.getItemInHand(hand);
-
-        if (!isTamed() && (stack.is(OKAPI_TAMEABLE) || stack.is(Items.MELON_SLICE) || stack.is(Items.MELON))) {
-            if (!player.getAbilities().instabuild) stack.shrink(1);
+        if (!isTamed() && isHiding()) {
             if (!level().isClientSide()) {
-                if (random.nextInt(3) == 0) {
-                    tame(player);
-                    level().broadcastEntityEvent(this, (byte) 7);
-                } else level().broadcastEntityEvent(this, (byte) 6);
+                setHiding(false);
+                tame(player);
+                level().broadcastEntityEvent(this, (byte) 7);
+
+                if (level() instanceof ServerLevel serverLevel) {
+                    serverLevel.sendParticles(ParticleTypes.HAPPY_VILLAGER, getX(), getY() + 1.0D, getZ(), 15, 0.5D, 0.5D, 0.5D, 0.02D);
+                }
             }
             return InteractionResult.sidedSuccess(level().isClientSide());
         }

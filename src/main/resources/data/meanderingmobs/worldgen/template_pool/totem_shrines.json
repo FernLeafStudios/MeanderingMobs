@@ -1,0 +1,96 @@
+{
+  "name": "meanderingmobs:totem_shrines",
+  "fallback": "minecraft:empty",
+  "elements": [
+    {
+      "weight": 1,
+      "element": {
+        "element_type": "minecraft:single_pool_element",
+        "location": "meanderingmobs:totem/ruffian",
+        "processors": "meanderingmobs:ruffian_decay",
+        "projection": "rigid"
+      }
+    },
+    {
+      "weight": 1,
+      "element": {
+        "element_type": "minecraft:single_pool_element",
+        "location": "meanderingmobs:totem/aukvulture",
+        "processors": "meanderingmobs:aukvulture_decay",
+        "projection": "rigid"
+      }
+    },
+    {
+      "weight": 1,
+      "element": {
+        "element_type": "minecraft:single_pool_element",
+        "location": "meanderingmobs:totem/whisp",
+        "processors": "meanderingmobs:whisp_decay",
+        "projection": "rigid"
+      }
+    },
+    {
+      "weight": 1,
+      "element": {
+        "element_type": "minecraft:single_pool_element",
+        "location": "meanderingmobs:totem/tegu",
+        "processors": "meanderingmobs:tegu_decay",
+        "projection": "rigid"
+      }
+    },
+    {
+      "weight": 1,
+      "element": {
+        "element_type": "minecraft:single_pool_element",
+        "location": "meanderingmobs:totem/porcupine",
+        "processors": "meanderingmobs:porcupine_decay",
+        "projection": "rigid"
+      }
+    },
+    {
+      "weight": 1,
+      "element": {
+        "element_type": "minecraft:single_pool_element",
+        "location": "meanderingmobs:totem/anchovy",
+        "processors": "meanderingmobs:anchovy_decay",
+        "projection": "rigid"
+      }
+    },
+    {
+      "weight": 1,
+      "element": {
+        "element_type": "minecraft:single_pool_element",
+        "location": "meanderingmobs:totem/deerfox",
+        "processors": "meanderingmobs:deerfox_decay",
+        "projection": "rigid"
+      }
+    },
+    {
+      "weight": 1,
+      "element": {
+        "element_type": "minecraft:single_pool_element",
+        "location": "meanderingmobs:totem/guttertank",
+        "processors": "meanderingmobs:guttertank_decay",
+        "projection": "rigid"
+      }
+    },
+    {
+      "weight": 1,
+      "element": {
+        "element_type": "minecraft:single_pool_element",
+        "location": "meanderingmobs:totem/wolverine",
+        "processors": "meanderingmobs:wolverine_decay",
+        "projection": "rigid"
+      }
+    },
+    {
+      "weight": 1,
+      "element": {
+        "element_type": "minecraft:single_pool_element",
+        "location": "meanderingmobs:totem/okapi",
+        "processors": "meanderingmobs:okapi_decay",
+        "projection": "rigid"
+      }
+    }
+  ]
+}

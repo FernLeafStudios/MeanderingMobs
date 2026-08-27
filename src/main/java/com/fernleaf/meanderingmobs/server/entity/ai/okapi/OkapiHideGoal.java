@@ -26,7 +26,7 @@ public class OkapiHideGoal extends Goal {
 
     @Override
     public boolean canUse() {
-        if (this.okapi.isTamed() || this.okapi.isVehicle()) {
+        if (this.okapi.isTamed() || this.okapi.isVehicle() || this.okapi.isHiding()) {
             return false;
         }
 
@@ -42,11 +42,15 @@ public class OkapiHideGoal extends Goal {
     }
 
     @Override
+    public void start() {
+        this.okapi.startHidingSequence();
+    }
+
+    @Override
     public boolean canContinueToUse() {
         if (this.okapi.isTamed() || this.okapi.isVehicle() || this.chaser == null || !this.chaser.isAlive()) {
             return false;
         }
-        // Also drop tracking if the player switches to creative/spectator mid-goal
         if (this.chaser instanceof Player player && (player.isCreative() || player.isSpectator())) {
             return false;
         }
@@ -62,7 +66,6 @@ public class OkapiHideGoal extends Goal {
                     if (entity == this.okapi || !entity.isAlive()) return false;
                     if (entity.getType().is(MeanderingMobsTagRegistry.EntityTypes.ALERT_OKAPI)) return true;
                     if (entity instanceof Player player) {
-                        // Ignore creative and spectator players, plus crouching players[cite: 36]
                         if (player.isCreative() || player.isSpectator()) {
                             return false;
                         }
@@ -71,7 +74,7 @@ public class OkapiHideGoal extends Goal {
                     return false;
                 }
         );
-        return nearby.isEmpty() ? null : nearby.get(0);
+        return nearby.isEmpty() ? null : nearby.getFirst();
     }
 
     @Override
@@ -93,7 +96,7 @@ public class OkapiHideGoal extends Goal {
         this.okapi.yHeadRot = this.okapi.getYRot();
 
         if (this.coverTarget != null) {
-            this.okapi.getNavigation().moveTo(this.coverTarget.x, this.coverTarget.y, this.coverTarget.z, 2.0D);
+            this.okapi.getNavigation().moveTo(this.coverTarget.x, this.coverTarget.y, this.coverTarget.z, 2.2D);
         }
     }
 
@@ -122,4 +125,6 @@ public class OkapiHideGoal extends Goal {
         }
         return null;
     }
+
+
 }

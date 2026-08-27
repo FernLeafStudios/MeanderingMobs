@@ -32,6 +32,17 @@ public class MeanderingMobsItemRegistry {
             .saturationModifier(0.5F)
             .build();
 
+    public static final FoodProperties RAW_ANCHOVY_FOOD = new FoodProperties.Builder()
+            .nutrition(1)
+            .saturationModifier(0.1F)
+            .fast()
+            .build();
+
+    public static final FoodProperties ANCHOVY_CAN_FOOD = new FoodProperties.Builder()
+            .nutrition(3)
+            .saturationModifier(1.2F)
+            .build();
+
     public static final DeferredHolder<Item, Item> RAW_PARROT_FISH = ITEMS.register("raw_parrotfish",
             () -> new Item(new Item.Properties().food(RAW_PARROT_FISH_FOOD))
     );
@@ -81,7 +92,17 @@ public class MeanderingMobsItemRegistry {
                     .attributes(SwordItem.createAttributes(Tiers.IRON, 2, -1.5F)))
     );
 
-    // Spawn Eggs (Uses custom textures from assets/meanderingmobs/textures/item/spawn_egg/)
+    public static final DeferredHolder<Item, Item> RAW_ANCHOVY = ITEMS.register("raw_anchovy",
+            () -> new Item(new Item.Properties().food(RAW_ANCHOVY_FOOD))
+    );
+
+    public static final DeferredHolder<Item, Item> ANCHOVY_CAN = ITEMS.register("anchovy_can",
+            () -> new AnchovyCanItem(new Item.Properties()
+                    .stacksTo(1)
+                    .food(ANCHOVY_CAN_FOOD))
+    );
+
+    // Spawn Eggs
     public static final DeferredHolder<Item, Item> AUKVULTURE_SPAWN_EGG = registerSpawnEgg(
             "aukvulture",
             MeanderingMobsEntityRegistry.AUKVULTURE

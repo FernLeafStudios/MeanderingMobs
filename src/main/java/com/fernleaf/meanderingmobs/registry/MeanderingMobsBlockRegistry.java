@@ -1,10 +1,7 @@
 package com.fernleaf.meanderingmobs.registry;
 
 import com.fernleaf.meanderingmobs.MeanderingMobs;
-import com.fernleaf.meanderingmobs.server.block.AuroraBlock;
-import com.fernleaf.meanderingmobs.server.block.ChannelCrystalChainBlock;
-import com.fernleaf.meanderingmobs.server.block.ChannelCrystalClusterBlock;
-import com.fernleaf.meanderingmobs.server.block.ChannelCrystalLampBlock;
+import com.fernleaf.meanderingmobs.server.block.*;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -79,6 +76,17 @@ public class MeanderingMobsBlockRegistry {
     );
     public static final DeferredHolder<Item, BlockItem> AURORA_BLOCK_ITEM = ITEMS.register("aurora_block",
             () -> new BlockItem(AURORA_BLOCK.get(), new Item.Properties())
+    );
+
+    public static final DeferredHolder<Block, CarvedStrippedSpruceLogBlock> CARVED_STRIPPED_SPRUCE_LOG = BLOCKS.register("carved_stripped_spruce_log",
+            () -> new CarvedStrippedSpruceLogBlock(BlockBehaviour.Properties.of()
+                    .strength(2.0F)
+                    .sound(SoundType.WOOD)
+            )
+    );
+
+    public static final DeferredHolder<Item, BlockItem> CARVED_STRIPPED_SPRUCE_LOG_ITEM = ITEMS.register("carved_stripped_spruce_log",
+            () -> new BlockItem(CARVED_STRIPPED_SPRUCE_LOG.get(), new Item.Properties())
     );
 
     public static void register(IEventBus eventBus) {

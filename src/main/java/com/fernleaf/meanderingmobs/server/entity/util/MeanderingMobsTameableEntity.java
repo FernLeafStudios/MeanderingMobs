@@ -1,6 +1,5 @@
 package com.fernleaf.meanderingmobs.server.entity.util;
 
-import com.evandev.redomesticate.api.ICommandableMob;
 import com.fernleaf.meanderingmobs.compat.redomesticate.RedomesticateCompat;
 import com.fernleaf.meanderingmobs.compat.redomesticate.goal.FeatherOnAStickGoal;
 import com.fernleaf.meanderingmobs.server.entity.ai.OwnerHurtByTargetGoal;
@@ -34,7 +33,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public abstract class MeanderingMobsTameableEntity extends TamableAnimal implements OwnableEntity, ICommandableMob {
+@SuppressWarnings("unused")
+public abstract class MeanderingMobsTameableEntity extends TamableAnimal implements OwnableEntity {
 
     protected static final EntityDataAccessor<Optional<UUID>> DATA_OWNER_UUID =
             SynchedEntityData.defineId(MeanderingMobsTameableEntity.class, EntityDataSerializers.OPTIONAL_UUID);
@@ -289,35 +289,36 @@ public abstract class MeanderingMobsTameableEntity extends TamableAnimal impleme
     }
 
     // --- Redomesticate API Compat ---
-    @Override
     public void redomesticate$setCommand(int command) {
+        if (!RedomesticateCompat.isLoaded()) return;
+
         CommandState nextState = switch (command) {
             case 1 -> CommandState.SIT;
             case 2 -> CommandState.FOLLOW;
             default -> CommandState.WANDER;
         };
 
-
         this.setAiState(nextState.id);
     }
 
-    @Override
     public int redomesticate$getCommand() {
+        RedomesticateCompat.isLoaded();
         return this.getAiState();
     }
 
-    @Override
     public boolean redomesticate$isStayingStill() {
+        if (!RedomesticateCompat.isLoaded()) return false;
         return this.isSitting();
     }
 
-    @Override
     public boolean redomesticate$isFollowingOwner() {
+        if (!RedomesticateCompat.isLoaded()) return false;
         return this.isTamed() && this.getCommandState() == CommandState.FOLLOW;
     }
 
-    @Override
     public boolean redomesticate$isValidAttackTarget(LivingEntity target) {
+        if (!RedomesticateCompat.isLoaded()) return true;
+
         if (target == null || !target.isAlive()) return false;
         if (this.isOwner(target)) return false;
 

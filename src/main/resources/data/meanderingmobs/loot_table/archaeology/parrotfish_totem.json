@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:archaeology",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "meanderingmobs:cooked_parrotfish",
+          "weight": 5
+        },
+        { "type": "minecraft:item", "name": "minecraft:sand", "weight": 5 },
+        { "type": "minecraft:item", "name": "minecraft:tube_coral_fan", "weight": 3 },
+        { "type": "minecraft:item", "name": "minecraft:brain_coral_fan", "weight": 3 },
+        { "type": "minecraft:item", "name": "minecraft:bubble_coral_fan", "weight": 3 },
+        { "type": "minecraft:item", "name": "minecraft:fire_coral_fan", "weight": 3 },
+        { "type": "minecraft:item", "name": "minecraft:horn_coral_fan", "weight": 3 },
+        { "type": "minecraft:item", "name": "minecraft:slime_ball", "weight": 3 },
+        { "type": "minecraft:item", "name": "minecraft:shears", "weight": 2 },
+        { "type": "minecraft:item", "name": "minecraft:brush", "weight": 2 }
+      ]
+    }
+  ],
+  "random_sequence": "meanderingmobs:archaeology/parrotfish_totem"
+}

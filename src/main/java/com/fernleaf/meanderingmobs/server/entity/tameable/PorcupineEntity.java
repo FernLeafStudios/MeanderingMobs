@@ -132,14 +132,16 @@ public class PorcupineEntity extends MeanderingMobsTameableEntity {
             return InteractionResult.sidedSuccess(level().isClientSide());
         }
 
-        if (!isTamed() && stack.is(MeanderingMobsTagRegistry.Items.PORCUPINE_TAME)) {
+        if (!isTamed() && isSheared() && stack.is(MeanderingMobsTagRegistry.Items.PORCUPINE_TAME)) {
             if (!player.getAbilities().instabuild) stack.shrink(1);
             if (!level().isClientSide()) {
                 if (random.nextInt(3) == 0) {
                     tame(player);
                     setDefenseState(DefenseState.NONE);
                     level().broadcastEntityEvent(this, (byte) 7);
-                } else level().broadcastEntityEvent(this, (byte) 6);
+                } else {
+                    level().broadcastEntityEvent(this, (byte) 6);
+                }
             }
             return InteractionResult.sidedSuccess(level().isClientSide());
         }
@@ -178,11 +180,15 @@ public class PorcupineEntity extends MeanderingMobsTameableEntity {
     @Override
     public void tick() {
         super.tick();
-        if (level().isClientSide()) setupAnimationStates();
-        else if (getDefenseState() == DefenseState.IDLE_DEFENSE && !isSheared()) {
-            level().getEntitiesOfClass(LivingEntity.class, getBoundingBox().inflate(0.4D),
-                    t -> t != this && !isOwner(t) && !t.isSpectator() && !t.isSteppingCarefully()
-            ).forEach(t -> t.addEffect(new MobEffectInstance(MeanderingMobsEffectsRegistry.QUILLED, 600, 0)));
+        if (level().isClientSide()) {
+            setupAnimationStates();
+        } else {
+            DefenseState state = getDefenseState();
+            if ((state == DefenseState.IDLE_DEFENSE || state == DefenseState.ENTERING) && !isSheared()) {
+                level().getEntitiesOfClass(LivingEntity.class, getBoundingBox().inflate(0.75D),
+                        t -> t != this && !isOwner(t) && !t.isSpectator() && !t.isSteppingCarefully()
+                ).forEach(t -> t.addEffect(new MobEffectInstance(MeanderingMobsEffectsRegistry.QUILLED, 600, 0)));
+            }
         }
     }
 

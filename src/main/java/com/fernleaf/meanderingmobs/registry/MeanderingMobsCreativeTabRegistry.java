@@ -26,6 +26,8 @@ public class MeanderingMobsCreativeTabRegistry {
                         output.accept(MeanderingMobsItemRegistry.RAW_PARROT_FISH.get());
                         output.accept(MeanderingMobsItemRegistry.COOKED_PARROT_FISH.get());
                         output.accept(MeanderingMobsItemRegistry.WOLVERINE_FUR.get());
+                        output.accept(MeanderingMobsItemRegistry.RAW_ANCHOVY.get());
+                        output.accept(MeanderingMobsItemRegistry.ANCHOVY_CAN.get());
 
                         // Soul Tools & Tech
                         output.accept(MeanderingMobsItemRegistry.SOUL_ORB.get());
@@ -39,6 +41,7 @@ public class MeanderingMobsCreativeTabRegistry {
 
                         // Special Items
                         output.accept((MeanderingMobsItemRegistry.ADOPTION_CERTIFICATE.get()));
+                        output.accept((MeanderingMobsBlockRegistry.CARVED_STRIPPED_SPRUCE_LOG_ITEM.get()));
 
                         // Weapons
                         output.accept((MeanderingMobsItemRegistry.CLAW_GLOVE.get()));

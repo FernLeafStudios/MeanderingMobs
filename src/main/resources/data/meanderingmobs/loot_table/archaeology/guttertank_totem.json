@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:archaeology",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:redstone",
+          "weight": 6
+        },
+        { "type": "minecraft:item", "name": "minecraft:iron_ingot", "weight": 5 },
+        { "type": "minecraft:item", "name": "minecraft:lapis_lazuli", "weight": 4 },
+        { "type": "minecraft:item", "name": "minecraft:carved_pumpkin", "weight": 3 },
+        { "type": "minecraft:item", "name": "minecraft:fire_charge", "weight": 3 },
+        { "type": "minecraft:item", "name": "minecraft:netherite_ingot", "weight": 1 },
+        { "type": "minecraft:item", "name": "minecraft:brush", "weight": 2 }
+      ]
+    }
+  ],
+  "random_sequence": "meanderingmobs:archaeology/guttertank_totem"
+}

@@ -159,7 +159,7 @@ public class DeerfoxEntity extends MeanderingMobsTameableEntity {
 
     // --- INTERACTION & TAMING ---
     @Override
-    public @NotNull InteractionResult mobInteract(Player player, @NotNull InteractionHand hand) {
+    public @NotNull InteractionResult mobInteract(@NotNull Player player, @NotNull InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
 
         // 1. TAMING LOGIC

@@ -3,6 +3,7 @@ package com.fernleaf.meanderingmobs.server.entity.tameable;
 import com.fernleaf.fernframe.umweltlite.goals.engine.PersonalityEngine;
 import com.fernleaf.meanderingmobs.client.model.ruffian.RuffianVariant;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsTagRegistry;
+import com.fernleaf.meanderingmobs.server.entity.ai.BlockPosUtil;
 import com.fernleaf.meanderingmobs.server.entity.ai.ruffian.*;
 import com.fernleaf.meanderingmobs.server.entity.ai.ruffian.brain.RuffianActivities;
 import com.fernleaf.meanderingmobs.server.entity.ai.ruffian.brain.RuffianMemoryModuleTypes;
@@ -11,12 +12,15 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.GlobalPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.world.Containers;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
@@ -30,6 +34,8 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.behavior.*;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
+import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.schedule.Activity;
@@ -73,9 +79,28 @@ public class RuffianEntity extends MeanderingMobsTameableEntity {
     }
 
     @Override
+    protected @NotNull PathNavigation createNavigation(@NotNull Level level) {
+        GroundPathNavigation nav = new GroundPathNavigation(this, level);
+        nav.setCanOpenDoors(true);
+        nav.setCanPassDoors(true);
+        return nav;
+    }
+
+    @Override
     protected Brain.@NotNull Provider<RuffianEntity> brainProvider() {
         return Brain.provider(
-                ImmutableList.of(MemoryModuleType.LOOK_TARGET, MemoryModuleType.WALK_TARGET, MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE, MemoryModuleType.PATH, MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, MemoryModuleType.NEAREST_PLAYERS, RuffianMemoryModuleTypes.STORAGE_POS.get(), RuffianMemoryModuleTypes.WORKSTATION_POS.get()),
+                ImmutableList.of(
+                        MemoryModuleType.LOOK_TARGET,
+                        MemoryModuleType.WALK_TARGET,
+                        MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE,
+                        MemoryModuleType.PATH,
+                        MemoryModuleType.DOORS_TO_CLOSE,
+                        MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES,
+                        MemoryModuleType.NEAREST_PLAYERS,
+                        RuffianMemoryModuleTypes.STORAGE_POS.get(),
+                        RuffianMemoryModuleTypes.WORKSTATION_POS.get(),
+                        RuffianMemoryModuleTypes.HOME_POS.get()
+                ),
                 ImmutableList.of(SensorType.NEAREST_LIVING_ENTITIES, SensorType.NEAREST_PLAYERS)
         );
     }
@@ -93,6 +118,7 @@ public class RuffianEntity extends MeanderingMobsTameableEntity {
     private void registerBrainGoals(Brain<RuffianEntity> brain) {
         brain.addActivity(Activity.CORE, 0, ImmutableList.of(
                 new Swim(0.8F),
+                InteractWithDoor.create(),
                 new LookAtTargetSink(45, 90),
                 new MoveToTargetSink(),
                 new RuffianStateBehavior()
@@ -108,7 +134,7 @@ public class RuffianEntity extends MeanderingMobsTameableEntity {
                 new RuffianPlayBehavior(),
                 new RuffianAttemptRideBehavior(),
                 new RunOne<>(ImmutableList.of(
-                        Pair.of(RandomStroll.stroll(0.6F), 2),
+                        Pair.of(new RuffianStrollBehavior(0.6F, 16), 2),
                         Pair.of(SetEntityLookTarget.create(EntityType.PLAYER, 8.0F), 2),
                         Pair.of(new DoNothing(30, 60), 3)
                 ))
@@ -123,6 +149,14 @@ public class RuffianEntity extends MeanderingMobsTameableEntity {
     protected void customServerAiStep() {
         ServerLevel level = (ServerLevel) level();
         Brain<RuffianEntity> brain = getBrain();
+
+        if (!brain.hasMemoryValue(RuffianMemoryModuleTypes.HOME_POS.get())) {
+            BlockPos bedPos = BlockPosUtil.findBlockInRadius(level, blockPosition(), BlockTags.BEDS, 12, 3);
+            if (bedPos != null) {
+                brain.setMemory(RuffianMemoryModuleTypes.HOME_POS.get(), GlobalPos.of(level.dimension(), bedPos));
+            }
+        }
+
         Activity targetActivity = getAiState() == 3 ? RuffianActivities.CHORES.get() : Activity.IDLE;
 
         if (!brain.isActive(targetActivity)) brain.setActiveActivityIfPossible(targetActivity);
@@ -174,10 +208,10 @@ public class RuffianEntity extends MeanderingMobsTameableEntity {
         int nextState = (getAiState() + 1) % 4;
         setAiState(nextState);
         String messageKey = switch (nextState) {
-            case 1 -> "message." + entityTypeName + ".sitting";
-            case 2 -> "message." + entityTypeName + ".following";
-            case 3 -> "message." + entityTypeName + ".working";
-            default -> "message." + entityTypeName + ".wandering";
+            case 1 -> "message." + entityTypeName + ".sit";
+            case 2 -> "message." + entityTypeName + ".follow";
+            case 3 -> "message." + entityTypeName + ".work";
+            default -> "message." + entityTypeName + ".wander";
         };
         player.displayClientMessage(Component.translatable(messageKey), true);
     }

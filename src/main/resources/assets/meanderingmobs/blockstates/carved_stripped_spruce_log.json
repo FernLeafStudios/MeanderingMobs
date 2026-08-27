@@ -1,0 +1,47 @@
+{
+  "variants": {
+    "axis=y,rune_id=0": { "model": "meanderingmobs:block/carved_spruce_log_deerfox" },
+    "axis=x,rune_id=0": { "model": "meanderingmobs:block/carved_spruce_log_deerfox", "x": 90, "y": 90 },
+    "axis=z,rune_id=0": { "model": "meanderingmobs:block/carved_spruce_log_deerfox", "x": 90 },
+
+    "axis=y,rune_id=1": { "model": "meanderingmobs:block/carved_spruce_log_whisp" },
+    "axis=x,rune_id=1": { "model": "meanderingmobs:block/carved_spruce_log_whisp", "x": 90, "y": 90 },
+    "axis=z,rune_id=1": { "model": "meanderingmobs:block/carved_spruce_log_whisp", "x": 90 },
+
+    "axis=y,rune_id=2": { "model": "meanderingmobs:block/carved_spruce_log_aukvulture" },
+    "axis=x,rune_id=2": { "model": "meanderingmobs:block/carved_spruce_log_aukvulture", "x": 90, "y": 90 },
+    "axis=z,rune_id=2": { "model": "meanderingmobs:block/carved_spruce_log_aukvulture", "x": 90 },
+
+    "axis=y,rune_id=3": { "model": "meanderingmobs:block/carved_spruce_log_tegu" },
+    "axis=x,rune_id=3": { "model": "meanderingmobs:block/carved_spruce_log_tegu", "x": 90, "y": 90 },
+    "axis=z,rune_id=3": { "model": "meanderingmobs:block/carved_spruce_log_tegu", "x": 90 },
+
+    "axis=y,rune_id=4": { "model": "meanderingmobs:block/carved_spruce_log_porcupine" },
+    "axis=x,rune_id=4": { "model": "meanderingmobs:block/carved_spruce_log_porcupine", "x": 90, "y": 90 },
+    "axis=z,rune_id=4": { "model": "meanderingmobs:block/carved_spruce_log_porcupine", "x": 90 },
+
+    "axis=y,rune_id=5": { "model": "meanderingmobs:block/carved_spruce_log_ruffian" },
+    "axis=x,rune_id=5": { "model": "meanderingmobs:block/carved_spruce_log_ruffian", "x": 90, "y": 90 },
+    "axis=z,rune_id=5": { "model": "meanderingmobs:block/carved_spruce_log_ruffian", "x": 90 },
+
+    "axis=y,rune_id=6": { "model": "meanderingmobs:block/carved_spruce_log_okapi" },
+    "axis=x,rune_id=6": { "model": "meanderingmobs:block/carved_spruce_log_okapi", "x": 90, "y": 90 },
+    "axis=z,rune_id=6": { "model": "meanderingmobs:block/carved_spruce_log_okapi", "x": 90 },
+
+    "axis=y,rune_id=7": { "model": "meanderingmobs:block/carved_spruce_log_wolverine" },
+    "axis=x,rune_id=7": { "model": "meanderingmobs:block/carved_spruce_log_wolverine", "x": 90, "y": 90 },
+    "axis=z,rune_id=7": { "model": "meanderingmobs:block/carved_spruce_log_wolverine", "x": 90 },
+
+    "axis=y,rune_id=8": { "model": "meanderingmobs:block/carved_spruce_log_parrotfish" },
+    "axis=x,rune_id=8": { "model": "meanderingmobs:block/carved_spruce_log_parrotfish", "x": 90, "y": 90 },
+    "axis=z,rune_id=8": { "model": "meanderingmobs:block/carved_spruce_log_parrotfish", "x": 90 },
+
+    "axis=y,rune_id=9": { "model": "meanderingmobs:block/carved_spruce_log_anchovy" },
+    "axis=x,rune_id=9": { "model": "meanderingmobs:block/carved_spruce_log_anchovy", "x": 90, "y": 90 },
+    "axis=z,rune_id=9": { "model": "meanderingmobs:block/carved_spruce_log_anchovy", "x": 90 },
+
+    "axis=y,rune_id=10": { "model": "meanderingmobs:block/carved_spruce_log_guttertank" },
+    "axis=x,rune_id=10": { "model": "meanderingmobs:block/carved_spruce_log_guttertank", "x": 90, "y": 90 },
+    "axis=z,rune_id=10": { "model": "meanderingmobs:block/carved_spruce_log_guttertank", "x": 90 }
+  }
+}

@@ -24,6 +24,7 @@ import com.fernleaf.meanderingmobs.client.model.wolverine.WolverineModel;
 import com.fernleaf.meanderingmobs.client.renderer.*;
 import com.fernleaf.meanderingmobs.server.entity.aquatic.AnchovyEntity;
 import com.fernleaf.meanderingmobs.server.entity.aquatic.ParrotfishEntity;
+import com.fernleaf.meanderingmobs.server.entity.decoy.OkapiCloneEntity;
 import com.fernleaf.meanderingmobs.server.entity.hostile.HollowRuffianEntity;
 import com.fernleaf.meanderingmobs.server.entity.hostile.RallyCrystalEntity;
 import com.fernleaf.meanderingmobs.server.entity.hostile.SoulFlareEntity;
@@ -140,16 +141,17 @@ public class MeanderingMobsEntityRegistry {
     public static final DeferredHolder<EntityType<?>, EntityType<RuffianEntity>> RUFFIAN =
             ENTITIES.register("ruffian", () ->
                     EntityType.Builder.of(RuffianEntity::new, MobCategory.MONSTER)
-                            .sized(0.7F, 1.2F)
+                            .sized(0.6F, 1.2F)
                             .clientTrackingRange(10)
                             .build("ruffian")
             );
     public static final DeferredHolder<EntityType<?>, EntityType<HollowRuffianEntity>> HOLLOW_RUFFIAN =
             ENTITIES.register("hollow_ruffian",
                     () -> EntityType.Builder.of(HollowRuffianEntity::new, MobCategory.MONSTER)
-                            .sized(0.7F, 1.2F)
+                            .sized(0.6F, 1.2F)
                             .clientTrackingRange(10)
                             .build("hollow_ruffian"));
+
     public static final DeferredHolder<EntityType<?>, EntityType<OkapiEntity>> OKAPI =
             ENTITIES.register("okapi", () ->
                     EntityType.Builder.of(OkapiEntity::new, MobCategory.CREATURE)
@@ -157,6 +159,15 @@ public class MeanderingMobsEntityRegistry {
                             .clientTrackingRange(8)
                             .build("okapi")
             );
+
+    public static final DeferredHolder<EntityType<?>, EntityType<OkapiCloneEntity>> OKAPI_CLONE =
+            ENTITIES.register("clone_okapi", () ->
+                    EntityType.Builder.of(OkapiCloneEntity::new, MobCategory.CREATURE)
+                            .sized(0.9F, 1.5F)
+                            .clientTrackingRange(8)
+                            .build("clone_okapi")
+            );
+
     public static final DeferredHolder<EntityType<?>, EntityType<WolverineEntity>> WOLVERINE =
             ENTITIES.register("wolverine", () ->
                     EntityType.Builder.of(WolverineEntity::new, MobCategory.CREATURE)
@@ -223,6 +234,7 @@ public class MeanderingMobsEntityRegistry {
             event.put(VAMPIRE.get(), VampireEntity.createAttributes().build());
             event.put(PILOT_WHALE.get(), PilotWhaleEntity.createAttributes().build());
             event.put(OKAPI.get(), OkapiEntity.createAttributes().build());
+            event.put(OKAPI_CLONE.get(), OkapiEntity.createAttributes().build());
             event.put(WOLVERINE.get(), WolverineEntity.createAttributes().build());
             event.put(ANCHOVY.get(), AnchovyEntity.createAttributes().build());
             event.put(GUTTERTANK.get(), GuttertankEntity.createAttributes().build());
@@ -254,6 +266,7 @@ public class MeanderingMobsEntityRegistry {
             event.registerEntityRenderer(ANCHOVY.get(), AnchovyRenderer::new);
             event.registerEntityRenderer(GUTTERTANK.get(),GuttertankRenderer::new);
             event.registerEntityRenderer(DEERFOX.get(),DeerfoxRenderer::new);
+            event.registerEntityRenderer(OKAPI_CLONE.get(), CloneOkapiRenderer::new);
         }
 
         @SubscribeEvent

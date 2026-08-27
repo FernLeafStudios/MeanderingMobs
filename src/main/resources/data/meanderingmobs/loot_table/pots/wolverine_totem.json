@@ -1,0 +1,43 @@
+{
+  "type": "minecraft:pots",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "meanderingmobs:wolverine_fur",
+          "weight": 5
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:mutton",
+          "weight": 5
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:honey_bottle",
+          "weight": 4
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:iron_axe",
+          "weight": 3
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:iron_sword",
+          "weight": 3
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:potion",
+          "weight": 3,
+          "functions": [{ "function": "minecraft:set_potion", "id": "minecraft:strength" }]
+        },
+        { "type": "minecraft:item", "name": "minecraft:brush", "weight": 2 }
+      ]
+    }
+  ],
+  "random_sequence": "meanderingmobs:archaeology/wolverine_totem"
+}

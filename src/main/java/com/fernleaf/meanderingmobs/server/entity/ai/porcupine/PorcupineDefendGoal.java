@@ -6,6 +6,7 @@ import com.fernleaf.meanderingmobs.server.entity.util.MeanderingMobsTameableEnti
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.OwnableEntity;
 import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.entity.player.Player;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -31,40 +32,40 @@ public class PorcupineDefendGoal extends Goal {
                 this.porcupine.getBoundingBox().inflate(6.0D),
                 entity -> entity.isAlive()
                         && !entity.isSpectator()
+                        && !(entity instanceof Player player && (player.isCreative() || player.isSpectator())) // Ignore Creative/Spectator players
                         && !this.porcupine.isOwner(entity)
-                        && !isFriendly(entity) // <--- Safe check added here!
-                        && (entity.getType().is(MeanderingMobsTagRegistry.EntityTypes.PORCUPINE_HATES)
+                        && !isFriendly(entity)
+                        && ((!this.porcupine.isTamed() && entity instanceof Player)
+                        || entity.getType().is(MeanderingMobsTagRegistry.EntityTypes.PORCUPINE_HATES)
                         || (this.porcupine.isTamed() && entity.getLastHurtByMob() == this.porcupine.getOwner()))
         );
 
         if (!threats.isEmpty()) {
-            this.currentTarget = threats.get(0);
+            this.currentTarget = threats.getFirst();
             return true;
         }
 
         return false;
     }
 
-    /**
-     * Helper check to ensure Porcupines ignore allied pets and fellow tamed mobs.
-     */
+    @SuppressWarnings("All")
     private boolean isFriendly(LivingEntity entity) {
-        // Ignore self
         if (entity == this.porcupine) return true;
 
-        // If the porcupine is tamed, ignore entities owned by the exact same owner
+        // If tamed, ignore the owner
+        if (this.porcupine.isTamed() && this.porcupine.isOwner(entity)) {
+            return true;
+        }
+
+        // Ignore entities belonging to the exact same owner
         if (this.porcupine.isTamed() && entity instanceof OwnableEntity ownable) {
             if (this.porcupine.getOwnerUUID() != null && this.porcupine.getOwnerUUID().equals(ownable.getOwnerUUID())) {
                 return true;
             }
         }
 
-        // Ignore any other tamed MeanderingMobs entity to prevent friendly fire
-        if (entity instanceof MeanderingMobsTameableEntity tameable && tameable.isTamed()) {
-            return true;
-        }
-
-        return false;
+        // Ignore other tamed custom mobs to avoid friendly fire
+        return entity instanceof MeanderingMobsTameableEntity tameable && tameable.isTamed();
     }
 
     @Override

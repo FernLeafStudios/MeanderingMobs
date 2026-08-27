@@ -2,6 +2,7 @@ package com.fernleaf.meanderingmobs.server.entity.ai.ruffian.brain;
 
 import com.fernleaf.meanderingmobs.MeanderingMobs;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.GlobalPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.neoforged.bus.api.IEventBus;
@@ -20,8 +21,8 @@ public class RuffianMemoryModuleTypes {
     public static final DeferredHolder<MemoryModuleType<?>, MemoryModuleType<BlockPos>> WORKSTATION_POS =
             MEMORY_MODULE_TYPES.register("workstation_pos", () -> new MemoryModuleType<>(Optional.empty()));
 
-    public static final DeferredHolder<MemoryModuleType<?>, MemoryModuleType<BlockPos>> BOOKSHELF_POS =
-            MEMORY_MODULE_TYPES.register("bookshelf_pos", () -> new MemoryModuleType<>(Optional.empty()));
+    public static final DeferredHolder<MemoryModuleType<?>, MemoryModuleType<GlobalPos>> HOME_POS =
+            MEMORY_MODULE_TYPES.register("home_pos", () -> new MemoryModuleType<>(Optional.empty()));
 
     public static void register(IEventBus eventBus) {
         MEMORY_MODULE_TYPES.register(eventBus);

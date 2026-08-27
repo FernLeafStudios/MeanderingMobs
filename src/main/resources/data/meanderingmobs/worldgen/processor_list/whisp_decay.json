@@ -1,0 +1,91 @@
+{
+  "processors": [
+    {
+      "processor_type": "minecraft:rule",
+      "rules": [
+        {
+          "location_predicate": { "predicate_type": "minecraft:always_true" },
+          "input_predicate": {
+            "block": "minecraft:white_glazed_terracotta",
+            "predicate_type": "minecraft:random_block_match",
+            "probability": 0.45
+          },
+          "output_state": { "Name": "minecraft:gravel" }
+        },
+        {
+          "location_predicate": { "predicate_type": "minecraft:always_true" },
+          "input_predicate": {
+            "block": "minecraft:light_blue_glazed_terracotta",
+            "predicate_type": "minecraft:random_block_match",
+            "probability": 0.4
+          },
+          "output_state": { "Name": "minecraft:gravel" }
+        },
+        {
+          "location_predicate": { "predicate_type": "minecraft:always_true" },
+          "input_predicate": {
+            "block": "minecraft:blue_glazed_terracotta",
+            "predicate_type": "minecraft:random_block_match",
+            "probability": 0.5
+          },
+          "output_state": {
+            "Name": "minecraft:suspicious_gravel",
+            "Properties": { "dusted": "0" }
+          },
+          "block_entity_modifier": {
+            "type": "minecraft:append_loot",
+            "loot_table": "meanderingmobs:archaeology/whisp_totem"
+          }
+        },
+        {
+          "location_predicate": { "predicate_type": "minecraft:always_true" },
+          "input_predicate": {
+            "block": "minecraft:blue_wall_banner",
+            "predicate_type": "minecraft:random_block_match",
+            "probability": 0.6
+          },
+          "output_state": { "Name": "minecraft:air" }
+        },
+        {
+          "location_predicate": { "predicate_type": "minecraft:always_true" },
+          "input_predicate": {
+            "block": "minecraft:light_blue_candle",
+            "predicate_type": "minecraft:random_block_match",
+            "probability": 0.5
+          },
+          "output_state": { "Name": "minecraft:air" }
+        },
+        {
+          "location_predicate": { "predicate_type": "minecraft:always_true" },
+          "input_predicate": {
+            "block": "minecraft:spruce_fence_gate",
+            "predicate_type": "minecraft:random_block_match",
+            "probability": 0.5
+          },
+          "output_state": { "Name": "minecraft:air" }
+        },
+        {
+          "location_predicate": { "predicate_type": "minecraft:always_true" },
+          "input_predicate": {
+            "block": "minecraft:decorated_pot",
+            "predicate_type": "minecraft:random_block_match",
+            "probability": 0.55
+          },
+          "output_state": { "Name": "minecraft:air" }
+        },
+        {
+          "location_predicate": { "predicate_type": "minecraft:always_true" },
+          "input_predicate": {
+            "block": "minecraft:decorated_pot",
+            "predicate_type": "minecraft:block_match"
+          },
+          "output_state": { "Name": "minecraft:decorated_pot" },
+          "block_entity_modifier": {
+            "type": "minecraft:append_static_loot",
+            "loot_table": "meanderingmobs:pots/whisp_totem"
+          }
+        }
+      ]
+    }
+  ]
+}

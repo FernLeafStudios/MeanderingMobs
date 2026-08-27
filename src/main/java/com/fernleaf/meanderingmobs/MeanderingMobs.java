@@ -40,6 +40,7 @@ public class MeanderingMobs {
         MeanderingMobsEntityRegistry.register(modEventBus);
         MeanderingMobsItemRegistry.register(modEventBus);
         MeanderingMobsBlockRegistry.register(modEventBus);
+        MeanderingMobsBlockEntityRegistry.register(modEventBus);
         MeanderingMobsEffectsRegistry.register(modEventBus);
         MeanderingMobsSoundsRegistry.SOUND_EVENTS.register(modEventBus);
         MeanderingMobsCreativeTabRegistry.register(modEventBus);

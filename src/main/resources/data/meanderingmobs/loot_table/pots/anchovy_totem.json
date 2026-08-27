@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:pots",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        { "type": "minecraft:item", "name": "minecraft:seagrass", "weight": 6 },
+        { "type": "minecraft:item", "name": "minecraft:sand", "weight": 6 },
+        { "type": "minecraft:item", "name": "minecraft:brush", "weight": 3 }
+      ]
+    }
+  ],
+  "random_sequence": "meanderingmobs:archaeology/anchovy_totem"
+}

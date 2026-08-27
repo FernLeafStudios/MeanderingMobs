@@ -133,17 +133,6 @@ public class TeguEntity extends MeanderingMobsTameableEntity {
             return InteractionResult.sidedSuccess(level().isClientSide());
         }
 
-        if (!isTamed() && heldStack.is(TEGU_TAMEABLE)) {
-            if (!player.getAbilities().instabuild) heldStack.shrink(1);
-            if (!level().isClientSide()) {
-                if (random.nextInt(3) == 0) {
-                    tame(player);
-                    level().broadcastEntityEvent(this, (byte) 7);
-                } else level().broadcastEntityEvent(this, (byte) 6);
-            }
-            return InteractionResult.sidedSuccess(level().isClientSide());
-        }
-
         if (isTamed() && isOwner(player) && hand == InteractionHand.MAIN_HAND) {
             cycleAiState(player, "tegu");
             return InteractionResult.sidedSuccess(level().isClientSide());

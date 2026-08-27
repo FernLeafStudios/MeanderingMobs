@@ -86,12 +86,15 @@
   "message.wolverine.follow": "Wolverine is now following",
 
   "entity.meanderingmobs.anchovy": "Anchovy",
+  "item.meanderingmobs.raw_anchovy": "Raw Anchovy",
+  "item.meanderingmobs.anchovy_can": "Anchovy Can",
 
   "entity.meanderingmobs.deerfox": "Deerfox",
   "message.deerfox.wander": "Deerfox is now wandering",
   "message.deerfox.sit": "Deerfox is now staying",
   "message.deerfox.follow": "Deerfox is now following",
-
   "enchantment.meanderingmobs.aurora_walker": "Aurora Walker",
-  "enchantment.meanderingmobs.aurora_walker.desc": "Creates a temporary bridge of aurora blocks when sprinting on a mount."
+  "enchantment.meanderingmobs.aurora_walker.desc": "Creates a temporary bridge of aurora blocks when sprinting on a mount.",
+
+  "block.meanderingmobs.carved_stripped_spruce_log": "Carved Spruce Stripped Log"
 }
