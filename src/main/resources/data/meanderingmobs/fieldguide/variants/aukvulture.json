@@ -1,0 +1,18 @@
+{
+  "entries": [
+    {
+      "id": "meanderingmobs:aukvulture",
+      "replace": true,
+      "variants": [
+        {
+          "id": "thalassic",
+          "nbt": "{Variant:0}"
+        },
+        {
+          "id": "gigagret",
+          "nbt": "{Variant:1}"
+        }
+      ]
+    }
+  ]
+}

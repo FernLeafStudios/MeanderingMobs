@@ -1,0 +1,18 @@
+{
+  "entries": [
+    {
+      "id": "meanderingmobs:tegu",
+      "replace": true,
+      "variants": [
+        {
+          "id": "marbled",
+          "nbt": "{Variant:0}"
+        },
+        {
+          "id": "crimson",
+          "nbt": "{Variant:1}"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "entries": [
+    {
+      "id": "meanderingmobs:okapi",
+      "replace": true,
+      "variants": [
+        {
+          "id": "jungle",
+          "nbt": "{Variant:0}"
+        },
+        {
+          "id": "flaghorn",
+          "nbt": "{Variant:1}"
+        }
+      ]
+    }
+  ]
+}

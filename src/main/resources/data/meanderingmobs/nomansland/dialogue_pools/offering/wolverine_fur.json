@@ -1,0 +1,8 @@
+{
+  "condition": {
+    "type": "nomansland:item_conditional",
+    "items": "meanderingmobs:wolverine_fur"
+  },
+  "weight": 1,
+  "text": "A piece of tuft from a resilient one.//\nOld friends of mine sanctified it,/ as a lesson in bravery,\n Both a millennia ago,// and just yesterday."
+}

@@ -12,8 +12,7 @@ import java.util.function.Function;
 public enum RuffianVariant implements IModelVariant<RuffianVariant.ModelType> {
     BLUE(0, "ruffian_blue", RuffianModel.LAYER_LOCATION, ModelType.RUFFIAN),
     YELLOW(1, "ruffian_yellow", RuffianModel.LAYER_LOCATION, ModelType.RUFFIAN),
-    RED(2, "ruffian_red", RuffianModel.LAYER_LOCATION, ModelType.RUFFIAN),
-    HOLLOW(3, "ruffian_hollow", RuffianModel.LAYER_LOCATION, ModelType.RUFFIAN);
+    RED(2, "ruffian_red", RuffianModel.LAYER_LOCATION, ModelType.RUFFIAN);
 
     private static final Function<Integer, RuffianVariant> LOOKUP =
             ModelVariantRegistry.createLookup(values(), BLUE);

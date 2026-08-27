@@ -1,0 +1,18 @@
+{
+  "entries": [
+    {
+      "id": "meanderingmobs:deerfox",
+      "replace": true,
+      "variants": [
+        {
+          "id": "white",
+          "nbt": "{Variant:0}"
+        },
+        {
+          "id": "red",
+          "nbt": "{Variant:1}"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "entries": [
+    {
+      "id": "meanderingmobs:parrotfish",
+      "replace": true,
+      "variants": [
+        {
+          "id": "bumphead",
+          "nbt": "{Variant:0}"
+        },
+        {
+          "id": "humphead",
+          "nbt": "{Variant:1}"
+        },
+        {
+          "id": "macaw",
+          "nbt": "{Variant:2}"
+        }
+      ]
+    }
+  ]
+}

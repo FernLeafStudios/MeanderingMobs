@@ -1,0 +1,22 @@
+{
+  "entries": [
+    {
+      "id": "meanderingmobs:whisp",
+      "replace": true,
+      "variants": [
+        {
+          "id": "allay",
+          "nbt": "{Variant:0}"
+        },
+        {
+          "id": "swamp",
+          "nbt": "{Variant:1}"
+        },
+        {
+          "id": "warped",
+          "nbt": "{Variant:2}"
+        }
+      ]
+    }
+  ]
+}

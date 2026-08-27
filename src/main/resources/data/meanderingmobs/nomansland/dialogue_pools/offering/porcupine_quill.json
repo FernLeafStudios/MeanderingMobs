@@ -1,0 +1,8 @@
+{
+  "condition": {
+    "type": "nomansland:item_conditional",
+    "items": "meanderingmobs:porcupine_quill"
+  },
+  "weight": 1,
+  "text": "Sharp thorns growing from scampering little creatures.//\nHandle them wrong and they prick you.//\nYet they yield to time and patience.\n Multitudes never learn such lessons./\nBut many more keep them."
+}

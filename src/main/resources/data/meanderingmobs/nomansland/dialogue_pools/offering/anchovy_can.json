@@ -1,0 +1,8 @@
+{
+  "condition": {
+    "type": "nomansland:item_conditional",
+    "items": "meanderingmobs:anchovy_can"
+  },
+  "weight": 1,
+  "text": "Tiny flesh stored in hollow metal.//\nSacred yet also reliable,/ as others before have learnt,\n Even the littlest things,/ hold immense history."
+}

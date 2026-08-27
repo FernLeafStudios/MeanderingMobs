@@ -133,10 +133,21 @@ dependencies {
 
     implementation "org.joml:joml:1.10.5"
 
-    // 3. Mod Compatibility (Redomesticate)
-    // Compiles against API natively, loads at runtime in dev, but remains optional in production
+    // Compats
     compileOnly "curse.maven:redomesticate-1541881:8524088"
     localRuntime "curse.maven:redomesticate-1541881:8524088"
+
+    compileOnly "curse.maven:field-guide-1470590:8682496"
+    localRuntime "curse.maven:field-guide-1470590:8682496"
+
+    compileOnly "curse.maven:item-descriptions-1101501:8228839"
+    localRuntime "curse.maven:item-descriptions-1101501:8228839"
+
+    compileOnly "curse.maven:immersive-overlays-1245453:8701560"
+    localRuntime "curse.maven:immersive-overlays-1245453:8701560"
+
+    compileOnly "curse.maven:no-mans-land-538493:8359457"
+    localRuntime "curse.maven:no-mans-land-538493:8359457"
 
     // 4. Runtime performance testing
     localRuntime "maven.modrinth:sodium:mc1.21.1-0.8.13-beta.2-neoforge"

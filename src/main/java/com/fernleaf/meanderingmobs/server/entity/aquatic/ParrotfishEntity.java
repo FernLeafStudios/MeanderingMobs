@@ -1,5 +1,6 @@
 package com.fernleaf.meanderingmobs.server.entity.aquatic;
 
+import com.fernleaf.meanderingmobs.client.model.deerfox.DeerfoxVariant;
 import com.fernleaf.meanderingmobs.client.model.parrotfish.ParrotfishVariant;
 import com.fernleaf.meanderingmobs.server.data.VariantSpawnManager;
 import com.fernleaf.meanderingmobs.server.entity.ai.parrotfish.ParrotfishCocoonGoal;
@@ -84,10 +85,7 @@ public class ParrotfishEntity extends MeanderingMobsAquaticEntity {
     public ParrotfishVariant getVariant() {
         return ParrotfishVariant.byId(this.getVariantId());
     }
-
-    public void setVariant(ParrotfishVariant variant) {
-        this.setVariantId(variant.id);
-    }
+    public void setVariant(ParrotfishVariant variant) { this.setVariantId(variant.id); }
 
     @Override
     protected @NotNull PathNavigation createNavigation(@NotNull Level level) {

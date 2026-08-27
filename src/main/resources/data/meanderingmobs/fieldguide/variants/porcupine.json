@@ -1,0 +1,22 @@
+{
+  "entries": [
+    {
+      "id": "meanderingmobs:porcupine",
+      "replace": true,
+      "variants": [
+        {
+          "id": "pinknose",
+          "nbt": "{Variant:1}"
+        },
+        {
+          "id": "snowy",
+          "nbt": "{Variant:1}"
+        },
+        {
+          "id": "crested",
+          "nbt": "{Variant:2}"
+        }
+      ]
+    }
+  ]
+}
