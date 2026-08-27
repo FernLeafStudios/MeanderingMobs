@@ -1,6 +1,7 @@
 package com.fernleaf.meanderingmobs.server.entity.ai.whisp;
 
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsItemRegistry;
+import com.fernleaf.meanderingmobs.server.block.entity.QueueboxBlockEntity;
 import com.fernleaf.meanderingmobs.server.entity.ai.AbstractBlockInteractionGoal;
 import com.fernleaf.meanderingmobs.server.entity.tameable.WhispEntity;
 import net.minecraft.core.BlockPos;
@@ -37,7 +38,11 @@ public class WhispDanceJukeboxGoal extends AbstractBlockInteractionGoal<WhispEnt
 
     private boolean isJukeboxPlaying(BlockPos pos) {
         BlockState state = this.entity.level().getBlockState(pos);
-        return state.getBlock() instanceof JukeboxBlock && state.getValue(JukeboxBlock.HAS_RECORD);
+        if (state.getBlock() instanceof JukeboxBlock && state.getValue(JukeboxBlock.HAS_RECORD)) {
+            return true;
+        }
+        // Whisp detects Queuebox when active!
+        return this.entity.level().getBlockEntity(pos) instanceof QueueboxBlockEntity queuebox && queuebox.isPlaying;
     }
 
     @Override

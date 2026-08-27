@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "meanderingmobs:block/queuebox_block_top",
+    "side": "meanderingmobs:block/queuebox_block_side",
+    "bottom": "meanderingmobs:block/queuebox_block_bottom"
+  }
+}

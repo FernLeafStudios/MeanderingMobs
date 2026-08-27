@@ -43,6 +43,8 @@ public class MeanderingMobsCreativeTabRegistry {
                         // Special Items
                         output.accept((MeanderingMobsItemRegistry.ADOPTION_CERTIFICATE.get()));
                         output.accept((MeanderingMobsBlockRegistry.CARVED_STRIPPED_SPRUCE_LOG_ITEM.get()));
+                        output.accept((MeanderingMobsBlockRegistry.AURORA_BLOCK_ITEM.get()));
+                        output.accept((MeanderingMobsBlockRegistry.QUEUEBOX_ITEM.get()));
 
                         // Weapons
                         output.accept((MeanderingMobsItemRegistry.CLAW_GLOVE.get()));

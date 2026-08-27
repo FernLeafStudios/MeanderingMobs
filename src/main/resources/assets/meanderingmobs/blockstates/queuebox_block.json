@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "meanderingmobs:block/queuebox_block"
+    }
+  }
+}

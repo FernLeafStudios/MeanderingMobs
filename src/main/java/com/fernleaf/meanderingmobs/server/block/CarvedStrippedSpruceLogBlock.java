@@ -1,6 +1,7 @@
 package com.fernleaf.meanderingmobs.server.block;
 
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsBlockEntityRegistry;
+import com.fernleaf.meanderingmobs.server.block.entity.CarvedStrippedSpruceLogBlockEntity;
 import com.fernleaf.meanderingmobs.server.block.rune.RuneType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;

@@ -89,6 +89,18 @@ public class MeanderingMobsBlockRegistry {
             () -> new BlockItem(CARVED_STRIPPED_SPRUCE_LOG.get(), new Item.Properties())
     );
 
+    // Queuebox Block
+    public static final DeferredHolder<Block, QueueboxBlock> QUEUEBOX = BLOCKS.register("queuebox_block",
+            () -> new QueueboxBlock(BlockBehaviour.Properties.of()
+                    .strength(2.0F)
+                    .sound(SoundType.WOOD)
+            )
+    );
+
+    public static final DeferredHolder<Item, BlockItem> QUEUEBOX_ITEM = ITEMS.register("queuebox_block",
+            () -> new BlockItem(QUEUEBOX.get(), new Item.Properties())
+    );
+
     public static void register(IEventBus eventBus) {
         BLOCKS.register(eventBus);
         ITEMS.register(eventBus);

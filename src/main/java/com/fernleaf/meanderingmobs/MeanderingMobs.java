@@ -36,11 +36,11 @@ public class MeanderingMobs {
 
         modContainer.registerConfig(ModConfig.Type.COMMON, MeanderingMobsConfig.COMMON_SPEC);
 
-        // Register Registries
         MeanderingMobsEntityRegistry.register(modEventBus);
         MeanderingMobsItemRegistry.register(modEventBus);
         MeanderingMobsBlockRegistry.register(modEventBus);
         MeanderingMobsBlockEntityRegistry.register(modEventBus);
+        MeanderingMobsMenuRegistry.register(modEventBus); // <-- ADD THIS LINE
         MeanderingMobsEffectsRegistry.register(modEventBus);
         MeanderingMobsPotionRegistry.register(modEventBus);
         MeanderingMobsSoundsRegistry.SOUND_EVENTS.register(modEventBus);
@@ -48,7 +48,6 @@ public class MeanderingMobs {
         RuffianMemoryModuleTypes.register(modEventBus);
         RuffianActivities.register(modEventBus);
 
-        // Register Game/Server Events (Commands, Level Events, etc.)
         NeoForge.EVENT_BUS.addListener(MeanderingMobs::onRegisterCommands);
 
         LOGGER.info("Meandering Mobs initialized with FernFrame!");

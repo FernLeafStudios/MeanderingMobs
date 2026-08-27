@@ -1,4 +1,4 @@
-package com.fernleaf.meanderingmobs.server.block;
+package com.fernleaf.meanderingmobs.server.block.entity;
 
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsBlockEntityRegistry;
 import com.fernleaf.meanderingmobs.server.block.rune.RuneType;

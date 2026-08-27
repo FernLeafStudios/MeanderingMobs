@@ -4,7 +4,7 @@ import com.fernleaf.meanderingmobs.MeanderingMobs;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsBlockRegistry;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsEntityRegistry;
 import com.fernleaf.meanderingmobs.server.block.CarvedStrippedSpruceLogBlock;
-import com.fernleaf.meanderingmobs.server.block.CarvedStrippedSpruceLogBlockEntity;
+import com.fernleaf.meanderingmobs.server.block.entity.CarvedStrippedSpruceLogBlockEntity;
 import com.fernleaf.meanderingmobs.server.block.GuttertankPattern;
 import com.fernleaf.meanderingmobs.server.block.RuffianPattern;
 import com.fernleaf.meanderingmobs.server.block.rune.RuneType;
