@@ -12,4 +12,10 @@ BIGMONKI - Modeler, Texturer, Animator
 
 Mushy - Modeler, Texturer, Animator
 
+DayTheMagpie - Texturer
+
+Solice - Modeler, Animnator
+
+Hat - Modeler, Animator, Texturer
+
 Sillcryt - Concept Artist
