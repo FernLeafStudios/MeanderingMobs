@@ -105,8 +105,19 @@ public class AukvultureSoarGoal extends Goal {
                     currentPos, downRayEnd, ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY, this.auk
             ));
 
-            if (this.flightTimer > 400 && groundHit.getType() != HitResult.Type.MISS) {
-                Vec3 landingSpot = Vec3.atBottomCenterOf(groundHit.getBlockPos().above());
+            boolean forceLand = this.flightTimer > 600;
+
+            if ((this.flightTimer > 400 && groundHit.getType() != HitResult.Type.MISS) || forceLand) {
+                Vec3 landingSpot;
+
+                if (groundHit.getType() != HitResult.Type.MISS) {
+                    landingSpot = Vec3.atBottomCenterOf(groundHit.getBlockPos().above());
+                } else {
+                    // Fallback: Just force it downward toward the current ground level block column
+                    BlockPos surfacePos = this.auk.level().getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, this.auk.blockPosition());
+                    landingSpot = Vec3.atBottomCenterOf(surfacePos);
+                }
+
                 this.auk.getMoveControl().setWantedPosition(landingSpot.x, landingSpot.y, landingSpot.z, 0.8D);
 
                 if (this.auk.onGround()) {

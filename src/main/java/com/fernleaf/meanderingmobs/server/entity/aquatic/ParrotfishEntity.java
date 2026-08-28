@@ -3,10 +3,7 @@ package com.fernleaf.meanderingmobs.server.entity.aquatic;
 import com.fernleaf.meanderingmobs.client.model.deerfox.DeerfoxVariant;
 import com.fernleaf.meanderingmobs.client.model.parrotfish.ParrotfishVariant;
 import com.fernleaf.meanderingmobs.server.data.VariantSpawnManager;
-import com.fernleaf.meanderingmobs.server.entity.ai.parrotfish.ParrotfishCocoonGoal;
-import com.fernleaf.meanderingmobs.server.entity.ai.parrotfish.ParrotfishEatCoralGoal;
-import com.fernleaf.meanderingmobs.server.entity.ai.parrotfish.ParrotfishRamAttackGoal;
-import com.fernleaf.meanderingmobs.server.entity.ai.parrotfish.ParrotfishSwimGoal;
+import com.fernleaf.meanderingmobs.server.entity.ai.parrotfish.*;
 import com.fernleaf.meanderingmobs.server.entity.util.MeanderingMobsAquaticEntity;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
@@ -96,8 +93,9 @@ public class ParrotfishEntity extends MeanderingMobsAquaticEntity {
         super.registerGoals();
         this.goalSelector.addGoal(0, new ParrotfishRamAttackGoal(this));
         this.goalSelector.addGoal(1, new ParrotfishCocoonGoal(this));
-        this.goalSelector.addGoal(2, new ParrotfishEatCoralGoal(this));
-        this.goalSelector.addGoal(3, new ParrotfishSwimGoal(this, 1.0D, 10));
+        this.goalSelector.addGoal(2, new ParrotfishRestoreCoralGoal(this));
+        this.goalSelector.addGoal(3, new ParrotfishEatCoralGoal(this));
+        this.goalSelector.addGoal(4, new ParrotfishSwimGoal(this, 1.0D, 10));
 
         this.targetSelector.addGoal(1, new HurtByTargetGoal(this));
     }

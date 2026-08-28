@@ -8,7 +8,9 @@ import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
+import org.checkerframework.checker.signedness.qual.SignedPositive;
 
+@SuppressWarnings("unused")
 public class MeanderingMobsCreativeTabRegistry {
 
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS =
@@ -24,6 +26,7 @@ public class MeanderingMobsCreativeTabRegistry {
                         output.accept(MeanderingMobsItemRegistry.TEGU_SCALE.get());
                         output.accept(MeanderingMobsItemRegistry.TEGU_POUCH.get());
                         output.accept(MeanderingMobsItemRegistry.WHISP_ESSENCE.get());
+                        output.accept(MeanderingMobsItemRegistry.AUKVULTURE_FEATHER.get());
                         output.accept(MeanderingMobsItemRegistry.RAW_PARROT_FISH.get());
                         output.accept(MeanderingMobsItemRegistry.COOKED_PARROT_FISH.get());
                         output.accept(MeanderingMobsItemRegistry.WOLVERINE_FUR.get());
@@ -41,13 +44,14 @@ public class MeanderingMobsCreativeTabRegistry {
                         output.accept(MeanderingMobsBlockRegistry.CHANNEL_CRYSTAL_CHAIN_ITEM.get());
 
                         // Special Items
-                        output.accept((MeanderingMobsItemRegistry.ADOPTION_CERTIFICATE.get()));
-                        output.accept((MeanderingMobsBlockRegistry.CARVED_STRIPPED_SPRUCE_LOG_ITEM.get()));
-                        output.accept((MeanderingMobsBlockRegistry.AURORA_BLOCK_ITEM.get()));
-                        output.accept((MeanderingMobsBlockRegistry.QUEUEBOX_ITEM.get()));
+                        output.accept(MeanderingMobsItemRegistry.ADOPTION_CERTIFICATE.get());
+                        output.accept(MeanderingMobsBlockRegistry.CARVED_STRIPPED_SPRUCE_LOG_ITEM.get());
+                        output.accept(MeanderingMobsBlockRegistry.AURORA_BLOCK_ITEM.get());
+                        output.accept(MeanderingMobsBlockRegistry.QUEUEBOX_ITEM.get());
 
-                        // Weapons
-                        output.accept((MeanderingMobsItemRegistry.CLAW_GLOVE.get()));
+                        // Weapons & Armor
+                        output.accept(MeanderingMobsItemRegistry.CLAW_GLOVE.get());
+                        output.accept(MeanderingMobsItemRegistry.AUKVULTURE_MASK.get());
 
                         // Spawn Eggs
                         output.accept(MeanderingMobsItemRegistry.AUKVULTURE_SPAWN_EGG.get());

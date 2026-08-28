@@ -38,6 +38,7 @@ public class MeanderingMobs {
 
         MeanderingMobsAttachmentRegistry.register(modEventBus);
         MeanderingMobsEntityRegistry.register(modEventBus);
+        MeanderingMobsArmorMaterials.register(modEventBus);
         MeanderingMobsItemRegistry.register(modEventBus);
         MeanderingMobsBlockRegistry.register(modEventBus);
         MeanderingMobsBlockEntityRegistry.register(modEventBus);

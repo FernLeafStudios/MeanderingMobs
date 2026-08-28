@@ -2,6 +2,7 @@ package com.fernleaf.meanderingmobs.registry;
 
 import com.fernleaf.meanderingmobs.MeanderingMobs;
 import com.fernleaf.meanderingmobs.network.AukvultureInputPacket;
+import com.fernleaf.meanderingmobs.network.OrcaInputPacket; // Add import
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
@@ -18,6 +19,13 @@ public class MeanderingMobsNetworkRegistry {
                 AukvultureInputPacket.TYPE,
                 AukvultureInputPacket.STREAM_CODEC,
                 AukvultureInputPacket::handleOnServer
+        );
+
+        // Register the new orca input packet here!
+        registrar.playToServer(
+                OrcaInputPacket.TYPE,
+                OrcaInputPacket.STREAM_CODEC,
+                OrcaInputPacket::handleOnServer
         );
     }
 }

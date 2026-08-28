@@ -1,8 +1,7 @@
 package com.fernleaf.meanderingmobs.server.entity.tameable;
 
-import com.fernleaf.fernframe.umweltlite.goals.api.engine.EmotionAPI;
-import com.fernleaf.fernframe.umweltlite.goals.api.engine.UmweltAPI;
 import com.fernleaf.meanderingmobs.client.model.aukvulture.AukvultureVariant;
+import com.fernleaf.meanderingmobs.registry.MeanderingMobsItemRegistry;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsSoundsRegistry;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsTagRegistry;
 import com.fernleaf.meanderingmobs.server.data.VariantSpawnManager;
@@ -198,17 +197,17 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
     public @NotNull InteractionResult mobInteract(@NotNull Player player, @NotNull InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
 
+        boolean wearingMask = player.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.HEAD).is(MeanderingMobsItemRegistry.AUKVULTURE_MASK.get());
+
         if (!isTamed() && stack.is(MeanderingMobsTagRegistry.Items.AUKVULTURE_TAME_FOOD)) {
             if (!level().isClientSide()) {
-                if (isLoneWanderer()) {
+                if (isLoneWanderer() || wearingMask) {
                     if (!player.getAbilities().instabuild) stack.shrink(1);
                     if (level() instanceof ServerLevel serverLevel) {
-                        if (random.nextInt(3) == 0) {
+                        boolean success = wearingMask || random.nextInt(3) == 0;
+
+                        if (success) {
                             tame(player);
-                            UmweltAPI.getEngine(this).ifPresent(e -> {
-                                EmotionAPI.setValence(e, 0.9f);
-                                EmotionAPI.setArousal(e, 0.2f);
-                            });
                             serverLevel.sendParticles(ParticleTypes.HEART, getX(), getY() + 0.5, getZ(), 5, 0.5, 0.5, 0.5, 0.0);
                         } else {
                             serverLevel.sendParticles(ParticleTypes.SMOKE, getX(), getY() + 0.5, getZ(), 5, 0.5, 0.5, 0.5, 0.0);
@@ -222,6 +221,21 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
         }
 
         if (isTamed() && isOwner(player) && hand == InteractionHand.MAIN_HAND) {
+
+            if (stack.is(Items.BRUSH)) {
+                if (!level().isClientSide()) {
+                    stack.hurtAndBreak(1, player, net.minecraft.world.entity.EquipmentSlot.MAINHAND);
+                    playSound(net.minecraft.sounds.SoundEvents.BRUSH_GENERIC, 1.0F, 1.0F);
+
+                    this.spawnAtLocation(new ItemStack(MeanderingMobsItemRegistry.AUKVULTURE_FEATHER.get()));
+
+                    if (level() instanceof ServerLevel serverLevel) {
+                        serverLevel.sendParticles(ParticleTypes.ITEM_SNOWBALL, getX(), getY() + 0.5, getZ(), 8, 0.3, 0.3, 0.3, 0.1);
+                    }
+                }
+                return InteractionResult.sidedSuccess(level().isClientSide());
+            }
+
             if (!isSaddled() && stack.is(Items.SADDLE)) {
                 if (!player.getAbilities().instabuild) stack.shrink(1);
                 setSaddled(true);
@@ -375,7 +389,7 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
         if (clientFlapping) {
             takeoffCharge = Math.min(1.0F, takeoffCharge + 0.015F);
             if (level().isClientSide() && getRandom().nextInt(3) == 0) {
-                level().addParticle(ParticleTypes.SPLASH, getX(), getY() + 0.2D, getZ(), 0, 0.1D, 0);
+                level().addParticle(ParticleTypes.GUST, getX(), getY() + 0.2D, getZ(), 0, 0.1D, 0);
             }
         } else takeoffCharge = Math.max(0.0F, takeoffCharge - 0.02F);
 

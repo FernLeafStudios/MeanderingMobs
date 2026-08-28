@@ -1,6 +1,8 @@
 package com.fernleaf.meanderingmobs.registry;
 
 import com.fernleaf.meanderingmobs.MeanderingMobs;
+import com.fernleaf.meanderingmobs.client.model.armor.AukvultureMaskModel;
+import com.fernleaf.meanderingmobs.client.renderer.armor.AukvultureMaskRenderer;
 import com.fernleaf.meanderingmobs.server.item.*;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.core.registries.Registries;
@@ -11,7 +13,12 @@ import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.Tiers;
+import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
 import net.neoforged.neoforge.common.DeferredSpawnEggItem;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -63,6 +70,10 @@ public class MeanderingMobsItemRegistry {
             () -> new Item(new Item.Properties())
     );
 
+    public static final DeferredHolder<Item, Item> AUKVULTURE_FEATHER = ITEMS.register("aukvulture_feather",
+            () -> new Item(new Item.Properties())
+    );
+
     public static final DeferredHolder<Item, Item> TEGU_SCALE = ITEMS.register("tegu_scale",
             () -> new Item(new Item.Properties())
     );
@@ -104,6 +115,10 @@ public class MeanderingMobsItemRegistry {
             () -> new AnchovyCanItem(new Item.Properties()
                     .stacksTo(1)
                     .food(ANCHOVY_CAN_FOOD))
+    );
+
+    public static final DeferredHolder<Item, AukvultureMaskItem> AUKVULTURE_MASK = ITEMS.register("aukvulture_mask",
+            () -> new AukvultureMaskItem(new Item.Properties().stacksTo(1))
     );
 
     // Spawn Eggs
@@ -164,8 +179,17 @@ public class MeanderingMobsItemRegistry {
         );
     }
 
-    public static void register(IEventBus eventBus) {
-        ITEMS.register(eventBus);
+    @EventBusSubscriber(modid = MeanderingMobs.MODID, value = Dist.CLIENT)
+    public static class ClientRegister {
+        @SubscribeEvent
+        public static void registerRenderers(RegisterClientExtensionsEvent event) {
+            event.registerItem(new AukvultureMaskRenderer(), MeanderingMobsItemRegistry.AUKVULTURE_MASK.get());
+        }
+
+        @SubscribeEvent
+        public static void registerLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
+            event.registerLayerDefinition(AukvultureMaskModel.LAYER_LOCATION, AukvultureMaskModel::createBodyLayer);
+        }
     }
 
     public static void registerItemProperties() {
@@ -174,5 +198,9 @@ public class MeanderingMobsItemRegistry {
                 ResourceLocation.withDefaultNamespace("full"),
                 (stack, level, entity, seed) -> TeguPouchItem.getFullnessDisplay(stack)
         );
+    }
+
+    public static void register(IEventBus eventBus) {
+        ITEMS.register(eventBus);
     }
 }

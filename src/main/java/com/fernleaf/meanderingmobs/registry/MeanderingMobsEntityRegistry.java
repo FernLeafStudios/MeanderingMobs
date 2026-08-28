@@ -2,6 +2,7 @@ package com.fernleaf.meanderingmobs.registry;
 
 import com.fernleaf.meanderingmobs.MeanderingMobs;
 import com.fernleaf.meanderingmobs.client.model.anchovy.AnchovyModel;
+import com.fernleaf.meanderingmobs.client.model.armor.AukvultureMaskModel;
 import com.fernleaf.meanderingmobs.client.model.aukvulture.AukvultureModel;
 import com.fernleaf.meanderingmobs.client.model.crystal.RallyCrystalModel;
 import com.fernleaf.meanderingmobs.client.model.deerfox.DeerfoxModel;
@@ -291,6 +292,9 @@ public class MeanderingMobsEntityRegistry {
             event.registerLayerDefinition(AnchovyModel.LAYER_LOCATION, AnchovyModel::createBodyLayer);
             event.registerLayerDefinition(GuttertankModel.LAYER_LOCATION, GuttertankModel::createBodyLayer);
             event.registerLayerDefinition(DeerfoxModel.LAYER_LOCATION, DeerfoxModel::createBodyLayer);
+
+            /// Armor
+            event.registerLayerDefinition(AukvultureMaskModel.LAYER_LOCATION, AukvultureMaskModel::createBodyLayer);
 
             // Update 3
             event.registerLayerDefinition(RaspberryVampireModel.LAYER_LOCATION, RaspberryVampireModel::createBodyLayer);

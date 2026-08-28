@@ -5,6 +5,10 @@ license="All Rights Reserved"
 [[accessTransformers]]
 file="META-INF/accesstransformer.cfg"
 
+mixins = [
+    "meanderingmobs.mixins.json"
+]
+
 [[mods]]
 modId="meanderingmobs"
 version="1.0.0"

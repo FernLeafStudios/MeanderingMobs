@@ -1,6 +1,7 @@
 package com.fernleaf.meanderingmobs.registry;
 
 import com.fernleaf.meanderingmobs.MeanderingMobs;
+import com.fernleaf.meanderingmobs.util.VecToInput;
 import com.mojang.serialization.Codec;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.attachment.AttachmentType;
@@ -21,7 +22,7 @@ public class MeanderingMobsAttachmentRegistry {
                     .build());
 
     public static final Supplier<AttachmentType<Optional<UUID>>> OWNER_UUID =
-            ATTACHMENT_TYPES.register("owner_uuid", () -> AttachmentType.builder(() -> Optional.<UUID>empty())
+            ATTACHMENT_TYPES.register("owner_uuid", () -> AttachmentType.builder(Optional::<UUID>empty)
                     .serialize(Codec.STRING.xmap(
                             s -> s.isEmpty() ? Optional.empty() : Optional.of(UUID.fromString(s)),
                             opt -> opt.map(UUID::toString).orElse("")
@@ -32,6 +33,11 @@ public class MeanderingMobsAttachmentRegistry {
             ATTACHMENT_TYPES.register("command_state", () -> AttachmentType.builder(() -> 0)
                     .serialize(Codec.INT)
                     .build());
+
+
+    public static final Supplier<AttachmentType<VecToInput>> ORCA_INPUT = ATTACHMENT_TYPES.register(
+            "orca_input", () -> AttachmentType.builder(VecToInput::new).serialize(VecToInput.CODEC).build()
+    );
 
     public static void register(IEventBus eventBus) {
         ATTACHMENT_TYPES.register(eventBus);

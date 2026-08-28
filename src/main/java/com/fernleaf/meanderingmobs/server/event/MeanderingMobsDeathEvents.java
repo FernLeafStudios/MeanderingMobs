@@ -72,13 +72,6 @@ public class MeanderingMobsDeathEvents {
                     );
 
                     data.addRespawnRequest(request);
-
-                    if (owner != null) {
-                        owner.displayClientMessage(
-                                Component.literal(nameTag + " has died and will respawn at its bed at morning!"),
-                                true
-                        );
-                    }
                 }
             }
         }

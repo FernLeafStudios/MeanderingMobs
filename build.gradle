@@ -119,7 +119,6 @@ dependencies {
     // 1. Mixin Processor & Extras
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
     implementation "io.github.llamalad7:mixinextras-neoforge:0.4.1"
-    annotationProcessor "io.github.llamalad7:mixinextras-common:0.4.1"
 
     // 2. FernFrame Core Library
     jarJar(implementation("com.fernleaf.fernframe:fernframe:1.0.0")) {
@@ -160,6 +159,12 @@ dependencies {
 
     compileOnly "curse.maven:geckolib-388172:8350073"
     localRuntime "curse.maven:geckolib-388172:8350073"
+
+    compileOnly "curse.maven:alexs-mobs-neo-1613387:8448639"
+    localRuntime "curse.maven:alexs-mobs-neo-1613387:8448639"
+
+    compileOnly "curse.maven:citadel-331936:8458935"
+    localRuntime "curse.maven:citadel-331936:8458935"
 
     // 4. Runtime performance testing
     localRuntime "maven.modrinth:sodium:mc1.21.1-0.8.13-beta.2-neoforge"
