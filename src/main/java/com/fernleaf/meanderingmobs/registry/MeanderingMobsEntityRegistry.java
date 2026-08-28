@@ -82,7 +82,7 @@ public class MeanderingMobsEntityRegistry {
 
     public static final DeferredHolder<EntityType<?>, EntityType<WhispEntity>> WHISP =
             ENTITIES.register("whisp", () ->
-                    EntityType.Builder.of(WhispEntity::new, MobCategory.MONSTER)
+                    EntityType.Builder.of(WhispEntity::new, MobCategory.CREATURE)
                             .sized(0.6F, 1.8F)
                             .clientTrackingRange(8)
                             .build("whisp")
@@ -186,7 +186,7 @@ public class MeanderingMobsEntityRegistry {
             );
     public static final DeferredHolder<EntityType<?>, EntityType<GuttertankEntity>> GUTTERTANK =
             ENTITIES.register("guttertank", () ->
-                    EntityType.Builder.of(GuttertankEntity::new, MobCategory.CREATURE)
+                    EntityType.Builder.of(GuttertankEntity::new, MobCategory.MONSTER)
                             .sized(3.0F, 3.0F)
                             .build("guttertank"));
 

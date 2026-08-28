@@ -2,7 +2,7 @@ package com.fernleaf.meanderingmobs.server.entity.ai.whisp;
 
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsItemRegistry;
 import com.fernleaf.meanderingmobs.server.block.entity.QueueboxBlockEntity;
-import com.fernleaf.meanderingmobs.server.entity.ai.AbstractBlockInteractionGoal;
+import com.fernleaf.meanderingmobs.server.entity.ai.util.AbstractBlockInteractionGoal;
 import com.fernleaf.meanderingmobs.server.entity.tameable.WhispEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;

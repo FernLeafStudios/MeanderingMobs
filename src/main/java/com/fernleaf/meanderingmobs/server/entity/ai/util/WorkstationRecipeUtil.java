@@ -1,4 +1,4 @@
-package com.fernleaf.meanderingmobs.server.entity.ai;
+package com.fernleaf.meanderingmobs.server.entity.ai.util;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Container;

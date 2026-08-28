@@ -2,10 +2,10 @@ package com.fernleaf.meanderingmobs.server.entity.util;
 
 import com.fernleaf.meanderingmobs.compat.redomesticate.RedomesticateCompat;
 import com.fernleaf.meanderingmobs.compat.redomesticate.goal.FeatherOnAStickGoal;
-import com.fernleaf.meanderingmobs.server.entity.ai.OwnerHurtByTargetGoal;
-import com.fernleaf.meanderingmobs.server.entity.ai.OwnerHurtTargetGoal;
-import com.fernleaf.meanderingmobs.server.entity.ai.StateAwareWaterAvoidingRandomStrollGoal;
-import com.fernleaf.meanderingmobs.server.entity.ai.TameableStateGoal;
+import com.fernleaf.meanderingmobs.server.entity.ai.util.OwnerHurtByTargetGoal;
+import com.fernleaf.meanderingmobs.server.entity.ai.util.OwnerHurtTargetGoal;
+import com.fernleaf.meanderingmobs.server.entity.ai.util.StateAwareWaterAvoidingRandomStrollGoal;
+import com.fernleaf.meanderingmobs.server.entity.ai.util.TameableStateGoal;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;

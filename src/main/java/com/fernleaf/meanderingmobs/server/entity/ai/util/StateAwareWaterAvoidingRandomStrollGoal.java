@@ -1,4 +1,4 @@
-package com.fernleaf.meanderingmobs.server.entity.ai;
+package com.fernleaf.meanderingmobs.server.entity.ai.util;
 
 import com.fernleaf.meanderingmobs.server.entity.util.MeanderingMobsTameableEntity;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;

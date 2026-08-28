@@ -3,10 +3,6 @@ package com.fernleaf.meanderingmobs;
 import com.fernleaf.meanderingmobs.config.MeanderingMobsConfig;
 import com.fernleaf.meanderingmobs.registry.*;
 import com.fernleaf.meanderingmobs.server.command.RuffianInspectCommand;
-import com.fernleaf.meanderingmobs.server.datagen.MeanderingMobsBiomeTagProvider;
-import com.fernleaf.meanderingmobs.server.datagen.MeanderingMobsBlockTagProvider;
-import com.fernleaf.meanderingmobs.server.datagen.MeanderingMobsEntityTypeTagProvider;
-import com.fernleaf.meanderingmobs.server.datagen.MeanderingMobsItemTagProvider;
 import com.fernleaf.meanderingmobs.server.entity.ai.ruffian.brain.RuffianActivities;
 import com.fernleaf.meanderingmobs.server.entity.ai.ruffian.brain.RuffianMemoryModuleTypes;
 import com.mojang.logging.LogUtils;
@@ -32,7 +28,6 @@ public class MeanderingMobs {
 
     public MeanderingMobs(IEventBus modEventBus, ModContainer modContainer) {
         modEventBus.addListener(this::commonSetup);
-        modEventBus.addListener(this::gatherData);
 
         modContainer.registerConfig(ModConfig.Type.COMMON, MeanderingMobsConfig.COMMON_SPEC);
 
@@ -57,25 +52,6 @@ public class MeanderingMobs {
 
     public static void onRegisterCommands(RegisterCommandsEvent event) {
         RuffianInspectCommand.register(event.getDispatcher());
-    }
-
-    private void gatherData(GatherDataEvent event) {
-        PackOutput packOutput = event.getGenerator().getPackOutput();
-        CompletableFuture<HolderLookup.Provider> lookupProvider = event.getLookupProvider();
-        ExistingFileHelper existingFileHelper = event.getExistingFileHelper();
-
-        MeanderingMobsBlockTagProvider blockTagsProvider =
-                new MeanderingMobsBlockTagProvider(packOutput, lookupProvider, existingFileHelper);
-        event.getGenerator().addProvider(event.includeServer(), blockTagsProvider);
-
-        event.getGenerator().addProvider(event.includeServer(),
-                new MeanderingMobsItemTagProvider(packOutput, lookupProvider, blockTagsProvider.contentsGetter(), existingFileHelper));
-
-        event.getGenerator().addProvider(event.includeServer(),
-                new MeanderingMobsEntityTypeTagProvider(packOutput, lookupProvider, existingFileHelper));
-
-        event.getGenerator().addProvider(event.includeServer(),
-                new MeanderingMobsBiomeTagProvider(packOutput, lookupProvider, existingFileHelper));
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {

@@ -4,6 +4,7 @@ import com.fernleaf.meanderingmobs.registry.MeanderingMobsEffectsRegistry;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsEntityRegistry;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsItemRegistry;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.AbstractArrow;
@@ -25,6 +26,14 @@ public class QuillArrowEntity extends AbstractArrow {
     @Override
     protected @NotNull ItemStack getDefaultPickupItem() {
         return new ItemStack(MeanderingMobsItemRegistry.PORCUPINE_QUILL.get());
+    }
+
+    @Override
+    protected boolean canHitEntity(@NotNull Entity entity) {
+        if (entity == this.getOwner()) {
+            return false;
+        }
+        return super.canHitEntity(entity);
     }
 
     @Override

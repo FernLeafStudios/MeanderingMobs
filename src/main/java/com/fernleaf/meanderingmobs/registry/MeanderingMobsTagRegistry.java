@@ -27,6 +27,11 @@ public class MeanderingMobsTagRegistry {
                 ResourceLocation.fromNamespaceAndPath("meanderingmobs", "okapi_tame")
         );
 
+        public static final TagKey<Item> TEGU_TAMEABLE = TagKey.create(
+                Registries.ITEM,
+                ResourceLocation.fromNamespaceAndPath("meanderingmobs", "tegu_tame")
+        );
+
         public static final TagKey<Item> ADOPTION_CERTIFICATE = TagKey.create(
                 Registries.ITEM,
                 ResourceLocation.fromNamespaceAndPath("meanderingmobs", "adoption_certificate")

@@ -2,9 +2,7 @@ package com.fernleaf.meanderingmobs.network;
 
 import com.fernleaf.meanderingmobs.MeanderingMobs;
 import com.fernleaf.meanderingmobs.compat.alexsmobs.AlexsMobsCompat;
-import com.fernleaf.meanderingmobs.compat.alexsmobs.goal.OrcaMoveControl;
-import com.fernleaf.meanderingmobs.registry.MeanderingMobsAttachmentRegistry;
-import com.fernleaf.meanderingmobs.util.VecToInput;
+import com.fernleaf.meanderingmobs.compat.alexsmobs.goal.orca.OrcaMoveControl;
 import com.github.alexthe666.alexsmobs.entity.EntityOrca;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;

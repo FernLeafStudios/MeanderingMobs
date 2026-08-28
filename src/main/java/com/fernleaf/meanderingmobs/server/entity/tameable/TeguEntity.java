@@ -37,8 +37,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 
 public class TeguEntity extends MeanderingMobsTameableEntity {
-
-    public static final TagKey<Item> TEGU_TAMEABLE = TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath("meanderingmobs", "tegu_tame"));
     private static final EntityDataAccessor<ItemStack> DATA_MOUTH_ITEM = SynchedEntityData.defineId(TeguEntity.class, EntityDataSerializers.ITEM_STACK);
 
     public final AnimationState idleAnimationState = new AnimationState();

@@ -1,7 +1,7 @@
 package com.fernleaf.meanderingmobs.compat.alexsmobs.event;
 
 import com.fernleaf.meanderingmobs.compat.alexsmobs.AlexsMobsCompat;
-import com.fernleaf.meanderingmobs.compat.alexsmobs.goal.*;
+import com.fernleaf.meanderingmobs.compat.alexsmobs.goal.orca.*;
 import com.github.alexthe666.alexsmobs.entity.EntityOrca;
 import com.fernleaf.meanderingmobs.MeanderingMobs;
 import com.fernleaf.meanderingmobs.compat.redomesticate.RedomesticateCompat;

@@ -6,6 +6,8 @@ import com.fernleaf.meanderingmobs.registry.MeanderingMobsItemRegistry;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsTagRegistry;
 import com.fernleaf.meanderingmobs.server.data.VariantSpawnManager;
 import com.fernleaf.meanderingmobs.server.entity.ai.porcupine.PorcupineDefendGoal;
+import com.fernleaf.meanderingmobs.server.entity.ai.porcupine.PorcupineHarvestGoal;
+import com.fernleaf.meanderingmobs.server.entity.ai.porcupine.PorcupineShootGoal;
 import com.fernleaf.meanderingmobs.server.entity.util.MeanderingMobsTameableEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -36,6 +38,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import org.jetbrains.annotations.NotNull;
 
+@SuppressWarnings("deprecation")
 public class PorcupineEntity extends MeanderingMobsTameableEntity {
 
     public final AnimationState idleAnimationState = new AnimationState();
@@ -101,11 +104,18 @@ public class PorcupineEntity extends MeanderingMobsTameableEntity {
         regrowQuillsTimer = compound.getInt("RegrowQuillsTimer");
     }
 
+    @Override
     protected void registerGoals() {
         super.registerGoals();
+
+        this.goalSelector.addGoal(1, new PorcupineShootGoal(this));
         this.goalSelector.addGoal(2, new PorcupineDefendGoal(this));
-        this.goalSelector.addGoal(3, new PanicGoal(this, 1.25D) {
-            @Override public boolean canUse() { return !PorcupineEntity.this.isTamed() && super.canUse(); }
+        this.goalSelector.addGoal(3, new PorcupineHarvestGoal(this));
+        this.goalSelector.addGoal(4, new PanicGoal(this, 1.25D) {
+            @Override
+            public boolean canUse() {
+                return !PorcupineEntity.this.isTamed() && super.canUse();
+            }
         });
     }
 
@@ -138,6 +148,9 @@ public class PorcupineEntity extends MeanderingMobsTameableEntity {
                 if (random.nextInt(3) == 0) {
                     tame(player);
                     setDefenseState(DefenseState.NONE);
+                    setSheared(false);
+                    level().broadcastEntityEvent(this, EVENT_QUILL_REPLENISH);
+
                     level().broadcastEntityEvent(this, (byte) 7);
                 } else {
                     level().broadcastEntityEvent(this, (byte) 6);
@@ -152,6 +165,15 @@ public class PorcupineEntity extends MeanderingMobsTameableEntity {
         }
 
         return super.mobInteract(player, hand);
+    }
+
+    @Override
+    public boolean canBeAffected(MobEffectInstance effectInstance) {
+        // Grant absolute immunity to the QUILLED status effect
+        if (effectInstance.getEffect() == MeanderingMobsEffectsRegistry.QUILLED) {
+            return false;
+        }
+        return super.canBeAffected(effectInstance);
     }
 
     @Override
@@ -170,7 +192,7 @@ public class PorcupineEntity extends MeanderingMobsTameableEntity {
     }
 
     @Override
-    public SpawnGroupData finalizeSpawn(@NotNull ServerLevelAccessor level, @NotNull DifficultyInstance difficulty, @NotNull MobSpawnType spawnType, @javax.annotation.Nullable SpawnGroupData spawnData) {
+    public @NotNull SpawnGroupData finalizeSpawn(@NotNull ServerLevelAccessor level, @NotNull DifficultyInstance difficulty, @NotNull MobSpawnType spawnType, @javax.annotation.Nullable SpawnGroupData spawnData) {
         SpawnGroupData data = super.finalizeSpawn(level, difficulty, spawnType, spawnData);
         Holder<Biome> biome = level.getBiome(blockPosition());
         setVariant(PorcupineVariant.byId(VariantSpawnManager.getVariantForSpawn(this, biome)));

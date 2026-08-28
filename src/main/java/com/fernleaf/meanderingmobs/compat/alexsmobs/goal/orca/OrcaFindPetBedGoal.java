@@ -1,11 +1,11 @@
-package com.fernleaf.meanderingmobs.compat.alexsmobs.goal;
+package com.fernleaf.meanderingmobs.compat.alexsmobs.goal.orca;
 
 import com.evandev.redomesticate.content.block.PetBedBlock;
 import com.evandev.redomesticate.content.block.entity.PetBedBlockEntity;
 import com.evandev.redomesticate.util.TameableUtils;
 import com.github.alexthe666.alexsmobs.entity.EntityOrca;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsAttachmentRegistry;
-import com.fernleaf.meanderingmobs.server.entity.ai.AbstractBlockInteractionGoal;
+import com.fernleaf.meanderingmobs.server.entity.ai.util.AbstractBlockInteractionGoal;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;

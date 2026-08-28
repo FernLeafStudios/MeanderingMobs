@@ -5,7 +5,7 @@ import com.fernleaf.meanderingmobs.client.sound.WhispSoundInstance;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsSoundsRegistry;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsTagRegistry;
 import com.fernleaf.meanderingmobs.server.data.VariantSpawnManager;
-import com.fernleaf.meanderingmobs.server.entity.ai.StateAwareWaterAvoidingRandomFlyingGoal;
+import com.fernleaf.meanderingmobs.server.entity.ai.util.StateAwareWaterAvoidingRandomFlyingGoal;
 import com.fernleaf.meanderingmobs.server.entity.ai.whisp.*;
 import com.fernleaf.meanderingmobs.server.entity.util.MeanderingMobsTameableEntity;
 import net.minecraft.client.Minecraft;

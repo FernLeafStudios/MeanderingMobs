@@ -1,7 +1,7 @@
 package com.fernleaf.meanderingmobs.server.entity.ai.okapi;
 
 import com.fernleaf.meanderingmobs.server.entity.tameable.OkapiEntity;
-import com.fernleaf.meanderingmobs.server.entity.ai.AbstractBlockInteractionGoal;
+import com.fernleaf.meanderingmobs.server.entity.ai.util.AbstractBlockInteractionGoal;
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.BlockTags;
 

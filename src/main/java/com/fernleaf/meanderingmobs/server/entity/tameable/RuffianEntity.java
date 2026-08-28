@@ -3,7 +3,7 @@ package com.fernleaf.meanderingmobs.server.entity.tameable;
 import com.fernleaf.fernframe.umweltlite.goals.engine.PersonalityEngine;
 import com.fernleaf.meanderingmobs.client.model.ruffian.RuffianVariant;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsTagRegistry;
-import com.fernleaf.meanderingmobs.server.entity.ai.BlockPosUtil;
+import com.fernleaf.meanderingmobs.server.entity.ai.util.BlockPosUtil;
 import com.fernleaf.meanderingmobs.server.entity.ai.ruffian.*;
 import com.fernleaf.meanderingmobs.server.entity.ai.ruffian.brain.RuffianActivities;
 import com.fernleaf.meanderingmobs.server.entity.ai.ruffian.brain.RuffianMemoryModuleTypes;

@@ -1,4 +1,4 @@
-package com.fernleaf.meanderingmobs.server.entity.ai;
+package com.fernleaf.meanderingmobs.server.entity.ai.util;
 
 import com.fernleaf.meanderingmobs.server.entity.tameable.AukvultureEntity;
 import com.fernleaf.meanderingmobs.server.entity.util.MeanderingMobsTameableEntity;
@@ -17,7 +17,7 @@ public class TameableStateGoal extends Goal {
 
     public TameableStateGoal(MeanderingMobsTameableEntity mob) {
         this.mob = mob;
-        this.setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
+        this.setFlags(EnumSet.of(Flag.MOVE));
     }
 
     @Override

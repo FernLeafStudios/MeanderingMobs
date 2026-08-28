@@ -1,4 +1,4 @@
-package com.fernleaf.meanderingmobs.compat.alexsmobs.goal;
+package com.fernleaf.meanderingmobs.compat.alexsmobs.goal.orca;
 
 import com.github.alexthe666.alexsmobs.entity.EntityOrca;
 import net.minecraft.world.entity.ai.goal.Goal;

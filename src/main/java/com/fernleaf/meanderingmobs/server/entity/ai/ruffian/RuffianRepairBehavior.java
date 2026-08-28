@@ -1,8 +1,8 @@
 package com.fernleaf.meanderingmobs.server.entity.ai.ruffian;
 
 import com.fernleaf.meanderingmobs.server.entity.tameable.RuffianEntity;
-import com.fernleaf.meanderingmobs.server.entity.ai.BlockPosUtil;
-import com.fernleaf.meanderingmobs.server.entity.ai.WorkstationRecipeUtil;
+import com.fernleaf.meanderingmobs.server.entity.ai.util.BlockPosUtil;
+import com.fernleaf.meanderingmobs.server.entity.ai.util.WorkstationRecipeUtil;
 import com.google.common.collect.ImmutableMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;

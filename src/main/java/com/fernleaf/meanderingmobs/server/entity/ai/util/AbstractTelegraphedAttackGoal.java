@@ -1,4 +1,4 @@
-package com.fernleaf.meanderingmobs.server.entity.ai;
+package com.fernleaf.meanderingmobs.server.entity.ai.util;
 
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;

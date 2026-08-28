@@ -1,6 +1,6 @@
 package com.fernleaf.meanderingmobs.server.entity.ai.guttertank;
 
-import com.fernleaf.meanderingmobs.server.entity.ai.AbstractTelegraphedAttackGoal;
+import com.fernleaf.meanderingmobs.server.entity.ai.util.AbstractTelegraphedAttackGoal;
 import com.fernleaf.meanderingmobs.server.entity.tameable.GuttertankEntity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.SmallFireball;
