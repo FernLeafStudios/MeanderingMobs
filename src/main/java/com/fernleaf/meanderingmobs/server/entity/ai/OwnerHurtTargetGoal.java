@@ -1,26 +1,29 @@
 package com.fernleaf.meanderingmobs.server.entity.ai;
 
-import com.fernleaf.meanderingmobs.server.entity.util.MeanderingMobsTameableEntity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.OwnableEntity;
 import net.minecraft.world.entity.ai.goal.target.TargetGoal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 
 import java.util.EnumSet;
 
 public class OwnerHurtTargetGoal extends TargetGoal {
-    private final MeanderingMobsTameableEntity mob;
+    private final Mob tameableMob;
+    private final OwnableEntity ownable;
     private LivingEntity target;
 
-    public OwnerHurtTargetGoal(MeanderingMobsTameableEntity mob) {
-        super(mob, false); // Pass mob as Mob to super
-        this.mob = mob;
+    public <T extends Mob & OwnableEntity> OwnerHurtTargetGoal(T mob) {
+        super(mob, false);
+        this.tameableMob = mob;
+        this.ownable = mob;
         this.setFlags(EnumSet.of(Flag.TARGET));
     }
 
     @Override
     public boolean canUse() {
-        if (this.mob.isTamed() && !this.mob.isSitting() && !this.mob.isVehicle()) {
-            LivingEntity owner = this.mob.getOwner();
+        if (this.ownable.getOwnerUUID() != null && !this.tameableMob.isVehicle()) {
+            LivingEntity owner = this.ownable.getOwner();
             if (owner != null) {
                 this.target = owner.getLastHurtMob();
                 return this.target != null && this.canAttack(this.target, TargetingConditions.DEFAULT);
@@ -31,7 +34,7 @@ public class OwnerHurtTargetGoal extends TargetGoal {
 
     @Override
     public void start() {
-        this.mob.setTarget(this.target);
+        this.tameableMob.setTarget(this.target);
         super.start();
     }
 }

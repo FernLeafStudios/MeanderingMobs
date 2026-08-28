@@ -1,23 +1,36 @@
 package com.fernleaf.meanderingmobs.server.event;
 
+import com.evandev.redomesticate.api.ICommandableMob;
+import com.evandev.redomesticate.api.PetCommand;
+import com.evandev.redomesticate.content.block.DrumBlock;
+import com.evandev.redomesticate.util.TameableUtils;
 import com.fernleaf.meanderingmobs.MeanderingMobs;
+import com.fernleaf.meanderingmobs.compat.redomesticate.RedomesticateCompat;
+import com.fernleaf.meanderingmobs.registry.MeanderingMobsAttachmentRegistry;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsBlockRegistry;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsEntityRegistry;
 import com.fernleaf.meanderingmobs.server.block.CarvedStrippedSpruceLogBlock;
-import com.fernleaf.meanderingmobs.server.block.entity.CarvedStrippedSpruceLogBlockEntity;
 import com.fernleaf.meanderingmobs.server.block.GuttertankPattern;
 import com.fernleaf.meanderingmobs.server.block.RuffianPattern;
+import com.fernleaf.meanderingmobs.server.block.entity.CarvedStrippedSpruceLogBlockEntity;
 import com.fernleaf.meanderingmobs.server.block.rune.RuneType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.TamableAnimal;
+import net.minecraft.world.entity.animal.Dolphin;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SwordItem;
@@ -26,11 +39,14 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+
+import java.util.List;
 
 @EventBusSubscriber(modid = MeanderingMobs.MODID)
 public class MeanderingMobsBlockEvents {
@@ -72,15 +88,19 @@ public class MeanderingMobsBlockEvents {
         }
     }
 
-    // --- Sword Log Carving Handler ---
+    // --- Interaction Handler (Sword Logs + Redomesticate Drum Override) ---
     @SubscribeEvent
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
+        // Prevent off-hand duplicate triggers
+        if (event.getHand() != InteractionHand.MAIN_HAND) return;
+
         Level level = event.getLevel();
         BlockPos pos = event.getPos();
         ItemStack stack = event.getItemStack();
         BlockState targetState = level.getBlockState(pos);
+        Player player = event.getEntity();
 
-        // Turn vanilla stripped spruce logs into Carved Spruce Log using any Sword
+        // 1. Turn vanilla stripped spruce logs into Carved Spruce Log using any Sword
         if (stack.getItem() instanceof SwordItem && targetState.is(Blocks.STRIPPED_SPRUCE_LOG)) {
             if (!level.isClientSide) {
                 BlockState newBlockState = MeanderingMobsBlockRegistry.CARVED_STRIPPED_SPRUCE_LOG.get()
@@ -94,11 +114,79 @@ public class MeanderingMobsBlockEvents {
                     blockEntity.setRuneType(RuneType.DEERFOX);
                 }
 
-                stack.hurtAndBreak(1, event.getEntity(), LivingEntity.getSlotForHand(event.getHand()));
+                stack.hurtAndBreak(1, player, LivingEntity.getSlotForHand(event.getHand()));
             }
 
             event.setCanceled(true);
             event.setCancellationResult(InteractionResult.sidedSuccess(level.isClientSide));
+            return;
+        }
+
+        // --- Redomesticate Drum Override ---
+        if (RedomesticateCompat.isLoaded() && !level.isClientSide()) {
+
+            if (targetState.getBlock() instanceof DrumBlock && !player.isShiftKeyDown()) {
+                int currentCommand = targetState.getValue(DrumBlock.COMMAND);
+                int newCommand = (currentCommand + 1) % 3;
+
+                // 1. ADVANCE THE BLOCK STATE IN THE WORLD so it doesn't stay stuck on state 1!
+                level.setBlock(pos, targetState.setValue(DrumBlock.COMMAND, newCommand), 3);
+
+                AABB searchBox = new AABB(pos).inflate(32.0D);
+
+                List<Dolphin> nearbyDolphins = level.getEntitiesOfClass(
+                        Dolphin.class,
+                        searchBox,
+                        d -> d.getData(MeanderingMobsAttachmentRegistry.IS_TAMED.get()) &&
+                                player.getUUID().equals(d.getData(MeanderingMobsAttachmentRegistry.OWNER_UUID.get()).orElse(null))
+                );
+
+                List<Mob> nearbyVanillaPets = level.getEntitiesOfClass(
+                        Mob.class,
+                        searchBox,
+                        m -> !(m instanceof Dolphin) && TameableUtils.isTamed(m) && player.getUUID().equals(TameableUtils.getOwnerUUIDOf(m))
+                );
+
+                int totalAffected = nearbyDolphins.size() + nearbyVanillaPets.size();
+
+                // 2. Command dolphins
+                for (Dolphin dolphin : nearbyDolphins) {
+                    RedomesticateCompat.setDolphinCommand(dolphin, newCommand);
+                    dolphin.getNavigation().stop();
+                    dolphin.setTarget(null);
+                    dolphin.addEffect(new MobEffectInstance(MobEffects.GLOWING, 60, 0, true, false));
+                }
+
+                // 3. Command standard Redomesticate pets
+                PetCommand targetPetCommand = switch (newCommand) {
+                    case 0 -> PetCommand.WANDER;
+                    case 1 -> PetCommand.SIT;
+                    default -> PetCommand.FOLLOW;
+                };
+
+                for (Mob mob : nearbyVanillaPets) {
+                    if (mob instanceof ICommandableMob commandable) {
+                        commandable.redomesticate$setPetCommand(targetPetCommand);
+                    }
+                    if (mob instanceof TamableAnimal tamable) {
+                        // Explicitly set false for non-sit commands so they stand back up
+                        tamable.setOrderedToSit(targetPetCommand == PetCommand.SIT);
+                    }
+                    mob.getNavigation().stop();
+                    mob.setTarget(null);
+                    mob.addEffect(new MobEffectInstance(MobEffects.GLOWING, 60, 0, true, false));
+                }
+
+                if (totalAffected > 0) {
+                    player.displayClientMessage(
+                            Component.translatable("message.redomesticate.drum_command_" + newCommand, totalAffected),
+                            true
+                    );
+                }
+
+                event.setCanceled(true);
+                event.setCancellationResult(InteractionResult.sidedSuccess(level.isClientSide));
+            }
         }
     }
 

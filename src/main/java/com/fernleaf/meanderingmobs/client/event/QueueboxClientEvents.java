@@ -10,7 +10,6 @@ import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 
 @EventBusSubscriber(modid = MeanderingMobs.MODID, value = Dist.CLIENT)
 public class QueueboxClientEvents {
-
     @SubscribeEvent
     public static void registerScreens(RegisterMenuScreensEvent event) {
         event.register(MeanderingMobsMenuRegistry.QUEUEBOX_MENU.get(), QueueboxScreen::new);

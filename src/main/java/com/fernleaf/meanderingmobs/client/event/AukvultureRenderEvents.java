@@ -47,27 +47,25 @@ public class AukvultureRenderEvents {
 
             if (mc.options.getCameraType().isFirstPerson()) {
                 if (allowRoll) {
-                    // Scale offset down as pitch approaches vertical (+/- 90) to prevent vector flips
                     float pitchRad = camera.getXRot() * Mth.DEG_TO_RAD;
                     float pitchFactor = Mth.cos(pitchRad); // 1.0 at horizon, 0.0 at straight up/down
 
                     camera.move(0.5F * pitchFactor, 0.25F * pitchFactor, 0.0F);
+                } else {
+                    float safePitch = Mth.clamp(camera.getXRot(), -89.9F, 89.9F);
+                    float pitchRad = safePitch * Mth.DEG_TO_RAD;
+                    float yawRad = camera.getYRot() * Mth.DEG_TO_RAD;
+                    double distance = 5.0D;
+
+                    Vec3 riderPos = aukvulture.getPassengerRidingPosition(player);
+                    Vec3 riderEyePos = riderPos.add(0.0D, player.getEyeHeight(), 0.0D);
+
+                    double offsetX = -Mth.sin(yawRad) * Mth.cos(pitchRad) * distance;
+                    double offsetY = -Mth.sin(pitchRad) * distance;
+                    double offsetZ = Mth.cos(yawRad) * Mth.cos(pitchRad) * distance;
+
+                    camera.setPosition(riderEyePos.x + offsetX, riderEyePos.y + offsetY, riderEyePos.z + offsetZ);
                 }
-            } else {
-                // Third-person safe pitch clamping
-                float safePitch = Mth.clamp(camera.getXRot(), -89.9F, 89.9F);
-                float pitchRad = safePitch * Mth.DEG_TO_RAD;
-                float yawRad = camera.getYRot() * Mth.DEG_TO_RAD;
-                double distance = 5.0D;
-
-                Vec3 riderPos = aukvulture.getPassengerRidingPosition(player);
-                Vec3 riderEyePos = riderPos.add(0.0D, player.getEyeHeight(), 0.0D);
-
-                double offsetX = -Mth.sin(yawRad) * Mth.cos(pitchRad) * distance;
-                double offsetY = -Mth.sin(pitchRad) * distance;
-                double offsetZ = Mth.cos(yawRad) * Mth.cos(pitchRad) * distance;
-
-                camera.setPosition(riderEyePos.x + offsetX, riderEyePos.y + offsetY, riderEyePos.z + offsetZ);
             }
         }
     }

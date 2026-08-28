@@ -36,11 +36,12 @@ public class MeanderingMobs {
 
         modContainer.registerConfig(ModConfig.Type.COMMON, MeanderingMobsConfig.COMMON_SPEC);
 
+        MeanderingMobsAttachmentRegistry.register(modEventBus);
         MeanderingMobsEntityRegistry.register(modEventBus);
         MeanderingMobsItemRegistry.register(modEventBus);
         MeanderingMobsBlockRegistry.register(modEventBus);
         MeanderingMobsBlockEntityRegistry.register(modEventBus);
-        MeanderingMobsMenuRegistry.register(modEventBus); // <-- ADD THIS LINE
+        MeanderingMobsMenuRegistry.register(modEventBus);
         MeanderingMobsEffectsRegistry.register(modEventBus);
         MeanderingMobsPotionRegistry.register(modEventBus);
         MeanderingMobsSoundsRegistry.SOUND_EVENTS.register(modEventBus);

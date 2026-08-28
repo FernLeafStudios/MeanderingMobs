@@ -96,5 +96,9 @@
   "enchantment.meanderingmobs.aurora_walker": "Aurora Walker",
   "enchantment.meanderingmobs.aurora_walker.desc": "Creates a temporary bridge of aurora blocks when sprinting on a mount.",
 
-  "block.meanderingmobs.carved_stripped_spruce_log": "Carved Spruce Stripped Log"
+  "block.meanderingmobs.carved_stripped_spruce_log": "Carved Spruce Stripped Log",
+
+  "message.dolphin.wander": "Dolphin is now wandering",
+  "message.dolphin.sit": "Dolphin is now staying",
+  "message.dolphin.follow": "Dolphin is now following"
 }

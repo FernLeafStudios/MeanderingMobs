@@ -1,29 +1,31 @@
 package com.fernleaf.meanderingmobs.server.event;
 
 import com.fernleaf.meanderingmobs.MeanderingMobs;
+import com.fernleaf.meanderingmobs.compat.redomesticate.RedomesticateCompat;
+import com.fernleaf.meanderingmobs.compat.redomesticate.goal.DolphinFindPetBedGoal;
+import com.fernleaf.meanderingmobs.compat.redomesticate.goal.FeatherOnAStickGoal;
+import com.fernleaf.meanderingmobs.registry.MeanderingMobsAttachmentRegistry;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsEntityRegistry;
-import com.fernleaf.meanderingmobs.server.block.GuttertankPattern;
-import com.fernleaf.meanderingmobs.server.block.RuffianPattern;
-import com.fernleaf.meanderingmobs.server.data.VariantSpawnManager;
-import com.fernleaf.meanderingmobs.server.entity.ai.allay.WhispOrbitGoal;
+import com.fernleaf.meanderingmobs.registry.MeanderingMobsTagRegistry;
+import com.fernleaf.meanderingmobs.server.entity.ai.dolphin.DolphinOwnerHurtByTargetGoal;
+import com.fernleaf.meanderingmobs.server.entity.ai.dolphin.DolphinOwnerHurtTargetGoal;
+import com.fernleaf.meanderingmobs.server.entity.ai.dolphin.DolphinTameableStateGoal;
 import com.fernleaf.meanderingmobs.server.entity.hostile.HollowRuffianEntity;
 import com.fernleaf.meanderingmobs.server.entity.hostile.RallyCrystalEntity;
 import com.fernleaf.meanderingmobs.server.entity.hostile.SoulHoundEntity;
-import com.fernleaf.meanderingmobs.server.entity.tameable.AukvultureEntity;
-import com.fernleaf.meanderingmobs.server.entity.tameable.PorcupineEntity;
-import com.fernleaf.meanderingmobs.server.entity.tameable.TeguEntity;
-import com.fernleaf.meanderingmobs.server.entity.tameable.WolverineEntity;
+import com.fernleaf.meanderingmobs.server.entity.tameable.*;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.tags.BlockTags;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
+import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.animal.Dolphin;
 import net.minecraft.world.entity.animal.WaterAnimal;
-import net.minecraft.world.entity.animal.allay.Allay;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ServerLevelAccessor;
-import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -31,7 +33,10 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent;
-import net.neoforged.neoforge.event.level.BlockEvent;
+
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 
 @EventBusSubscriber(modid = MeanderingMobs.MODID)
 public class MeanderingMobsSpawnEvents {
@@ -127,10 +132,7 @@ public class MeanderingMobsSpawnEvents {
                 RegisterSpawnPlacementsEvent.Operation.REPLACE
         );
 
-
         // --- Custom Vanilla Entity Spawn Overrides ---
-
-        // Allay spawn rules
         event.register(
                 EntityType.ALLAY,
                 SpawnPlacementTypes.ON_GROUND,
@@ -138,6 +140,65 @@ public class MeanderingMobsSpawnEvents {
                 MeanderingMobsSpawnEvents::checkAllayGrassSpawnRules,
                 RegisterSpawnPlacementsEvent.Operation.REPLACE
         );
+    }
+
+    @SubscribeEvent
+    public static void onEntityJoinLevel(EntityJoinLevelEvent event) {
+        if (event.getEntity() instanceof Dolphin dolphin && !event.getLevel().isClientSide()) {
+            if (dolphin.getAttribute(Attributes.ATTACK_DAMAGE) != null) {
+                Objects.requireNonNull(dolphin.getAttribute(Attributes.ATTACK_DAMAGE)).setBaseValue(3.0D);
+            }
+
+            dolphin.goalSelector.addGoal(1, new DolphinTameableStateGoal(dolphin));
+            dolphin.goalSelector.addGoal(2, new DolphinOwnerHurtByTargetGoal(dolphin));
+            dolphin.goalSelector.addGoal(3, new DolphinOwnerHurtTargetGoal(dolphin));
+            dolphin.goalSelector.addGoal(4, new MeleeAttackGoal(dolphin, 1.2D, true));
+            if (RedomesticateCompat.isLoaded()) {
+                dolphin.goalSelector.addGoal(5, new DolphinFindPetBedGoal(dolphin));
+                dolphin.goalSelector.addGoal(6, new FeatherOnAStickGoal(dolphin));
+            }
+
+            dolphin.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(
+                    dolphin,
+                    LivingEntity.class,
+                    10,
+                    true,
+                    false,
+                    target -> {
+                        boolean isTamed = dolphin.getData(MeanderingMobsAttachmentRegistry.IS_TAMED.get());
+                        int state = dolphin.getData(MeanderingMobsAttachmentRegistry.COMMAND_STATE.get());
+
+                        return isTamed && state != 1 && target.getType().is(MeanderingMobsTagRegistry.EntityTypes.DOLPHIN_HATES);
+                    }
+            ));
+        }
+    }
+
+    @SubscribeEvent
+    public static void onDolphinRespawn(EntityJoinLevelEvent event) {
+        if (!(event.getEntity() instanceof Dolphin dolphin) || event.getLevel().isClientSide()) return;
+
+        boolean isTamed = dolphin.getData(MeanderingMobsAttachmentRegistry.IS_TAMED.get());
+        if (!isTamed) return;
+
+        // If the custom name was saved as default "Dolphin", remove it so floating text disappears
+        if (dolphin.hasCustomName() && "Dolphin".equalsIgnoreCase(Objects.requireNonNull(dolphin.getCustomName()).getString())) {
+            dolphin.setCustomName(null);
+            dolphin.setCustomNameVisible(false);
+        }
+
+        // Send dawn chat notification
+        long time = event.getLevel().dayTime() % 24000L;
+        if (time >= 0 && time <= 5) {
+            Optional<UUID> ownerUUID = dolphin.getData(MeanderingMobsAttachmentRegistry.OWNER_UUID.get());
+            if (ownerUUID.isPresent() && event.getLevel() instanceof ServerLevel level) {
+                Player owner = level.getServer().getPlayerList().getPlayer(ownerUUID.get());
+                if (owner != null) {
+                    String name = dolphin.hasCustomName() ? Objects.requireNonNull(dolphin.getCustomName()).getString() : dolphin.getName().getString();
+                    owner.displayClientMessage(Component.literal(name + " has respawned at its bed"), false);
+                }
+            }
+        }
     }
 
     public static boolean checkAllayGrassSpawnRules(

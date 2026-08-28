@@ -33,6 +33,7 @@ import com.fernleaf.meanderingmobs.server.entity.projectile.QuillArrowEntity;
 import com.fernleaf.meanderingmobs.server.entity.projectile.SoulFireballEntity;
 import com.fernleaf.meanderingmobs.server.entity.projectile.SoulOrbEntity;
 import com.fernleaf.meanderingmobs.server.entity.tameable.*;
+import net.minecraft.client.renderer.entity.DolphinRenderer;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.EntityType;
@@ -193,6 +194,7 @@ public class MeanderingMobsEntityRegistry {
                     EntityType.Builder.of(DeerfoxEntity::new, MobCategory.CREATURE)
                             .sized(1.5F, 2.0F)
                             .build("deerfox"));
+
 
     // Structure Update Mobs
     public static final DeferredHolder<EntityType<?>, EntityType<VampireEntity>> VAMPIRE =

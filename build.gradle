@@ -149,6 +149,18 @@ dependencies {
     compileOnly "curse.maven:no-mans-land-538493:8359457"
     localRuntime "curse.maven:no-mans-land-538493:8359457"
 
+    compileOnly "curse.maven:mod-primal-1351626:7909458"
+    localRuntime "curse.maven:mod-primal-1351626:7909458"
+
+    compileOnly "curse.maven:spawn-mod-935694:8507225"
+    localRuntime "curse.maven:spawn-mod-935694:8507225"
+
+    compileOnly "curse.maven:teallib-1597849:8507094"
+    localRuntime "curse.maven:teallib-1597849:8507094"
+
+    compileOnly "curse.maven:geckolib-388172:8350073"
+    localRuntime "curse.maven:geckolib-388172:8350073"
+
     // 4. Runtime performance testing
     localRuntime "maven.modrinth:sodium:mc1.21.1-0.8.13-beta.2-neoforge"
 }

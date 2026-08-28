@@ -1,0 +1,44 @@
+package com.fernleaf.meanderingmobs.client.model.anchovy;
+
+import com.fernleaf.fernframe.proprio.model.IModelVariant;
+import com.fernleaf.fernframe.proprio.model.ModelVariantRegistry;
+import com.fernleaf.fernframe.proprio.model.TextureUtils;
+import com.fernleaf.meanderingmobs.MeanderingMobs;
+import net.minecraft.client.model.geom.ModelLayerLocation;
+import net.minecraft.resources.ResourceLocation;
+
+import java.util.function.Function;
+
+public enum AnchovyVariant implements IModelVariant<AnchovyVariant.ModelType> {
+    SILVER(0, "silver_anchovy", AnchovyModel.LAYER_LOCATION, ModelType.ANCHOVY),
+    DEEP(1, "deep_anchovy", AnchovyModel.LAYER_LOCATION, ModelType.ANCHOVY),
+    CARDINAL(2, "cardinal_anchovy", AnchovyModel.LAYER_LOCATION, ModelType.ANCHOVY);
+
+    private static final Function<Integer, AnchovyVariant> LOOKUP =
+            ModelVariantRegistry.createLookup(values(), SILVER);
+
+    public final int id;
+    private final ModelLayerLocation layerLocation;
+    private final ModelType modelType;
+    private final ResourceLocation textureLocation;
+
+    AnchovyVariant(int id, String textureName, ModelLayerLocation layerLocation, ModelType modelType) {
+        this.id = id;
+        this.layerLocation = layerLocation;
+        this.modelType = modelType;
+        this.textureLocation = TextureUtils.buildEntityTexture(MeanderingMobs.MODID, "anchovy", textureName);
+    }
+
+    @Override public int getId() { return this.id; }
+    @Override public ModelLayerLocation getLayerLocation() { return this.layerLocation; }
+    @Override public ModelType getModelType() { return this.modelType; }
+    @Override public ResourceLocation getTextureLocation() { return this.textureLocation; }
+
+    public enum ModelType {
+        ANCHOVY
+    }
+
+    public static AnchovyVariant byId(int id) {
+        return LOOKUP.apply(id);
+    }
+}

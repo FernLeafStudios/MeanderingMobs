@@ -79,7 +79,6 @@ public class ParrotfishEntity extends MeanderingMobsAquaticEntity {
         builder.define(DATA_IS_CHARGING, false);
         builder.define(DATA_IS_STUNNED, false);
         builder.define(DATA_IS_EATING, false);
-        this.setVariantId(ParrotfishVariant.BUMPHEAD.id);
     }
 
     public ParrotfishVariant getVariant() {

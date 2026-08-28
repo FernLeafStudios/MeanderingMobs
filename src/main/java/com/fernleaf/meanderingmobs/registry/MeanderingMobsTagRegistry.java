@@ -71,6 +71,11 @@ public class MeanderingMobsTagRegistry {
                 Registries.ENTITY_TYPE,
                 ResourceLocation.fromNamespaceAndPath(MeanderingMobs.MODID, "rally_crystal_bishop")
         );
+
+        public static final TagKey<EntityType<?>> DOLPHIN_HATES = TagKey.create(
+                Registries.ENTITY_TYPE,
+                ResourceLocation.fromNamespaceAndPath(MeanderingMobs.MODID, "dolphin_hates")
+        );
     }
 
     public static class Biomes {

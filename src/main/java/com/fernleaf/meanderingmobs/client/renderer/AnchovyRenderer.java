@@ -1,6 +1,5 @@
 package com.fernleaf.meanderingmobs.client.renderer;
 
-import com.fernleaf.meanderingmobs.MeanderingMobs;
 import com.fernleaf.meanderingmobs.client.model.anchovy.AnchovyModel;
 import com.fernleaf.meanderingmobs.server.entity.aquatic.AnchovyEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -13,16 +12,13 @@ import org.jetbrains.annotations.NotNull;
 
 public class AnchovyRenderer extends MobRenderer<AnchovyEntity, AnchovyModel<AnchovyEntity>> {
 
-    private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath(MeanderingMobs.MODID, "textures/entity/anchovy/anchovy.png");
-
     public AnchovyRenderer(EntityRendererProvider.Context context) {
         super(context, new AnchovyModel<>(context.bakeLayer(AnchovyModel.LAYER_LOCATION)), 0.2F);
     }
 
     @Override
     public @NotNull ResourceLocation getTextureLocation(@NotNull AnchovyEntity entity) {
-        return TEXTURE;
+        return entity.getVariant().getTextureLocation();
     }
 
     @Override

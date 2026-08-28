@@ -11,6 +11,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
+@SuppressWarnings("deprecation")
 public class AnchovySwimGoal extends RandomSwimmingGoal {
 
     private final AnchovyEntity fish;
@@ -24,26 +25,38 @@ public class AnchovySwimGoal extends RandomSwimmingGoal {
     public void tick() {
         super.tick();
 
-        // Tighter Schooling Boids Factor: Pull towards nearby Anchovies
-        List<AnchovyEntity> schoolMates = this.fish.level().getEntities(
-                EntityTypeTest.forClass(AnchovyEntity.class),
-                this.fish.getBoundingBox().inflate(3.5D, 2.0D, 3.5D),
-                mate -> mate != this.fish && mate.isAlive()
-        );
+        if (this.fish.tickCount % 2 == 0) {
+            List<AnchovyEntity> schoolMates = this.fish.level().getEntities(
+                    EntityTypeTest.forClass(AnchovyEntity.class),
+                    this.fish.getBoundingBox().inflate(2.5D, 1.5D, 2.5D),
+                    mate -> mate != this.fish && mate.isAlive()
+            );
 
-        if (!schoolMates.isEmpty()) {
-            Vec3 cohesion = Vec3.ZERO;
-            for (AnchovyEntity mate : schoolMates) {
-                cohesion = cohesion.add(mate.position());
+            if (!schoolMates.isEmpty()) {
+                Vec3 cohesion = Vec3.ZERO;
+                Vec3 separation = Vec3.ZERO;
+                int maxCheck = Math.min(schoolMates.size(), 6);
+                for (int i = 0; i < maxCheck; i++) {
+                    AnchovyEntity mate = schoolMates.get(i);
+                    cohesion = cohesion.add(mate.position());
+                    double distSq = this.fish.distanceToSqr(mate);
+                    if (distSq < 1.44D && distSq > 0.001D) {
+                        Vec3 away = this.fish.position().subtract(mate.position());
+                        separation = separation.add(away.normalize().scale(0.04D / Math.sqrt(distSq)));
+                    }
+                }
+
+                cohesion = cohesion.scale(1.0 / maxCheck);
+
+                Vec3 currentMotion = this.fish.getDeltaMovement();
+                Vec3 pull = cohesion.subtract(this.fish.position()).normalize().scale(0.015D);
+                Vec3 newMotion = currentMotion.add(pull).add(separation);
+                Vec3 forward = Vec3.directionFromRotation(this.fish.getXRot(), this.fish.getYRot()).scale(0.01D);
+
+                this.fish.setDeltaMovement(newMotion.add(forward));
             }
-            cohesion = cohesion.scale(1.0 / schoolMates.size());
-
-            Vec3 currentMotion = this.fish.getDeltaMovement();
-            Vec3 pull = cohesion.subtract(this.fish.position()).normalize().scale(0.03D);
-            this.fish.setDeltaMovement(currentMotion.add(pull));
         }
 
-        // Surface recovery: Push back down if they break the water line
         if (this.fish.isInWater() && !this.fish.isEyeInFluid(FluidTags.WATER)) {
             Vec3 deepPos = new Vec3(this.fish.getX(), this.fish.getY() - 2.0D, this.fish.getZ());
             this.fish.getNavigation().moveTo(deepPos.x, deepPos.y, deepPos.z, 1.4D);
