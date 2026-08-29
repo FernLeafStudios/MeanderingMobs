@@ -265,11 +265,11 @@ public class MeanderingMobsEntityRegistry {
             event.registerEntityRenderer(VAMPIRE.get(), VampireRenderer::new);
             event.registerEntityRenderer(PILOT_WHALE.get(), PilotWhaleRenderer::new);
             event.registerEntityRenderer(OKAPI.get(), OkapiRenderer::new);
+            event.registerEntityRenderer(OKAPI_CLONE.get(), OkapiCloneRenderer::new);
             event.registerEntityRenderer(WOLVERINE.get(), WolverineRenderer::new);
             event.registerEntityRenderer(ANCHOVY.get(), AnchovyRenderer::new);
             event.registerEntityRenderer(GUTTERTANK.get(),GuttertankRenderer::new);
             event.registerEntityRenderer(DEERFOX.get(),DeerfoxRenderer::new);
-            event.registerEntityRenderer(OKAPI_CLONE.get(), CloneOkapiRenderer::new);
         }
 
         @SubscribeEvent

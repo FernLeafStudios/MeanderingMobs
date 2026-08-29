@@ -24,40 +24,53 @@ public class RuffianWorkingLayer extends RenderLayer<RuffianEntity, RuffianModel
     public void render(@NotNull PoseStack poseStack, @NotNull MultiBufferSource buffer, int packedLight, RuffianEntity entity,
                        float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch) {
 
-        ItemStack heldItem = entity.getItemBySlot(EquipmentSlot.MAINHAND);
+        ItemStack mainItem = entity.getItemBySlot(EquipmentSlot.MAINHAND);
+        ItemStack offItem = entity.getItemBySlot(EquipmentSlot.OFFHAND);
 
-        if (heldItem.isEmpty() || entity.isNapping()) {
+        if ((mainItem.isEmpty() && offItem.isEmpty()) || entity.isNapping()) {
             return;
         }
 
+        RuffianModel<RuffianEntity> activeModel = this.getParentModel();
+
+        // Main Hand Rendering
+        if (!mainItem.isEmpty()) {
+            renderItemInHand(poseStack, buffer, packedLight, entity, activeModel, mainItem, "right_arm", ItemDisplayContext.THIRD_PERSON_RIGHT_HAND);
+        }
+
+        // Off Hand (Dye) Rendering
+        if (!offItem.isEmpty()) {
+            renderItemInHand(poseStack, buffer, packedLight, entity, activeModel, offItem, "left_arm", ItemDisplayContext.THIRD_PERSON_LEFT_HAND);
+        }
+    }
+
+    private void renderItemInHand(PoseStack poseStack, MultiBufferSource buffer, int packedLight, RuffianEntity entity,
+                                  RuffianModel<RuffianEntity> model, ItemStack stack, String armName, ItemDisplayContext context) {
         poseStack.pushPose();
 
-        // Translate and rotate based on right_arm
-        RuffianModel<RuffianEntity> activeModel = this.getParentModel();
-        if (activeModel.root().hasChild("bone")) {
-            ModelPart bone = activeModel.root().getChild("bone");
+        if (model.root().hasChild("bone")) {
+            ModelPart bone = model.root().getChild("bone");
             if (bone.hasChild("body")) {
                 ModelPart body = bone.getChild("body");
                 if (body.hasChild("torso")) {
                     ModelPart torso = body.getChild("torso");
-                    if (torso.hasChild("right_arm")) {
-                        ModelPart rightArm = torso.getChild("right_arm");
+                    if (torso.hasChild(armName)) {
+                        ModelPart arm = torso.getChild(armName);
                         bone.translateAndRotate(poseStack);
                         body.translateAndRotate(poseStack);
                         torso.translateAndRotate(poseStack);
-                        rightArm.translateAndRotate(poseStack);
+                        arm.translateAndRotate(poseStack);
                     }
                 }
             }
         }
 
-        // Offsets positioning relative to the end of the hand
         poseStack.translate(0.0D, 0.2D, -0.1D);
         poseStack.scale(0.5F, 0.5F, 0.5F);
 
         Minecraft.getInstance().getItemRenderer().renderStatic(
-                heldItem,
-                ItemDisplayContext.THIRD_PERSON_RIGHT_HAND,
+                stack,
+                context,
                 packedLight,
                 OverlayTexture.NO_OVERLAY,
                 poseStack,

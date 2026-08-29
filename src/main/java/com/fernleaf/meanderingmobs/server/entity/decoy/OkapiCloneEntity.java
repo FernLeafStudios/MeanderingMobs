@@ -9,17 +9,28 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.goal.AvoidEntityGoal;
+import net.minecraft.world.entity.ai.goal.PanicGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Optional;
+import java.util.UUID;
 
 public class OkapiCloneEntity extends PathfinderMob {
 
     private static final EntityDataAccessor<Integer> DATA_VARIANT_ID = SynchedEntityData.defineId(OkapiCloneEntity.class, EntityDataSerializers.INT);
-    private int lifeTicks = 300;
+    private static final EntityDataAccessor<Optional<UUID>> DATA_FAKE_RIDER_UUID = SynchedEntityData.defineId(OkapiCloneEntity.class, EntityDataSerializers.OPTIONAL_UUID);
+
+    private int lifeTicks = 200;
+    private int dashTicks = 0;
+    private Vec3 cloneDashVector = Vec3.ZERO;
 
     public OkapiCloneEntity(EntityType<? extends PathfinderMob> type, Level level) {
         super(type, level);
@@ -28,27 +39,55 @@ public class OkapiCloneEntity extends PathfinderMob {
     @Override
     protected void registerGoals() {
         super.registerGoals();
-        // Clones actively sprint away from players within 16 blocks at 1.8x speed
-        this.goalSelector.addGoal(1, new AvoidEntityGoal<>(this, Player.class, 16.0F, 1.8D, 2.0D));
-        this.goalSelector.addGoal(2, new WaterAvoidingRandomStrollGoal(this, 1.0D));
+        this.goalSelector.addGoal(1, new PanicGoal(this, 2.0D));
+        this.goalSelector.addGoal(2, new AvoidEntityGoal<>(this, Mob.class, 16.0F, 1.8D, 2.0D));
+        this.goalSelector.addGoal(3, new AvoidEntityGoal<>(this, Player.class, 16.0F, 1.8D, 2.0D));
+        this.goalSelector.addGoal(4, new WaterAvoidingRandomStrollGoal(this, 1.2D));
     }
 
     @Override
     protected void defineSynchedData(SynchedEntityData.@NotNull Builder builder) {
         super.defineSynchedData(builder);
         builder.define(DATA_VARIANT_ID, 0);
+        builder.define(DATA_FAKE_RIDER_UUID, Optional.empty());
     }
 
     public OkapiVariant getVariant() { return OkapiVariant.byId(this.entityData.get(DATA_VARIANT_ID)); }
     public void setVariant(OkapiVariant variant) { this.entityData.set(DATA_VARIANT_ID, variant.id); }
 
+    public Optional<UUID> getFakeRiderUUID() { return this.entityData.get(DATA_FAKE_RIDER_UUID); }
+    public void setFakeRiderUUID(UUID uuid) { this.entityData.set(DATA_FAKE_RIDER_UUID, Optional.ofNullable(uuid)); }
+
+    public void triggerCloneDash(Vec3 vector, int ticks) {
+        this.cloneDashVector = vector;
+        this.dashTicks = ticks;
+        this.setDeltaMovement(vector);
+        this.hasImpulse = true;
+    }
+
+    @Override
+    public void travel(@NotNull Vec3 travelVector) {
+        if (this.isAlive() && this.dashTicks > 0) {
+            this.setDeltaMovement(this.cloneDashVector);
+            this.move(MoverType.SELF, this.getDeltaMovement());
+            return;
+        }
+        super.travel(travelVector);
+    }
+
     @Override
     public void tick() {
         super.tick();
 
-        // Spawn subtle particles on client to hint that this okapi is fake
+        if (this.dashTicks > 0) {
+            this.dashTicks--;
+            if (this.dashTicks <= 0) {
+                this.cloneDashVector = Vec3.ZERO;
+            }
+        }
+
         if (this.level().isClientSide()) {
-            if (this.random.nextInt(5) == 0) { // Fires every ~5 ticks
+            if (this.random.nextInt(4) == 0) {
                 this.level().addParticle(
                         ParticleTypes.SMOKE,
                         this.getRandomX(0.6D),
@@ -59,6 +98,7 @@ public class OkapiCloneEntity extends PathfinderMob {
             }
         } else {
             if (--lifeTicks <= 0) {
+                this.level().broadcastEntityEvent(this, (byte) 60);
                 this.discard();
             }
         }
@@ -78,6 +118,7 @@ public class OkapiCloneEntity extends PathfinderMob {
         super.addAdditionalSaveData(tag);
         tag.putInt("Variant", getVariant().id);
         tag.putInt("LifeTicks", lifeTicks);
+        getFakeRiderUUID().ifPresent(uuid -> tag.putUUID("FakeRiderUUID", uuid));
     }
 
     @Override
@@ -85,5 +126,6 @@ public class OkapiCloneEntity extends PathfinderMob {
         super.readAdditionalSaveData(tag);
         if (tag.contains("Variant")) setVariant(OkapiVariant.byId(tag.getInt("Variant")));
         if (tag.contains("LifeTicks")) lifeTicks = tag.getInt("LifeTicks");
+        if (tag.hasUUID("FakeRiderUUID")) setFakeRiderUUID(tag.getUUID("FakeRiderUUID"));
     }
 }

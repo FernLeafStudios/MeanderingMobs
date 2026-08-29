@@ -1,12 +1,18 @@
-package com.fernleaf.meanderingmobs.server.entity.ai.util;
+package com.fernleaf.meanderingmobs.util;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TieredItem;
+import net.minecraft.world.item.component.DyedItemColor;
 import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -180,5 +186,127 @@ public class WorkstationRecipeUtil {
             }
         }
         return false;
+    }
+
+    /**
+     * Finds an item in a container suitable for any missing slot on an Armor Stand.
+     */
+    public static int findArmorForStand(Container container, ArmorStand stand) {
+        for (int i = 0; i < container.getContainerSize(); i++) {
+            ItemStack stack = container.getItem(i);
+            if (!stack.isEmpty()) {
+                EquipmentSlot slot = stand.getEquipmentSlotForItem(stack);
+                // Ensure it's a valid equipment piece and the stand's target slot is currently empty
+                if (slot.getType() == EquipmentSlot.Type.HUMANOID_ARMOR && stand.getItemBySlot(slot).isEmpty()) {
+                    return i;
+                }
+            }
+        }
+        return -1;
+    }
+
+    // --- DYE UTILS ---
+
+    /**
+     * Checks if an item can be dyed (Leather Armor, Wool, Carpet, Terracotta, Concrete Powder, Banners, Glass).
+     */
+    public static boolean isDyeable(ItemStack stack) {
+        if (stack.isEmpty()) return false;
+
+        if (stack.is(ItemTags.DYEABLE)) return true;
+
+        // Base undyed/white variants for block items
+        return stack.is(ItemTags.WOOL) ||
+                stack.is(ItemTags.WOOL_CARPETS) ||
+                stack.is(ItemTags.TERRACOTTA) ||
+                stack.is(ItemTags.BEDS) ||
+                stack.getItem().getDescriptionId().contains("concrete");
+    }
+
+    /**
+     * Checks whether an item is already dyed with the given dye item's color.
+     */
+    public static boolean isAlreadyDyedWith(Level level, ItemStack target, ItemStack dyeStack) {
+        if (target.isEmpty() || !(dyeStack.getItem() instanceof DyeItem dyeItem)) return false;
+
+        // Path A: Leather Armor & Dyeable Items with Color Components
+        if (target.is(ItemTags.DYEABLE)) {
+            int currentColor = DyedItemColor.getOrDefault(target, -1);
+            if (currentColor != -1) {
+                DyeColor targetDyeColor = dyeItem.getDyeColor();
+                int newDyeColor = targetDyeColor.getTextureDiffuseColor();
+                return currentColor == newDyeColor;
+            }
+            return false;
+        }
+
+        // Path B: Blocks/Items via Recipe Outcome comparison
+        ItemStack dyedResult = applyDye(level, target, dyeStack);
+        if (dyedResult.isEmpty()) return true;
+
+        return ItemStack.isSameItemSameComponents(target, dyedResult);
+    }
+
+    /**
+     * Finds the slot of a dyeable item inside a container that is NOT already dyed with any dye present in the container.
+     */
+    public static int findDyeableItemSlot(Level level, Container container) {
+        int dyeSlot = findDyeSlot(container);
+        if (dyeSlot == -1) return -1;
+
+        ItemStack dyeStack = container.getItem(dyeSlot);
+
+        for (int i = 0; i < container.getContainerSize(); i++) {
+            ItemStack stack = container.getItem(i);
+            if (isDyeable(stack) && !isAlreadyDyedWith(level, stack, dyeStack)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Legacy overload for containers without Level reference.
+     */
+    public static int findDyeableItemSlot(Container container) {
+        for (int i = 0; i < container.getContainerSize(); i++) {
+            ItemStack stack = container.getItem(i);
+            if (isDyeable(stack)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Finds any DyeItem inside a container.
+     */
+    public static int findDyeSlot(Container container) {
+        for (int i = 0; i < container.getContainerSize(); i++) {
+            ItemStack stack = container.getItem(i);
+            if (!stack.isEmpty() && stack.getItem() instanceof DyeItem) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Dynamically dyes leather gear or crafts colored blocks (Wool, Concrete, Banners, etc.).
+     */
+    public static ItemStack applyDye(Level level, ItemStack target, ItemStack dyeStack) {
+        if (target.isEmpty() || !(dyeStack.getItem() instanceof DyeItem dyeItem)) return ItemStack.EMPTY;
+
+        // Path A: Leather Armor & Dyeable Items (uses Data Component System)
+        if (target.is(ItemTags.DYEABLE)) {
+            ItemStack result = target.copy();
+            result.setCount(1);
+            return DyedItemColor.applyDyes(result, java.util.List.of(dyeItem));
+        }
+
+        // Path B: Blocks (Wool, Carpet, Terracotta, Concrete, Glass) via Vanilla Recipe Manager
+        CraftingInput input = CraftingInput.of(1, 2, java.util.List.of(target.copyWithCount(1), dyeStack.copyWithCount(1)));
+        Optional<RecipeHolder<CraftingRecipe>> recipe = level.getRecipeManager().getRecipeFor(RecipeType.CRAFTING, input, level);
+        return recipe.map(craftingRecipeRecipeHolder -> craftingRecipeRecipeHolder.value().assemble(input, level.registryAccess())).orElse(ItemStack.EMPTY);
     }
 }

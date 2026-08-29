@@ -17,6 +17,8 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -101,6 +103,45 @@ public class WhispEntity extends MeanderingMobsTameableEntity {
     public @NotNull InteractionResult mobInteract(@NotNull Player player, @NotNull InteractionHand hand) {
         ItemStack itemStack = player.getItemInHand(hand);
 
+        // --- WHISP DUPLICATION MECHANIC (Allay Style) ---
+        if (this.isTamed() && itemStack.is(Items.AMETHYST_BLOCK)) {
+            if (this.isDancingNearJukebox()) {
+                if (!this.level().isClientSide()) {
+                    // Consume 1 Amethyst Block
+                    if (!player.getAbilities().instabuild) {
+                        itemStack.shrink(1);
+                    }
+
+                    ServerLevel serverLevel = (ServerLevel) this.level();
+                    double spawnX = this.getX() + (this.random.nextDouble() - 0.5D) * 1.5D;
+                    double spawnY = this.getY() + 0.5D;
+                    double spawnZ = this.getZ() + (this.random.nextDouble() - 0.5D) * 1.5D;
+
+                    WhispEntity babyWhisp = (WhispEntity) this.getType().create(serverLevel);
+                    if (babyWhisp != null) {
+                        babyWhisp.moveTo(spawnX, spawnY, spawnZ, this.getYRot(), this.getXRot());
+                        babyWhisp.tame(player);
+                        babyWhisp.setVariant(this.getVariant());
+
+                        Vec3 pushVector = new Vec3(
+                                (this.random.nextDouble() - 0.5D) * 0.5D,
+                                0.2D,
+                                (this.random.nextDouble() - 0.5D) * 0.5D
+                        );
+                        babyWhisp.setDeltaMovement(pushVector);
+                        babyWhisp.hasImpulse = true;
+
+                        serverLevel.addFreshEntity(babyWhisp);
+
+                        // Effects & Chime Sound
+                        serverLevel.sendParticles(ParticleTypes.HEART, spawnX, spawnY + 0.5D, spawnZ, 7, 0.4, 0.4, 0.4, 0.0D);
+                        serverLevel.playSound(null, this.blockPosition(), SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.NEUTRAL, 1.5F, 1.0F);
+                    }
+                }
+                return InteractionResult.sidedSuccess(this.level().isClientSide());
+            }
+        }
+
         if (itemStack.is(Items.BRUSH)) {
             if (!level().isClientSide()) setCosplay((getCosplay() + 1) % WhispCosplay.values().length);
             return InteractionResult.sidedSuccess(level().isClientSide());
@@ -117,6 +158,21 @@ public class WhispEntity extends MeanderingMobsTameableEntity {
         }
 
         return super.mobInteract(player, hand);
+    }
+
+    public boolean isDancingNearJukebox() {
+        BlockPos currentPos = this.blockPosition();
+        int radius = 10;
+        for (BlockPos pos : BlockPos.betweenClosed(currentPos.offset(-radius, -4, -radius), currentPos.offset(radius, 4, radius))) {
+            BlockState state = this.level().getBlockState(pos);
+            if (state.getBlock() instanceof net.minecraft.world.level.block.JukeboxBlock && state.getValue(net.minecraft.world.level.block.JukeboxBlock.HAS_RECORD)) {
+                return true;
+            }
+            if (this.level().getBlockEntity(pos) instanceof com.fernleaf.meanderingmobs.server.block.entity.QueueboxBlockEntity queuebox && queuebox.isPlaying) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override public boolean isNoGravity() { return true; }

@@ -2,7 +2,6 @@ package com.fernleaf.meanderingmobs.client.model.guttertank;
 
 import com.fernleaf.meanderingmobs.MeanderingMobs;
 import com.fernleaf.meanderingmobs.client.animation.GuttertankAnimations;
-import com.fernleaf.meanderingmobs.server.block.GuttertankPattern;
 import com.fernleaf.meanderingmobs.server.entity.tameable.GuttertankEntity;
 import net.minecraft.client.model.HierarchicalModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;

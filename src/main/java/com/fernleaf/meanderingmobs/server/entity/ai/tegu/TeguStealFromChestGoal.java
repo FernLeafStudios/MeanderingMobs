@@ -1,5 +1,6 @@
 package com.fernleaf.meanderingmobs.server.entity.ai.tegu;
 
+import com.fernleaf.meanderingmobs.registry.MeanderingMobsTagRegistry;
 import com.fernleaf.meanderingmobs.server.entity.tameable.TeguEntity;
 import com.fernleaf.meanderingmobs.server.entity.ai.util.AbstractBlockInteractionGoal;
 import net.minecraft.core.BlockPos;
@@ -95,7 +96,7 @@ public class TeguStealFromChestGoal extends AbstractBlockInteractionGoal<TeguEnt
                                 );
                             }
 
-                            if (stolenStack.is(TeguEntity.TEGU_TAMEABLE)) {
+                        if (stolenStack.is(MeanderingMobsTagRegistry.Items.TEGU_TAMEABLE)) {
                                 if (this.entity.getRandom().nextInt(3) == 0) {
                                     Player nearestPlayer = this.entity.level().getNearestPlayer(this.entity, 16.0D);
                                     if (nearestPlayer != null) {

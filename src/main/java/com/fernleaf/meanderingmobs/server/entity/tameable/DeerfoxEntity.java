@@ -1,9 +1,10 @@
 package com.fernleaf.meanderingmobs.server.entity.tameable;
 
-import com.fernleaf.meanderingmobs.client.model.aukvulture.AukvultureVariant;
 import com.fernleaf.meanderingmobs.client.model.deerfox.DeerfoxVariant;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsBlockRegistry;
+import com.fernleaf.meanderingmobs.registry.MeanderingMobsTagRegistry;
 import com.fernleaf.meanderingmobs.server.data.VariantSpawnManager;
+import com.fernleaf.meanderingmobs.server.entity.ai.deerfox.DeerfoxAttractToTotemGoal;
 import com.fernleaf.meanderingmobs.server.entity.ai.deerfox.DeerfoxChargeGoal;
 import com.fernleaf.meanderingmobs.server.entity.ai.deerfox.DeerfoxHowlGoal;
 import com.fernleaf.meanderingmobs.server.entity.ai.deerfox.DeerfoxSkySprintGoal;
@@ -12,16 +13,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.tags.TagKey;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -42,17 +40,12 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 
-public class DeerfoxEntity extends MeanderingMobsTameableEntity {
-
-    public static final TagKey<EntityType<?>> DEERFOX_HATES = TagKey.create(
-            Registries.ENTITY_TYPE,
-            ResourceLocation.fromNamespaceAndPath("meanderingmobs", "deerfox_hates")
-    );
+public class DeerfoxEntity extends MeanderingMobsTameableEntity implements PlayerRideableJumping {
 
     private static final EntityDataAccessor<Boolean> IS_HOWLING =
             SynchedEntityData.defineId(DeerfoxEntity.class, EntityDataSerializers.BOOLEAN);
@@ -65,6 +58,7 @@ public class DeerfoxEntity extends MeanderingMobsTameableEntity {
             SynchedEntityData.defineId(DeerfoxEntity.class, EntityDataSerializers.OPTIONAL_BLOCK_POS);
 
     private boolean canDoubleJump = false;
+    private float playerJumpPendingScale = 0.0F;
 
     public DeerfoxEntity(EntityType<? extends MeanderingMobsTameableEntity> entityType, Level level) {
         super(entityType, level);
@@ -83,7 +77,8 @@ public class DeerfoxEntity extends MeanderingMobsTameableEntity {
         return Monster.createMonsterAttributes()
                 .add(Attributes.MAX_HEALTH, 16.0D)
                 .add(Attributes.MOVEMENT_SPEED, 0.3D)
-                .add(Attributes.ATTACK_DAMAGE, 4.0D);
+                .add(Attributes.ATTACK_DAMAGE, 4.0D)
+                .add(Attributes.STEP_HEIGHT, 2.0D);
     }
 
     @Override
@@ -93,10 +88,11 @@ public class DeerfoxEntity extends MeanderingMobsTameableEntity {
         this.goalSelector.addGoal(1, new DeerfoxChargeGoal(this));
         this.goalSelector.addGoal(2, new DeerfoxHowlGoal(this));
         this.goalSelector.addGoal(3, new DeerfoxSkySprintGoal(this));
+        this.goalSelector.addGoal(4, new DeerfoxAttractToTotemGoal(this));
 
         this.targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(
                 this, Mob.class, 10, true, false,
-                entity -> entity.getType().is(DEERFOX_HATES)
+                entity -> entity.getType().is(MeanderingMobsTagRegistry.EntityTypes.DEERFOX_HATES)
         ));
     }
 
@@ -104,8 +100,10 @@ public class DeerfoxEntity extends MeanderingMobsTameableEntity {
     public void tick() {
         super.tick();
 
+        // Safely reset airtime states on ground touch to avoid jump locks
         if (this.onGround()) {
             this.canDoubleJump = true;
+            this.setBounding(false);
         }
 
         if (!this.level().isClientSide()) {
@@ -113,7 +111,65 @@ public class DeerfoxEntity extends MeanderingMobsTameableEntity {
         }
     }
 
-    // --- STATE ACCESSORS ---
+    @Override
+    public boolean canJump() {
+        return this.isTame() && this.isVehicle();
+    }
+
+    @Override
+    public void handleStartJump(int jumpPower) {
+        if (jumpPower < 0) jumpPower = 0;
+        this.playerJumpPendingScale = jumpPower >= 90 ? 1.0F : 0.4F + 0.4F * (float) jumpPower / 90.0F;
+    }
+
+    @Override
+    public void handleStopJump() { }
+
+    @Override
+    public void onPlayerJump(int jumpPower) {
+        this.handleStartJump(jumpPower);
+    }
+
+    @Override
+    protected void tickRidden(@NotNull Player player, @NotNull Vec3 travelVector) {
+        super.tickRidden(player, travelVector);
+
+        if (!this.onGround() && !this.hasEffect(MobEffects.SLOW_FALLING)) {
+            this.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 20, 0, false, false, false));
+        }
+
+        if (this.playerJumpPendingScale > 0.0F) {
+            if (this.onGround()) {
+                double jumpStrength = 1.15D * (double) this.playerJumpPendingScale;
+                Vec3 currentVel = this.getDeltaMovement();
+                this.setDeltaMovement(currentVel.x, jumpStrength, currentVel.z);
+                this.hasImpulse = true;
+                this.canDoubleJump = true;
+            } else if (this.canDoubleJump) {
+                this.triggerDoubleJump();
+            }
+            this.playerJumpPendingScale = 0.0F;
+        }
+
+        if (!this.level().isClientSide() && player.isUsingItem() && player.getUseItem().is(Items.GOAT_HORN) && player.getTicksUsingItem() == 1) {
+            this.teleportToLodestone();
+        }
+    }
+
+    @Override
+    protected void removePassenger(@NotNull Entity passenger) {
+        super.removePassenger(passenger);
+        if (this.hasEffect(MobEffects.SLOW_FALLING)) {
+            this.removeEffect(MobEffects.SLOW_FALLING);
+        }
+    }
+
+    @Override
+    protected float getRiddenSpeed(@NotNull Player player) {
+        float speed = super.getRiddenSpeed(player);
+        return this.isSprinting() ? speed * 1.4F : speed;
+    }
+
     public boolean isHowling() { return this.entityData.get(IS_HOWLING); }
     public void setHowling(boolean howling) { this.entityData.set(IS_HOWLING, howling); }
 
@@ -132,7 +188,6 @@ public class DeerfoxEntity extends MeanderingMobsTameableEntity {
     public DeerfoxVariant getVariant() { return DeerfoxVariant.byId(this.getVariantId()); }
     public void setVariant(DeerfoxVariant variant) { this.setVariantId(variant.id); }
 
-    // --- NBT SAVE / LOAD ---
     @Override
     public void addAdditionalSaveData(@NotNull CompoundTag compound) {
         super.addAdditionalSaveData(compound);
@@ -147,7 +202,6 @@ public class DeerfoxEntity extends MeanderingMobsTameableEntity {
         }
     }
 
-    // --- COMBAT ---
     @Override
     public boolean doHurtTarget(@NotNull Entity target) {
         boolean hurt = super.doHurtTarget(target);
@@ -157,49 +211,49 @@ public class DeerfoxEntity extends MeanderingMobsTameableEntity {
         return hurt;
     }
 
-    // --- INTERACTION & TAMING ---
     @Override
     public @NotNull InteractionResult mobInteract(@NotNull Player player, @NotNull InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
 
-        // 1. TAMING LOGIC
-        if (stack.is(Items.GLOW_BERRIES) && !this.isTame()) {
-            if (this.level().isNight() && this.level().getMoonPhase() == 0) {
-                if (!this.level().isClientSide) {
-                    this.usePlayerItem(player, hand, stack);
-                    if (this.random.nextInt(3) == 0) {
-                        this.tame(player);
-                        this.level().broadcastEntityEvent(this, (byte) 7);
-                    } else {
-                        this.level().broadcastEntityEvent(this, (byte) 6);
-                    }
+        if (stack.is(MeanderingMobsTagRegistry.Items.DEERFOX_TAME_ITEMS) && !this.isTame()) {
+            if (!this.level().isClientSide) {
+                this.usePlayerItem(player, hand, stack);
+
+                if (this.random.nextInt(3) == 0) {
+                    this.tame(player);
+                    this.level().broadcastEntityEvent(this, (byte) 7);
+                } else {
+                    this.level().broadcastEntityEvent(this, (byte) 6);
                 }
-                return InteractionResult.sidedSuccess(this.level().isClientSide);
-            } else {
-                return InteractionResult.PASS;
             }
+            return InteractionResult.sidedSuccess(this.level().isClientSide);
         }
 
         if (this.isTame() && this.isOwner(player)) {
-            // 2. PERMANENT LODESTONE BINDING (Sneak + Right Click with Lodestone Compass)
-            if (player.isSecondaryUseActive() && stack.is(Items.COMPASS) && stack.has(DataComponents.LODESTONE_TRACKER)) {
-                var tracker = stack.get(DataComponents.LODESTONE_TRACKER);
-                if (tracker != null && tracker.target().isPresent()) {
-                    BlockPos targetPos = tracker.target().get().pos();
+            // Shift + Right Click allows state cycling (Follow / Sit / Wander)
+            if (player.isSecondaryUseActive()) {
+                if (stack.is(Items.COMPASS) && stack.has(DataComponents.LODESTONE_TRACKER)) {
+                    var tracker = stack.get(DataComponents.LODESTONE_TRACKER);
+                    if (tracker != null && tracker.target().isPresent()) {
+                        BlockPos targetPos = tracker.target().get().pos();
+                        if (!this.level().isClientSide()) {
+                            this.setLodestonePos(targetPos);
+                            ((ServerLevel) this.level()).sendParticles(
+                                    ParticleTypes.HAPPY_VILLAGER,
+                                    this.getX(), this.getY() + 1.0D, this.getZ(),
+                                    15, 0.5D, 0.5D, 0.5D, 0.05D
+                            );
+                        }
+                        return InteractionResult.sidedSuccess(this.level().isClientSide());
+                    }
+                } else {
                     if (!this.level().isClientSide()) {
-                        // Bind coordinates internally to Deerfox DataAccessor & NBT
-                        this.setLodestonePos(targetPos);
-                        ((ServerLevel) this.level()).sendParticles(
-                                ParticleTypes.HAPPY_VILLAGER,
-                                this.getX(), this.getY() + 1.0D, this.getZ(),
-                                15, 0.5D, 0.5D, 0.5D, 0.05D
-                        );
+                        this.cycleAiState(player, "deerfox");
                     }
                     return InteractionResult.sidedSuccess(this.level().isClientSide());
                 }
             }
 
-            // 3. MOUNTING LOGIC
             if (!player.isSecondaryUseActive() && !this.isVehicle()) {
                 if (!this.level().isClientSide) {
                     player.startRiding(this);
@@ -216,29 +270,13 @@ public class DeerfoxEntity extends MeanderingMobsTameableEntity {
         return super.isNoAi() || this.isVehicle();
     }
 
-    @Override
-    protected void tickRidden(@NotNull Player player, @NotNull Vec3 travelVector) {
-        super.tickRidden(player, travelVector);
-
-        // Triggers teleport when rider starts blowing the Goat Horn
-        if (!this.level().isClientSide() && player.isUsingItem() && player.getUseItem().is(Items.GOAT_HORN) && player.getTicksUsingItem() == 1) {
-            this.teleportToLodestone();
-        }
-    }
-
-    @Override
-    protected float getRiddenSpeed(@NotNull Player player) {
-        float speed = super.getRiddenSpeed(player);
-        return this.isSprinting() ? speed * 1.4F : speed;
-    }
-
-    // --- SPECIAL ABILITIES ---
     public void triggerDoubleJump() {
         if (!this.onGround() && this.canDoubleJump) {
             Vec3 currentVel = this.getDeltaMovement();
-            this.setDeltaMovement(currentVel.x, 0.65D, currentVel.z);
+            this.setDeltaMovement(currentVel.x, 0.85D, currentVel.z);
             this.canDoubleJump = false;
             this.hasImpulse = true;
+            this.setBounding(true);
         }
     }
 
@@ -265,10 +303,8 @@ public class DeerfoxEntity extends MeanderingMobsTameableEntity {
             try {
                 Vec3 targetVec = Vec3.atBottomCenterOf(destination);
 
-                // Particles at origin
                 serverLevel.sendParticles(ParticleTypes.REVERSE_PORTAL, this.getX(), this.getY() + 0.5D, this.getZ(), 30, 0.5D, 0.5D, 0.5D, 0.1D);
 
-                // 1. Teleport Pets
                 List<TamableAnimal> nearbyPets = serverLevel.getEntitiesOfClass(
                         TamableAnimal.class,
                         this.getBoundingBox().inflate(12.0D),
@@ -279,20 +315,14 @@ public class DeerfoxEntity extends MeanderingMobsTameableEntity {
                     pet.teleportTo(serverLevel, targetVec.x, targetVec.y, targetVec.z, java.util.Set.of(), pet.getYRot(), pet.getXRot());
                 }
 
-                // 2. Direct Teleport without Dismounting
                 Entity rider = this.getFirstPassenger();
-
-                // Move the Deerfox entity
                 this.teleportTo(serverLevel, targetVec.x, targetVec.y, targetVec.z, java.util.Set.of(), this.getYRot(), this.getXRot());
 
                 if (rider instanceof ServerPlayer player) {
-                    // Instantly sync server player position & forces chunk refresh on client
                     player.teleportTo(serverLevel, targetVec.x, targetVec.y, targetVec.z, java.util.Set.of(), player.getYRot(), player.getXRot());
-                    // Force network position resync
                     player.connection.teleport(targetVec.x, targetVec.y, targetVec.z, player.getYRot(), player.getXRot());
                 }
 
-                // Particles at destination
                 serverLevel.sendParticles(ParticleTypes.END_ROD, targetVec.x, targetVec.y + 0.5D, targetVec.z, 40, 0.8D, 0.8D, 0.8D, 0.05D);
 
             } finally {
@@ -302,7 +332,7 @@ public class DeerfoxEntity extends MeanderingMobsTameableEntity {
     }
 
     @Override
-    public @NotNull SpawnGroupData finalizeSpawn(@NotNull ServerLevelAccessor level, @NotNull DifficultyInstance difficulty, @NotNull MobSpawnType spawnType, @javax.annotation.Nullable SpawnGroupData spawnData) {
+    public @NotNull SpawnGroupData finalizeSpawn(@NotNull ServerLevelAccessor level, @NotNull DifficultyInstance difficulty, @NotNull MobSpawnType spawnType, @Nullable SpawnGroupData spawnData) {
         SpawnGroupData data = super.finalizeSpawn(level, difficulty, spawnType, spawnData);
         Holder<Biome> biome = level.getBiome(blockPosition());
         setVariant(DeerfoxVariant.byId(VariantSpawnManager.getVariantForSpawn(this, biome)));

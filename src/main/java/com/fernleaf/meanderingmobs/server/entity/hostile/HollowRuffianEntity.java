@@ -1,5 +1,6 @@
 package com.fernleaf.meanderingmobs.server.entity.hostile;
 
+import com.fernleaf.meanderingmobs.registry.MeanderingMobsTagRegistry;
 import com.fernleaf.meanderingmobs.server.entity.util.MeanderingMobsHostileEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -8,10 +9,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
@@ -99,13 +97,17 @@ public class HollowRuffianEntity extends MeanderingMobsHostileEntity implements 
         level.sendParticles(ParticleTypes.SCULK_SOUL,
                 this.getX(), this.getEyeY(), this.getZ(), 15, 0.3, 0.5, 0.3, 0.05);
 
-        level.getEntitiesOfClass(Monster.class, this.getBoundingBox().inflate(36.0D), mob -> mob != this && mob.isAlive())
-                .forEach(hostile -> {
-                    if (!(hostile instanceof Creeper) && targetPlayer.canBeSeenAsEnemy()) {
-                        hostile.setTarget(targetPlayer);
-                        hostile.getNavigation().moveTo(targetPlayer, 1.25D);
-                    }
-                });
+        // Alert all mobs within range tagged with #meanderingmobs:hollow_ruffian_backup
+        level.getEntitiesOfClass(Mob.class, this.getBoundingBox().inflate(36.0D), mob ->
+                mob != this
+                        && mob.isAlive()
+                        && mob.getType().is(MeanderingMobsTagRegistry.EntityTypes.HOLLOW_RUFFIAN_BACKUP)
+        ).forEach(backupMob -> {
+            if (!(backupMob instanceof Creeper) && targetPlayer.canBeSeenAsEnemy()) {
+                backupMob.setTarget(targetPlayer);
+                backupMob.getNavigation().moveTo(targetPlayer, 1.25D);
+            }
+        });
     }
 
     @Override

@@ -4,6 +4,7 @@ import com.fernleaf.meanderingmobs.registry.MeanderingMobsItemRegistry;
 import com.fernleaf.meanderingmobs.server.block.entity.QueueboxBlockEntity;
 import com.fernleaf.meanderingmobs.server.entity.ai.util.AbstractBlockInteractionGoal;
 import com.fernleaf.meanderingmobs.server.entity.tameable.WhispEntity;
+import com.fernleaf.meanderingmobs.util.OrbitMathUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
@@ -12,6 +13,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.JukeboxBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 
 public class WhispDanceJukeboxGoal extends AbstractBlockInteractionGoal<WhispEntity> {
 
@@ -73,57 +75,19 @@ public class WhispDanceJukeboxGoal extends AbstractBlockInteractionGoal<WhispEnt
             this.essenceTimer++;
             Level level = this.entity.level();
 
-            // --- DEERFOX ORBIT MATH ADAPTED FOR FLIGHT ---
-            this.entity.getNavigation().stop();
-
             // Advance orbit angle
             this.circleAngle += 0.08F;
 
-            // Target coordinates around Jukebox center
-            double centerX = this.targetPos.getX() + 0.5D;
-            double centerY = this.targetPos.getY() + 1.2D; // Float slightly above the jukebox
-            double centerZ = this.targetPos.getZ() + 0.5D;
+            Vec3 center = new Vec3(this.targetPos.getX() + 0.5D, this.targetPos.getY() + 1.2D, this.targetPos.getZ() + 0.5D);
 
-            float circleRadius = 2.2F;
-            double orbitX = centerX + Math.cos(this.circleAngle) * circleRadius;
-            double orbitZ = centerZ + Math.sin(this.circleAngle) * circleRadius;
-
-            // Perpendicular tangent vector
-            double tangentX = -Math.sin(this.circleAngle);
-            double tangentZ = Math.cos(this.circleAngle);
-
-            // Pull vector back toward ideal orbital circumference
-            double pullX = (orbitX - this.entity.getX()) * 0.25D;
-            double pullY = (centerY - this.entity.getY()) * 0.2D;
-            double pullZ = (orbitZ - this.entity.getZ()) * 0.25D;
-
-            double moveX = tangentX * 0.25D + pullX;
-            double moveZ = tangentZ * 0.25D + pullZ;
-
-            // Apply direct impulse movement for smooth flying momentum
-            this.entity.setDeltaMovement(moveX, pullY, moveZ);
-            this.entity.hasImpulse = true;
-
-            // Snappy flying rotation towards movement direction
-            if (Math.abs(moveX) > 0.001D || Math.abs(moveZ) > 0.001D) {
-                float targetYRot = (float) (Mth.atan2(moveZ, moveX) * (180.0D / Math.PI)) - 90.0F;
-                float interpolatedRot = Mth.rotLerp(0.2F, this.entity.getYRot(), targetYRot);
-                this.entity.setYRot(interpolatedRot);
-                this.entity.yBodyRot = interpolatedRot;
-            }
-
-            // Keep eyes locked on the Jukebox center
-            this.entity.getLookControl().setLookAt(centerX, centerY, centerZ, 45.0F, 45.0F);
+            OrbitMathUtil.applyOrbitMotion(
+                    this.entity, center, this.circleAngle,
+                    2.2D, 1.0F, 0.25D, 0.25D, 0.2F, center.y
+            );
 
             // --- PARTICLES & ESSENCE ---
-            if (this.danceTicks % 4 == 0) {
-                if (level instanceof ServerLevel serverLevel) {
-                    serverLevel.sendParticles(
-                            ParticleTypes.NOTE,
-                            this.entity.getX(), this.entity.getY() + 0.3D, this.entity.getZ(),
-                            1, 0.5D, 0.0D, 0.0D, 1.0D
-                    );
-                }
+            if (this.danceTicks % 4 == 0 && level instanceof ServerLevel serverLevel) {
+                serverLevel.sendParticles(ParticleTypes.NOTE, this.entity.getX(), this.entity.getY() + 0.3D, this.entity.getZ(), 1, 0.5D, 0.0D, 0.0D, 1.0D);
             }
 
             if (this.essenceTimer >= 600) {

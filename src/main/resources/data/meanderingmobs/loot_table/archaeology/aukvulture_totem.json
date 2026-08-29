@@ -48,6 +48,16 @@
           "type": "minecraft:item",
           "name": "minecraft:iron_nugget",
           "weight": 3
+        },
+        {
+          "type": "minecraft:item",
+          "name": "meanderingmobs:aukvulture_feather",
+          "weight": 2
+        },
+        {
+          "type": "minecraft:item",
+          "name": "meanderingmobs:aukvulture_mask",
+          "weight": 1
         }
       ]
     }

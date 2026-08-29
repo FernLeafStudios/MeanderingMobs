@@ -8,7 +8,6 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 
 public class MeanderingMobsTagRegistry {
@@ -22,19 +21,19 @@ public class MeanderingMobsTagRegistry {
                 ResourceLocation.fromNamespaceAndPath("meanderingmobs", "porcupine_tame")
         );
 
-        public static final TagKey<Item> OKAPI_TAME = TagKey.create(
-                Registries.ITEM,
-                ResourceLocation.fromNamespaceAndPath("meanderingmobs", "okapi_tame")
-        );
-
         public static final TagKey<Item> TEGU_TAMEABLE = TagKey.create(
                 Registries.ITEM,
-                ResourceLocation.fromNamespaceAndPath("meanderingmobs", "tegu_tame")
+                ResourceLocation.fromNamespaceAndPath(MeanderingMobs.MODID, "tegu_tame")
         );
 
         public static final TagKey<Item> ADOPTION_CERTIFICATE = TagKey.create(
                 Registries.ITEM,
                 ResourceLocation.fromNamespaceAndPath("meanderingmobs", "adoption_certificate")
+        );
+
+        public static final TagKey<Item> DEERFOX_TAME_ITEMS = TagKey.create(
+                Registries.ITEM,
+                ResourceLocation.fromNamespaceAndPath("meanderingmobs", "deerfox_tame")
         );
     }
 
@@ -81,12 +80,15 @@ public class MeanderingMobsTagRegistry {
                 Registries.ENTITY_TYPE,
                 ResourceLocation.fromNamespaceAndPath(MeanderingMobs.MODID, "dolphin_hates")
         );
-    }
 
-    public static class Biomes {
-        public static final TagKey<Biome> SPAWNS_COLD_PORCUPINES =
-                TagKey.create(Registries.BIOME, ResourceLocation.fromNamespaceAndPath(MeanderingMobs.MODID, "spawns_cold_porcupines"));
-        public static final TagKey<Biome> SPAWNS_WARM_PORCUPINES =
-                TagKey.create(Registries.BIOME, ResourceLocation.fromNamespaceAndPath(MeanderingMobs.MODID, "spawns_warm_porcupines"));
+        public static final TagKey<EntityType<?>> DEERFOX_HATES = TagKey.create(
+                Registries.ENTITY_TYPE,
+                ResourceLocation.fromNamespaceAndPath(MeanderingMobs.MODID, "deerfox_hates")
+        );
+
+        public static final TagKey<EntityType<?>> HOLLOW_RUFFIAN_BACKUP = TagKey.create(
+                Registries.ENTITY_TYPE,
+                ResourceLocation.fromNamespaceAndPath("meanderingmobs", "hollow_ruffian_backup")
+        );
     }
 }

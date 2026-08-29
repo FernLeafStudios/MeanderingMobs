@@ -43,6 +43,21 @@ public class MeanderingMobsCreativeTabRegistry {
                         output.accept(MeanderingMobsBlockRegistry.CHANNEL_CRYSTAL_CLUSTER_ITEM.get());
                         output.accept(MeanderingMobsBlockRegistry.CHANNEL_CRYSTAL_CHAIN_ITEM.get());
 
+                        // Building Materials
+                        output.accept(MeanderingMobsBlockRegistry.KOKESHI_LOG_ITEM.get());
+                        output.accept(MeanderingMobsBlockRegistry.KOKESHI_PLANKS_ITEM.get());
+                        output.accept(MeanderingMobsBlockRegistry.STRIPPED_KOKESHI_LOG_ITEM.get());
+                        output.accept(MeanderingMobsBlockRegistry.KOKESHI_WOOD_ITEM.get());
+                        output.accept(MeanderingMobsBlockRegistry.STRIPPED_KOKESHI_WOOD_ITEM.get());
+                        output.accept(MeanderingMobsBlockRegistry.KOKESHI_STAIRS_ITEM.get());
+                        output.accept(MeanderingMobsBlockRegistry.KOKESHI_SLAB_ITEM.get());
+                        output.accept(MeanderingMobsBlockRegistry.KOKESHI_FENCE_ITEM.get());
+                        output.accept(MeanderingMobsBlockRegistry.KOKESHI_FENCE_GATE_ITEM.get());
+                        output.accept(MeanderingMobsBlockRegistry.KOKESHI_DOOR_ITEM.get());
+                        output.accept(MeanderingMobsBlockRegistry.KOKESHI_TRAPDOOR_ITEM.get());
+                        output.accept(MeanderingMobsBlockRegistry.KOKESHI_BUTTON_ITEM.get());
+                        output.accept(MeanderingMobsBlockRegistry.KOKESHI_PRESSURE_PLATE_ITEM.get());
+
                         // Special Items
                         output.accept(MeanderingMobsItemRegistry.ADOPTION_CERTIFICATE.get());
                         output.accept(MeanderingMobsBlockRegistry.CARVED_STRIPPED_SPRUCE_LOG_ITEM.get());

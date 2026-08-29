@@ -1,12 +1,9 @@
 {
   "replace": false,
   "values": [
-    "minecraft:tropical_fish",
     "minecraft:cod",
     "minecraft:salmon",
-    "minecraft:pufferfish",
     "minecraft:drowned",
-    "meanderingmobs:anchovy",
-    "meanderingmobs:parrotfish"
+    "meanderingmobs:anchovy"
   ]
 }

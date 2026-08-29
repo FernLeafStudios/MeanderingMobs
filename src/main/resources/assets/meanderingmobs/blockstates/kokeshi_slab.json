@@ -1,0 +1,15 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "meanderingmobs:block/kokeshi_slab"
+    },
+    "type=top": {
+      "model": "meanderingmobs:block/kokeshi_slab",
+      "x": 180,
+      "uvlock": true
+    },
+    "type=double": {
+      "model": "meanderingmobs:block/kokeshi_planks"
+    }
+  }
+}

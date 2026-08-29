@@ -1,0 +1,21 @@
+{
+  "replace": false,
+  "values": [
+    "#minecraft:skeletons",
+    "#minecraft:raiders",
+    "minecraft:zombie",
+    "minecraft:husk",
+    "minecraft:drowned",
+    "minecraft:slime",
+    "minecraft:creeper",
+    "minecraft:spider",
+    {
+      "id": "alexsmobs:murmur",
+      "required": false
+    },
+    {
+      "id": "alexsmobs:guster",
+      "required": false
+    }
+  ]
+}

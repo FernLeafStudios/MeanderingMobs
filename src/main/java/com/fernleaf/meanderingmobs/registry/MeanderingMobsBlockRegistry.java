@@ -5,9 +5,10 @@ import com.fernleaf.meanderingmobs.server.block.*;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.properties.BlockSetType;
+import net.minecraft.world.level.block.state.properties.WoodType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -95,6 +96,117 @@ public class MeanderingMobsBlockRegistry {
                     .strength(2.0F)
                     .sound(SoundType.WOOD)
             )
+    );
+
+    public static final DeferredHolder<Block, RotatedPillarBlock> KOKESHI_LOG = BLOCKS.register("kokeshi_log",
+            () -> new RotatedPillarBlock(BlockBehaviour.Properties.of()
+                    .strength(2.0F)
+                    .sound(SoundType.WOOD)
+            )
+    );
+    public static final DeferredHolder<Item, BlockItem> KOKESHI_LOG_ITEM = ITEMS.register("kokeshi_log",
+            () -> new BlockItem(KOKESHI_LOG.get(), new Item.Properties())
+    );
+
+    public static final DeferredHolder<Block, RotatedPillarBlock> STRIPPED_KOKESHI_LOG = BLOCKS.register("stripped_kokeshi_log",
+            () -> new RotatedPillarBlock(BlockBehaviour.Properties.of()
+                    .strength(2.0F)
+                    .sound(SoundType.WOOD)
+            )
+    );
+    public static final DeferredHolder<Item, BlockItem> STRIPPED_KOKESHI_LOG_ITEM = ITEMS.register("stripped_kokeshi_log",
+            () -> new BlockItem(STRIPPED_KOKESHI_LOG.get(), new Item.Properties())
+    );
+
+    public static final DeferredHolder<Block, RotatedPillarBlock> KOKESHI_WOOD = BLOCKS.register("kokeshi_wood",
+            () -> new RotatedPillarBlock(BlockBehaviour.Properties.of()
+                    .strength(2.0F)
+                    .sound(SoundType.WOOD)
+            )
+    );
+    public static final DeferredHolder<Item, BlockItem> KOKESHI_WOOD_ITEM = ITEMS.register("kokeshi_wood",
+            () -> new BlockItem(KOKESHI_WOOD.get(), new Item.Properties())
+    );
+
+    public static final DeferredHolder<Block, RotatedPillarBlock> STRIPPED_KOKESHI_WOOD = BLOCKS.register("stripped_kokeshi_wood",
+            () -> new RotatedPillarBlock(BlockBehaviour.Properties.of()
+                    .strength(2.0F)
+                    .sound(SoundType.WOOD)
+            )
+    );
+    public static final DeferredHolder<Item, BlockItem> STRIPPED_KOKESHI_WOOD_ITEM = ITEMS.register("stripped_kokeshi_wood",
+            () -> new BlockItem(STRIPPED_KOKESHI_WOOD.get(), new Item.Properties())
+    );
+
+    // 2. Base Planks
+    public static final DeferredHolder<Block, Block> KOKESHI_PLANKS = BLOCKS.register("kokeshi_planks",
+            () -> new Block(BlockBehaviour.Properties.of()
+                    .strength(2.0F, 3.0F)
+                    .sound(SoundType.WOOD)
+            )
+    );
+    public static final DeferredHolder<Item, BlockItem> KOKESHI_PLANKS_ITEM = ITEMS.register("kokeshi_planks",
+            () -> new BlockItem(KOKESHI_PLANKS.get(), new Item.Properties())
+    );
+
+    // 3. Stairs & Slabs
+    public static final DeferredHolder<Block, StairBlock> KOKESHI_STAIRS = BLOCKS.register("kokeshi_stairs",
+            () -> new StairBlock(KOKESHI_PLANKS.get().defaultBlockState(), BlockBehaviour.Properties.ofFullCopy(KOKESHI_PLANKS.get()))
+    );
+    public static final DeferredHolder<Item, BlockItem> KOKESHI_STAIRS_ITEM = ITEMS.register("kokeshi_stairs",
+            () -> new BlockItem(KOKESHI_STAIRS.get(), new Item.Properties())
+    );
+
+    public static final DeferredHolder<Block, SlabBlock> KOKESHI_SLAB = BLOCKS.register("kokeshi_slab",
+            () -> new SlabBlock(BlockBehaviour.Properties.ofFullCopy(KOKESHI_PLANKS.get()))
+    );
+    public static final DeferredHolder<Item, BlockItem> KOKESHI_SLAB_ITEM = ITEMS.register("kokeshi_slab",
+            () -> new BlockItem(KOKESHI_SLAB.get(), new Item.Properties())
+    );
+
+    // 4. Fences & Fence Gates
+    public static final DeferredHolder<Block, FenceBlock> KOKESHI_FENCE = BLOCKS.register("kokeshi_fence",
+            () -> new FenceBlock(BlockBehaviour.Properties.ofFullCopy(KOKESHI_PLANKS.get()))
+    );
+    public static final DeferredHolder<Item, BlockItem> KOKESHI_FENCE_ITEM = ITEMS.register("kokeshi_fence",
+            () -> new BlockItem(KOKESHI_FENCE.get(), new Item.Properties())
+    );
+
+    public static final DeferredHolder<Block, FenceGateBlock> KOKESHI_FENCE_GATE = BLOCKS.register("kokeshi_fence_gate",
+            () -> new FenceGateBlock(WoodType.CHERRY, BlockBehaviour.Properties.ofFullCopy(KOKESHI_PLANKS.get()))
+    );
+    public static final DeferredHolder<Item, BlockItem> KOKESHI_FENCE_GATE_ITEM = ITEMS.register("kokeshi_fence_gate",
+            () -> new BlockItem(KOKESHI_FENCE_GATE.get(), new Item.Properties())
+    );
+
+    // 5. Doors & Trapdoors
+    public static final DeferredHolder<Block, DoorBlock> KOKESHI_DOOR = BLOCKS.register("kokeshi_door",
+            () -> new DoorBlock(BlockSetType.CHERRY, BlockBehaviour.Properties.ofFullCopy(KOKESHI_PLANKS.get()).noOcclusion())
+    );
+    public static final DeferredHolder<Item, BlockItem> KOKESHI_DOOR_ITEM = ITEMS.register("kokeshi_door",
+            () -> new BlockItem(KOKESHI_DOOR.get(), new Item.Properties())
+    );
+
+    public static final DeferredHolder<Block, TrapDoorBlock> KOKESHI_TRAPDOOR = BLOCKS.register("kokeshi_trapdoor",
+            () -> new TrapDoorBlock(BlockSetType.CHERRY, BlockBehaviour.Properties.ofFullCopy(KOKESHI_PLANKS.get()).noOcclusion())
+    );
+    public static final DeferredHolder<Item, BlockItem> KOKESHI_TRAPDOOR_ITEM = ITEMS.register("kokeshi_trapdoor",
+            () -> new BlockItem(KOKESHI_TRAPDOOR.get(), new Item.Properties())
+    );
+
+    // 6. Buttons & Pressure Plates
+    public static final DeferredHolder<Block, ButtonBlock> KOKESHI_BUTTON = BLOCKS.register("kokeshi_button",
+            () -> new ButtonBlock(BlockSetType.CHERRY, 30, BlockBehaviour.Properties.ofFullCopy(KOKESHI_PLANKS.get()).noCollission())
+    );
+    public static final DeferredHolder<Item, BlockItem> KOKESHI_BUTTON_ITEM = ITEMS.register("kokeshi_button",
+            () -> new BlockItem(KOKESHI_BUTTON.get(), new Item.Properties())
+    );
+
+    public static final DeferredHolder<Block, PressurePlateBlock> KOKESHI_PRESSURE_PLATE = BLOCKS.register("kokeshi_pressure_plate",
+            () -> new PressurePlateBlock(BlockSetType.CHERRY, BlockBehaviour.Properties.ofFullCopy(KOKESHI_PLANKS.get()).noCollission())
+    );
+    public static final DeferredHolder<Item, BlockItem> KOKESHI_PRESSURE_PLATE_ITEM = ITEMS.register("kokeshi_pressure_plate",
+            () -> new BlockItem(KOKESHI_PRESSURE_PLATE.get(), new Item.Properties())
     );
 
     public static final DeferredHolder<Item, BlockItem> QUEUEBOX_ITEM = ITEMS.register("queuebox_block",

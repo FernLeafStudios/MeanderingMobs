@@ -1,7 +1,8 @@
-package com.fernleaf.meanderingmobs.server.block;
+package com.fernleaf.meanderingmobs.server.block.pattern;
 
-import com.fernleaf.meanderingmobs.server.entity.tameable.GuttertankEntity;
+import com.fernleaf.meanderingmobs.server.entity.tameable.RuffianEntity;
 import net.minecraft.core.BlockPos;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
@@ -16,26 +17,25 @@ import net.minecraft.world.level.block.state.predicate.BlockStatePredicate;
 
 import javax.annotation.Nullable;
 
-public class GuttertankPattern {
+public class RuffianPattern {
 
     @Nullable
-    private static BlockPattern guttertankPattern;
+    private static BlockPattern ruffianPattern;
 
     public static BlockPattern getOrCreatePattern() {
-        if (guttertankPattern == null) {
-            guttertankPattern = BlockPatternBuilder.start()
-                    .aisle("R^R", "RRR", "INI")
+        if (ruffianPattern == null) {
+            ruffianPattern = BlockPatternBuilder.start()
+                    .aisle("W", "^", "P")
+                    .where('W', BlockInWorld.hasState(state -> state.is(BlockTags.WOOL)))
                     .where('^', BlockInWorld.hasState(BlockStatePredicate.forBlock(Blocks.CARVED_PUMPKIN)
                             .or(BlockStatePredicate.forBlock(Blocks.JACK_O_LANTERN))))
-                    .where('R', BlockInWorld.hasState(BlockStatePredicate.forBlock(Blocks.REDSTONE_BLOCK)))
-                    .where('N', BlockInWorld.hasState(BlockStatePredicate.forBlock(Blocks.NETHERITE_BLOCK)))
-                    .where('I', BlockInWorld.hasState(BlockStatePredicate.forBlock(Blocks.IRON_BLOCK)))
+                    .where('P', BlockInWorld.hasState(state -> state.is(BlockTags.PLANKS)))
                     .build();
         }
-        return guttertankPattern;
+        return ruffianPattern;
     }
 
-    public static void trySpawnGuttertank(Level level, BlockPos pos, EntityType<GuttertankEntity> entityType, @Nullable Player builder) {
+    public static void trySpawnRuffian(Level level, BlockPos pos, EntityType<RuffianEntity> entityType, @Nullable Player builder) {
         if (!(level instanceof ServerLevel serverLevel)) return;
 
         BlockPattern pattern = getOrCreatePattern();
@@ -59,14 +59,13 @@ public class GuttertankPattern {
                 }
             }
 
-            BlockPos spawnPos = match.getBlock(1, 2, 0).getPos();
-            GuttertankEntity entity = entityType.create(level);
+            BlockPos spawnPos = match.getBlock(0, 2, 0).getPos();
+            RuffianEntity entity = entityType.create(level);
 
             if (entity != null) {
                 entity.moveTo(spawnPos.getX() + 0.5D, spawnPos.getY() + 0.05D, spawnPos.getZ() + 0.5D, 0.0F, 0.0F);
                 entity.finalizeSpawn(serverLevel, serverLevel.getCurrentDifficultyAt(spawnPos), MobSpawnType.TRIGGERED, null);
 
-                // Automatically tame and set owner if placed by a player
                 if (builder != null) {
                     entity.tame(builder);
                 }

@@ -1,23 +1,21 @@
-package com.fernleaf.meanderingmobs.server.entity.ai.util;
+package com.fernleaf.meanderingmobs.util;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+
 public class BlockPosUtil {
 
     /**
-     * Scans surrounding blocks for the first block matching a given TagKey.
-     *
-     * @param level    The level context
-     * @param origin   Center search position
-     * @param tag      The TagKey to search for
-     * @param radiusXZ Horizontal search radius
-     * @param radiusY  Vertical search radius
-     * @return Immutable BlockPos of the found block, or null if not found
+     * Finds the nearest block matching a TagKey within radius.
      */
     public static BlockPos findBlockInRadius(Level level, BlockPos origin, TagKey<Block> tag, int radiusXZ, int radiusY) {
+        List<BlockPos> found = new ArrayList<>();
         BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos();
 
         for (int x = -radiusXZ; x <= radiusXZ; x++) {
@@ -25,25 +23,21 @@ public class BlockPosUtil {
                 for (int z = -radiusXZ; z <= radiusXZ; z++) {
                     mutable.set(origin.getX() + x, origin.getY() + y, origin.getZ() + z);
                     if (level.getBlockState(mutable).is(tag)) {
-                        return mutable.immutable();
+                        found.add(mutable.immutable());
                     }
                 }
             }
         }
-        return null;
+
+        found.sort(Comparator.comparingDouble(origin::distSqr));
+        return found.isEmpty() ? null : found.getFirst();
     }
 
     /**
-     * Scans surrounding blocks for the first block matching a direct Block instance.
-     *
-     * @param level       The level context
-     * @param origin      Center search position
-     * @param targetBlock The specific Block to search for
-     * @param radiusXZ    Horizontal search radius
-     * @param radiusY     Vertical search radius
-     * @return Immutable BlockPos of the found block, or null if not found
+     * Finds the nearest block matching a specific Block instance within radius.
      */
     public static BlockPos findBlockInRadius(Level level, BlockPos origin, Block targetBlock, int radiusXZ, int radiusY) {
+        List<BlockPos> found = new ArrayList<>();
         BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos();
 
         for (int x = -radiusXZ; x <= radiusXZ; x++) {
@@ -51,11 +45,13 @@ public class BlockPosUtil {
                 for (int z = -radiusXZ; z <= radiusXZ; z++) {
                     mutable.set(origin.getX() + x, origin.getY() + y, origin.getZ() + z);
                     if (level.getBlockState(mutable).is(targetBlock)) {
-                        return mutable.immutable();
+                        found.add(mutable.immutable());
                     }
                 }
             }
         }
-        return null;
+
+        found.sort(Comparator.comparingDouble(origin::distSqr));
+        return found.isEmpty() ? null : found.getFirst();
     }
 }

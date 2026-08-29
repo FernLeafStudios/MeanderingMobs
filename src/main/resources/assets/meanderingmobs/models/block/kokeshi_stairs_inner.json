@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/inner_stairs",
+  "textures": {
+    "bottom": "meanderingmobs:block/kokeshi_planks",
+    "top": "meanderingmobs:block/kokeshi_planks",
+    "side": "meanderingmobs:block/kokeshi_planks"
+  }
+}

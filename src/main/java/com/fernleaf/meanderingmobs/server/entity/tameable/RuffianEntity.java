@@ -3,7 +3,7 @@ package com.fernleaf.meanderingmobs.server.entity.tameable;
 import com.fernleaf.fernframe.umweltlite.goals.engine.PersonalityEngine;
 import com.fernleaf.meanderingmobs.client.model.ruffian.RuffianVariant;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsTagRegistry;
-import com.fernleaf.meanderingmobs.server.entity.ai.util.BlockPosUtil;
+import com.fernleaf.meanderingmobs.util.BlockPosUtil;
 import com.fernleaf.meanderingmobs.server.entity.ai.ruffian.*;
 import com.fernleaf.meanderingmobs.server.entity.ai.ruffian.brain.RuffianActivities;
 import com.fernleaf.meanderingmobs.server.entity.ai.ruffian.brain.RuffianMemoryModuleTypes;
@@ -123,11 +123,15 @@ public class RuffianEntity extends MeanderingMobsTameableEntity {
                 new MoveToTargetSink(),
                 new RuffianStateBehavior()
         ));
+
         brain.addActivity(RuffianActivities.CHORES.get(), 5, ImmutableList.of(
-                new RuffianSmeltBehavior(),
                 new RuffianRepairBehavior(),
-                new RuffianBrewBehavior()
+                new RuffianArmorStandBehavior(),
+                new RuffianDyeBehavior(),
+                new RuffianBrewBehavior(),
+                new RuffianSmeltBehavior()
         ));
+
         brain.addActivity(Activity.IDLE, 10, ImmutableList.of(
                 new RuffianCaringBehavior(),
                 new RuffianIdleBehavior(),
