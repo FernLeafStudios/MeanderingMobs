@@ -1,6 +1,8 @@
 {
+  "comment.creative_tab": "Creative Mode Tabs",
   "itemGroup.meanderingmobs": "Meandering Mobs",
 
+  "comment.whisp": "Whisp",
   "entity.meanderingmobs.whisp": "Whisp",
   "item.meanderingmobs.whisp_spawn_egg": "Whisp Spawn Egg",
   "message.meanderingmobs.whisp.tag_start": "The Whisp wants to play tag! Stay close!",
@@ -11,7 +13,10 @@
   "message.whisp.sit": "Whisp is now staying",
   "message.whisp.follow": "Whisp is now following",
   "effect.meanderingmobs.whimsical": "Whimsical",
+  "block.meanderingmobs.queuebox_block": "Queuebox",
+  "item.meanderingmobs.queuebox_block": "Queuebox",
 
+  "comment.aukvulture": "Aukvulture",
   "entity.meanderingmobs.aukvulture": "Aukvulture",
   "item.meanderingmobs.aukvulture_spawn_egg": "Aukvulture Spawn Egg",
   "item.meanderingmobs.aukvulture_feather": "Aukvulture Feather",
@@ -20,20 +25,24 @@
   "message.aukvulture.sit": "Aukvulture is now staying",
   "message.aukvulture.follow": "Aukvulture is now following",
 
+  "comment.parrotfish": "Bumphead Parrotfish",
   "entity.meanderingmobs.parrotfish": "Bumphead Parrotfish",
   "item.meanderingmobs.parrotfish_spawn_egg": "Bumphead Parrotfish Spawn Egg",
   "item.meanderingmobs.raw_parrotfish": "Raw Parrotfish",
   "item.meanderingmobs.cooked_parrotfish": "Cooked Parrotfish",
 
+  "comment.soulflare": "Soulflare & Soul Items",
   "entity.meanderingmobs.soulflare": "Soulflare",
   "item.meanderingmobs.soulflare_spawn_egg": "Soulflare Spawn Egg",
   "item.meanderingmobs.soul_orb": "Soul Orb",
   "item.meanderingmobs.soul_orb_active": "Active Soul Orb",
   "item.meanderingmobs.soul_rod": "Soul Rod",
 
+  "comment.soul_hound": "Soul Hound",
   "entity.meanderingmobs.soul_hound": "Soul Hound",
   "item.meanderingmobs.soul_hound_spawn_egg": "Soul Hound Spawn Egg",
 
+  "comment.rally_crystal": "Rally & Channel Crystal",
   "entity.meanderingmobs.rally_crystal": "Rally Crystal",
   "message.meanderingmobs.rally_crystal.emerge": "The air grows cold as souls rally...",
   "item.meanderingmobs.channel_crystal_lamp": "Channel Crystal Lamp",
@@ -46,6 +55,7 @@
   "block.meanderingmobs.channel_crystal_chain": "Channel Crystal Chain",
   "block.meanderingmobs.channel_crystal_cluster": "Channel Crystal Cluster",
 
+  "comment.tegu": "Tegu",
   "entity.meanderingmobs.tegu": "Tegu",
   "item.meanderingmobs.tegu_spawn_egg": "Tegu Spawn Egg",
   "item.meanderingmobs.tegu_scale": "Tegu Scale",
@@ -55,6 +65,7 @@
   "message.tegu.sit": "Tegu is now sitting",
   "message.tegu.follow": "Tegu is now following",
 
+  "comment.porcupine": "Porcupine",
   "entity.meanderingmobs.porcupine": "Porcupine",
   "item.meanderingmobs.porcupine_spawn_egg": "Porcupine Spawn Egg",
   "entity.meanderingmobs.quill_arrow": "Porcupine Quill Arrow",
@@ -64,6 +75,7 @@
   "message.porcupine.sit": "Porcupine is now sitting",
   "message.porcupine.follow": "Porcupine is now following",
 
+  "comment.ruffian": "Ruffian & Kokeshi Set",
   "entity.meanderingmobs.ruffian": "Ruffian",
   "item.meanderingmobs.adoption_certificate": "Adoption Certificate",
   "message.meanderingmobs.ruffian.adopted": "You have officially adopted this little ruffian!",
@@ -98,38 +110,64 @@
   "block.meanderingmobs.kokeshi_pressure_plate": "Kokeshi Pressure Plate",
   "item.meanderingmobs.kokeshi_pressure_plate": "Kokeshi Pressure Plate",
 
+  "comment.hollow_ruffian": "Hollow Ruffian",
   "entity.meanderingmobs.hollow_ruffian": "Hollow Ruffian",
 
+  "comment.okapi": "Okapi",
   "entity.meanderingmobs.okapi": "Okapi",
   "item.meanderingmobs.okapi_spawn_egg": "Okapi Spawn Egg",
   "message.okapi.wander": "Okapi is now wandering",
   "message.okapi.sit": "Okapi is now staying",
   "message.okapi.follow": "Okapi is now following",
 
+  "comment.wolverine": "Wolverine",
   "entity.meanderingmobs.wolverine": "Wolverine",
   "item.meanderingmobs.wolverine_spawn_egg": "Wolverine Spawn Egg",
+  "item.meanderingmobs.claw_glove": "Claw Glove",
+  "attribute.meanderingmobs.dual_wield_speed": "Dual Wield Speed",
   "item.meanderingmobs.wolverine_fur": "Wolverine Fur",
   "message.wolverine.wander": "Wolverine is now wandering",
   "message.wolverine.sit": "Wolverine is now staying",
   "message.wolverine.follow": "Wolverine is now following",
 
+  "comment.anchovy": "Anchovy",
   "entity.meanderingmobs.anchovy": "Anchovy",
   "item.meanderingmobs.raw_anchovy": "Raw Anchovy",
   "item.meanderingmobs.anchovy_can": "Anchovy Can",
 
+  "comment.deerfox": "Deerfox & Aurora",
   "entity.meanderingmobs.deerfox": "Deerfox",
   "message.deerfox.wander": "Deerfox is now wandering",
   "message.deerfox.sit": "Deerfox is now staying",
   "message.deerfox.follow": "Deerfox is now following",
+  "block.meanderingmobs.aurora_block": "Aurora Block",
   "enchantment.meanderingmobs.aurora_walker": "Aurora Walker",
   "enchantment.meanderingmobs.aurora_walker.desc": "Creates a temporary bridge of aurora blocks when sprinting on a mount.",
 
+  "comment.guttertank": "Guttertank",
+  "entity.meanderingmobs.guttertank": "Guttertank",
+  "item.meanderingmobs.redstone_plate": "Redstone Plate",
+  "item.meanderingmobs.knuckleblaster": "Knuckleblaster",
+  "item.meanderingmobs.juggernaut_helmet": "Juggernaut Helmet",
+  "item.meanderingmobs.juggernaut_chestplate": "Juggernaut Chestplate",
+  "item.meanderingmobs.juggernaut_leggings": "Juggernaut Leggings",
+  "item.meanderingmobs.juggernaut_boots": "Juggernaut Boots",
+
+
+  "comment.carved_logs": "Decorative Wood Blocks",
   "block.meanderingmobs.carved_stripped_spruce_log": "Carved Spruce Stripped Log",
 
+  "comment.music_discs": "Music Discs",
+  "item.meanderingmobs.music_disc_digital_dusts": "Music Disc",
+  "item.meanderingmobs.music_disc_digital_dusts.desc": "FermineFabulous - Digital Dusts",
+  "jukebox_song.meanderingmobs.digital_dusts": "FermineFabulous - Digital Dusts",
+
+  "comment.dolphin": "Dolphin Commands",
   "message.dolphin.wander": "Dolphin is now wandering",
   "message.dolphin.sit": "Dolphin is now staying",
   "message.dolphin.follow": "Dolphin is now following",
 
+  "comment.orca": "Alex's Mobs Compat",
   "message.orca.wander": "Orca is now wandering",
   "message.orca.sit": "Orca is now staying",
   "message.orca.follow": "Orca is now following"

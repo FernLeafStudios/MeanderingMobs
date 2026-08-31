@@ -8,7 +8,6 @@ import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
-import org.checkerframework.checker.signedness.qual.SignedPositive;
 
 @SuppressWarnings("unused")
 public class MeanderingMobsCreativeTabRegistry {
@@ -32,6 +31,7 @@ public class MeanderingMobsCreativeTabRegistry {
                         output.accept(MeanderingMobsItemRegistry.WOLVERINE_FUR.get());
                         output.accept(MeanderingMobsItemRegistry.RAW_ANCHOVY.get());
                         output.accept(MeanderingMobsItemRegistry.ANCHOVY_CAN.get());
+                        output.accept(MeanderingMobsItemRegistry.REDSTONE_PLATE.get());
 
                         // Soul Tools & Tech
                         output.accept(MeanderingMobsItemRegistry.SOUL_ORB.get());
@@ -67,6 +67,11 @@ public class MeanderingMobsCreativeTabRegistry {
                         // Weapons & Armor
                         output.accept(MeanderingMobsItemRegistry.CLAW_GLOVE.get());
                         output.accept(MeanderingMobsItemRegistry.AUKVULTURE_MASK.get());
+                        output.accept(MeanderingMobsItemRegistry.KNUCKLEBLASTER.get());
+                        output.accept(MeanderingMobsItemRegistry.JUGGERNAUT_HELMET.get());
+                        output.accept(MeanderingMobsItemRegistry.JUGGERNAUT_CHESTPLATE.get());
+                        output.accept(MeanderingMobsItemRegistry.JUGGERNAUT_LEGGINGS.get());
+                        output.accept(MeanderingMobsItemRegistry.JUGGERNAUT_BOOTS.get());
 
                         // Spawn Eggs
                         output.accept(MeanderingMobsItemRegistry.AUKVULTURE_SPAWN_EGG.get());
@@ -78,6 +83,8 @@ public class MeanderingMobsCreativeTabRegistry {
                         output.accept(MeanderingMobsItemRegistry.OKAPI_SPAWN_EGG.get());
                         output.accept(MeanderingMobsItemRegistry.WOLVERINE_SPAWN_EGG.get());
                         output.accept(MeanderingMobsItemRegistry.SOUL_HOUND_SPAWN_EGG.get());
+
+                        output.accept(MeanderingMobsItemRegistry.MUSIC_DISC_DIGITAL_DUSTS.get());
                     })
                     .build());
 

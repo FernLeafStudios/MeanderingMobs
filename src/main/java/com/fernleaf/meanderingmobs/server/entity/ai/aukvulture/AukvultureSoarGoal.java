@@ -1,10 +1,12 @@
 package com.fernleaf.meanderingmobs.server.entity.ai.aukvulture;
 
 import com.fernleaf.meanderingmobs.server.entity.tameable.AukvultureEntity;
+import com.fernleaf.meanderingmobs.util.SolidRadiusUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -75,13 +77,19 @@ public class AukvultureSoarGoal extends Goal {
             return;
         }
 
-        // --- STUCK DETECTION ---
+        // --- STUCK DETECTION VIA UTILITY ---
         double xzDistanceSqr = currentPos.subtract(this.lastCheckPos).horizontalDistanceSqr();
-        if (xzDistanceSqr < 0.01D) {
+
+        // Bounding box inflation check to catch solid leaf/block clipping
+        AABB checkBounds = this.auk.getBoundingBox().inflate(0.1D);
+        boolean insideSolidBlock = SolidRadiusUtil.isInsideSolid(this.auk.level(), checkBounds);
+        boolean wedgedInCorner = SolidRadiusUtil.isCornerStuck(this.auk.level(), this.auk.blockPosition(), 1);
+
+        if (xzDistanceSqr < 0.01D || wedgedInCorner || insideSolidBlock) {
             this.stuckTicks++;
             this.totalStuckTicks++;
 
-            // Fail-safe: Irrecoverably jammed in leaves for 3 seconds (60 ticks) -> Force Land
+            // Fail-safe: Irrecoverably jammed in leaves or geometry for 3 seconds (60 ticks) -> Force Land
             if (this.totalStuckTicks >= 60) {
                 this.stopAndCooldown();
                 return;
@@ -167,20 +175,13 @@ public class AukvultureSoarGoal extends Goal {
             int targetY = groundY + 12 + this.auk.getRandom().nextInt(8);
             Vec3 candidatePos = new Vec3(rx, targetY, rz);
 
-            BlockHitResult hit = this.auk.level().clip(new ClipContext(
-                    this.auk.position(), candidatePos, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this.auk
-            ));
+            // Path & Ceiling Checks via SolidRadiusUtil
+            boolean clearPath = SolidRadiusUtil.hasLineOfSight(this.auk.level(), this.auk, this.auk.position(), candidatePos);
+            boolean clearCeiling = SolidRadiusUtil.hasLineOfSight(this.auk.level(), this.auk, this.auk.position(), this.auk.position().add(0, 6.0D, 0));
 
-            if (hit.getType() == HitResult.Type.MISS) {
-                Vec3 upCheckEnd = this.auk.position().add(0, 6.0D, 0);
-                BlockHitResult ceilingHit = this.auk.level().clip(new ClipContext(
-                        this.auk.position(), upCheckEnd, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this.auk
-                ));
-
-                if (ceilingHit.getType() == HitResult.Type.MISS) {
-                    this.targetPos = candidatePos;
-                    return;
-                }
+            if (clearPath && clearCeiling) {
+                this.targetPos = candidatePos;
+                return;
             }
         }
     }

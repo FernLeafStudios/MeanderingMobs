@@ -72,9 +72,9 @@ public class WolverineRaidBeehiveGoal extends AbstractBlockInteractionGoal<Wolve
 
             this.entity.getLookControl().setLookAt(
                     this.targetPos.getX() + 0.5D,
-                    this.entity.getY() + this.entity.getEyeHeight(),
+                    this.targetPos.getY() + 0.5D,
                     this.targetPos.getZ() + 0.5D,
-                    30.0F, 0.0F
+                    30.0F, 30.0F
             );
 
             this.entity.getNavigation().moveTo(
@@ -84,13 +84,20 @@ public class WolverineRaidBeehiveGoal extends AbstractBlockInteractionGoal<Wolve
                     this.speedModifier
             );
 
-            boolean horizontalDistMatches = Math.abs(this.entity.getX() - (this.targetPos.getX() + 0.5D)) < 1.2D
-                    && Math.abs(this.entity.getZ() - (this.targetPos.getZ() + 0.5D)) < 1.2D;
+            // Check if standing under/near the trunk below the hive
+            double distX = Math.abs(this.entity.getX() - (this.targetPos.getX() + 0.5D));
+            double distZ = Math.abs(this.entity.getZ() - (this.targetPos.getZ() + 0.5D));
+            boolean isUnderHive = distX <= 1.5D && distZ <= 1.5D;
+            boolean isBelowHive = this.entity.getY() < (this.targetPos.getY() - 0.5D);
 
-            if ((this.entity.horizontalCollision || horizontalDistMatches) && this.entity.getY() < this.targetPos.getY()) {
+            if (isBelowHive && (this.entity.horizontalCollision || isUnderHive)) {
                 this.entity.setClimbing(true);
-                Vec3 currentVel = this.entity.getDeltaMovement();
-                this.entity.setDeltaMovement(currentVel.x, 0.22D, currentVel.z); // Force upward climb velocity
+
+                // Vector toward trunk center while applying upward velocity
+                Vec3 dirToHive = Vec3.atCenterOf(this.targetPos).subtract(this.entity.position()).normalize();
+                this.entity.setDeltaMovement(dirToHive.x * 0.1D, 0.22D, dirToHive.z * 0.1D);
+            } else {
+                this.entity.setClimbing(false);
             }
         } else {
             this.reachedTarget = true;

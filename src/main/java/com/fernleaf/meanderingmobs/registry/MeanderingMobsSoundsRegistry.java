@@ -51,6 +51,9 @@ public class MeanderingMobsSoundsRegistry {
     public static final DeferredHolder<SoundEvent, SoundEvent> AUKVULTURE_ATTACK =
             registerSoundEvent("entity.aukvulture.attack");
 
+    public static final DeferredHolder<SoundEvent, SoundEvent> MUSIC_DISC_DIGITAL_DUSTS =
+            registerSoundEvent("music_disc.digital_dusts");
+
     private static DeferredHolder<SoundEvent, SoundEvent> registerSoundEvent(String name) {
         ResourceLocation id = ResourceLocation.fromNamespaceAndPath(MeanderingMobs.MODID, name);
         return SOUND_EVENTS.register(name, () -> SoundEvent.createVariableRangeEvent(id));

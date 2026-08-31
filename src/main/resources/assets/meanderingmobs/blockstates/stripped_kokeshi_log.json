@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "axis=y": {
+      "model": "meanderingmobs:block/stripped_kokeshi_log"
+    },
+    "axis=z": {
+      "model": "meanderingmobs:block/stripped_kokeshi_log",
+      "x": 90
+    },
+    "axis=x": {
+      "model": "meanderingmobs:block/stripped_kokeshi_log",
+      "x": 90,
+      "y": 90
+    }
+  }
+}

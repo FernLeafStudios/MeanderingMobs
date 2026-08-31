@@ -4,6 +4,7 @@ import com.fernleaf.meanderingmobs.config.MeanderingMobsConfig;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsSoundsRegistry;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsTagRegistry;
 import com.fernleaf.meanderingmobs.server.entity.tameable.WhispEntity;
+import com.fernleaf.meanderingmobs.util.SolidRadiusUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
@@ -18,6 +19,8 @@ import java.util.EnumSet;
 public class WhispPlayTagGoal extends Goal {
 
     private final WhispEntity whisp;
+    private int tagTimer = 0;
+    private int maxTagDuration = 180; // 9 seconds default
 
     public WhispPlayTagGoal(WhispEntity whisp) {
         this.whisp = whisp;
@@ -30,7 +33,16 @@ public class WhispPlayTagGoal extends Goal {
     }
 
     @Override
+    public boolean canContinueToUse() {
+        return this.canUse() && this.tagTimer < this.maxTagDuration;
+    }
+
+    @Override
     public void start() {
+        this.tagTimer = 0;
+        // Target duration: 160 to 200 ticks (8 to 10 seconds)
+        this.maxTagDuration = 160 + this.whisp.getRandom().nextInt(41);
+
         Player player = this.whisp.getTagPlayer();
         if (player != null) {
             player.displayClientMessage(Component.translatable("message.meanderingmobs.whisp.tag_start"), true);
@@ -52,20 +64,33 @@ public class WhispPlayTagGoal extends Goal {
         Player player = this.whisp.getTagPlayer();
         if (player == null) return;
 
+        this.tagTimer++;
+
         double distSqr = this.whisp.distanceToSqr(player);
         double maxDist = MeanderingMobsConfig.getSafe(MeanderingMobsConfig.WHISP_TAG_MAX_DISTANCE);
         double maxDistSqr = maxDist * maxDist;
 
-        if (distSqr > maxDistSqr) {
-            this.whisp.stopTagGame(false);
-            return;
+        // 2-second initial grace period (40 ticks) to prevent instant success/fail on interaction
+        if (this.tagTimer > 40) {
+            // Player left max radius -> Fail
+            if (distSqr > maxDistSqr) {
+                this.whisp.stopTagGame(false);
+                return;
+            }
+
+            // Player caught the Whisp -> Tag Success
+            if (distSqr < 2.25D) { // ~1.5 block radius
+                player.displayClientMessage(Component.translatable("message.meanderingmobs.whisp.tag_success"), true);
+                this.whisp.playSound(MeanderingMobsSoundsRegistry.WHISP_TAG_SUCCESS.get(), 1.0F, 1.0F);
+                this.whisp.tame(player);
+                this.whisp.stopTagGame(true);
+                return;
+            }
         }
 
-        if (distSqr < 2.5D) {
-            player.displayClientMessage(Component.translatable("message.meanderingmobs.whisp.tag_success"), true);
-            this.whisp.playSound(MeanderingMobsSoundsRegistry.WHISP_TAG_SUCCESS.get(), 1.0F, 1.0F);
-            this.whisp.tame(player);
-            this.whisp.stopTagGame(true);
+        // Timer expired (8-10 seconds elapsed) without being tagged -> Fail
+        if (this.tagTimer >= this.maxTagDuration) {
+            this.whisp.stopTagGame(false);
             return;
         }
 
@@ -78,6 +103,18 @@ public class WhispPlayTagGoal extends Goal {
         }
         fleeDir = fleeDir.normalize();
 
+        Vec3 forwardCheck = whispPos.add(fleeDir.scale(1.5D));
+        boolean hasClearPath = SolidRadiusUtil.hasLineOfSight(this.whisp.level(), this.whisp, whispPos, forwardCheck);
+
+        if (!hasClearPath) {
+            fleeDir = fleeDir.yRot((float) Math.toRadians(60.0D));
+        }
+
+        // Corner backup check
+        if (SolidRadiusUtil.isCornerStuck(this.whisp.level(), this.whisp.blockPosition(), 1)) {
+            fleeDir = fleeDir.yRot((float) Math.toRadians(45.0D));
+        }
+
         float targetYaw = (float) (Mth.atan2(fleeDir.z, fleeDir.x) * (180.0D / Math.PI)) - 90.0F;
         this.whisp.setYRot(Mth.rotLerp(0.3F, this.whisp.getYRot(), targetYaw));
         this.whisp.setXRot(0.0F);
@@ -85,21 +122,13 @@ public class WhispPlayTagGoal extends Goal {
         this.whisp.yHeadRot = this.whisp.getYRot();
         this.whisp.xRotO = 0.0F;
 
+        // Bounding box phase check via SolidRadiusUtil
         AABB checkBounds = this.whisp.getBoundingBox().inflate(0.3D);
-        boolean isInsidePhaseBlock = false;
-
-        for (BlockPos pos : BlockPos.betweenClosed(
-                Mth.floor(checkBounds.minX), Mth.floor(checkBounds.minY), Mth.floor(checkBounds.minZ),
-                Mth.floor(checkBounds.maxX), Mth.floor(checkBounds.maxY), Mth.floor(checkBounds.maxZ))) {
-
-            BlockState state = this.whisp.level().getBlockState(pos);
-            if (state.is(MeanderingMobsTagRegistry.Blocks.WHISP_PHASE_THROUGH)) {
-                isInsidePhaseBlock = true;
-                break;
-            }
-        }
-
-        this.whisp.noPhysics = isInsidePhaseBlock;
+        this.whisp.noPhysics = SolidRadiusUtil.isInsideMatchingTag(
+        this.whisp.level(),
+                checkBounds,
+                MeanderingMobsTagRegistry.Blocks.WHISP_PHASE_THROUGH
+        );
 
         double targetY = player.getY() + 0.3D;
         BlockPos aheadPos = BlockPos.containing(whispPos.add(fleeDir.scale(0.8D)));

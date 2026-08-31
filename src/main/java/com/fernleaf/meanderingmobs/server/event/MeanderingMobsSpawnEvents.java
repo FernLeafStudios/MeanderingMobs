@@ -24,6 +24,7 @@ import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.animal.Dolphin;
 import net.minecraft.world.entity.animal.WaterAnimal;
+import net.minecraft.world.entity.animal.allay.Allay;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
@@ -144,6 +145,27 @@ public class MeanderingMobsSpawnEvents {
 
     @SubscribeEvent
     public static void onEntityJoinLevel(EntityJoinLevelEvent event) {
+        // --- ALLAY TO WHISP SWAP (STRUCTURES ONLY) ---
+        if (event.getEntity() instanceof Allay allay && !event.getLevel().isClientSide()) {
+            ServerLevel level = (ServerLevel) event.getLevel();
+            BlockPos pos = allay.blockPosition();
+
+            boolean isInStructure = level.structureManager().getStructureWithPieceAt(pos, s -> true).isValid();
+
+            if (isInStructure && level.getRandom().nextFloat() < 0.3F) {
+                WhispEntity whisp = MeanderingMobsEntityRegistry.WHISP.get().create(level);
+                if (whisp != null) {
+                    whisp.moveTo(allay.getX(), allay.getY(), allay.getZ(), allay.getYRot(), allay.getXRot());
+                    whisp.finalizeSpawn(level, level.getCurrentDifficultyAt(pos), MobSpawnType.STRUCTURE, null);
+
+                    level.addFreshEntity(whisp);
+                    event.setCanceled(true);
+                    return;
+                }
+            }
+        }
+
+        // --- DOLPHIN LOGIC ---
         if (event.getEntity() instanceof Dolphin dolphin && !event.getLevel().isClientSide()) {
             if (dolphin.getAttribute(Attributes.ATTACK_DAMAGE) != null) {
                 Objects.requireNonNull(dolphin.getAttribute(Attributes.ATTACK_DAMAGE)).setBaseValue(3.0D);

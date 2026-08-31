@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "meanderingmobs:block/stripped_kokeshi_log_top",
+    "side": "meanderingmobs:block/stripped_kokeshi_log_side"
+  }
+}

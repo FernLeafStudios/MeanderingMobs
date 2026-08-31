@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "axis=y": {
+      "model": "meanderingmobs:block/kokeshi_wood"
+    },
+    "axis=z": {
+      "model": "meanderingmobs:block/kokeshi_wood",
+      "x": 90
+    },
+    "axis=x": {
+      "model": "meanderingmobs:block/kokeshi_wood",
+      "x": 90,
+      "y": 90
+    }
+  }
+}

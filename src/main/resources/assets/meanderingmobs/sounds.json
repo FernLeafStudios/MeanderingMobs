@@ -79,5 +79,14 @@
       "meanderingmobs:entity/aukvulture/aukvulture_flap_seven",
       "meanderingmobs:entity/aukvulture/aukvulture_flap_eight"
     ]
+  },
+  "music_disc.digital_dusts": {
+    "subtitle": "subtitles.meanderingmobs.music_disc.digital_dusts",
+    "sounds": [
+      {
+        "name": "meanderingmobs:music/digital_dusts",
+        "stream": true
+      }
+    ]
   }
 }

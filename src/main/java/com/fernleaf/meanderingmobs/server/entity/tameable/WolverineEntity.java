@@ -1,5 +1,6 @@
 package com.fernleaf.meanderingmobs.server.entity.tameable;
 
+import com.fernleaf.meanderingmobs.registry.MeanderingMobsItemRegistry;
 import com.fernleaf.meanderingmobs.server.entity.ai.wolverine.WolverineAttackGoal;
 import com.fernleaf.meanderingmobs.server.entity.ai.wolverine.WolverineClimbGoal;
 import com.fernleaf.meanderingmobs.server.entity.ai.wolverine.WolverineRaidBeehiveGoal;
@@ -11,6 +12,8 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
@@ -27,6 +30,7 @@ import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
@@ -45,15 +49,19 @@ public class WolverineEntity extends MeanderingMobsTameableEntity {
     public final AnimationState runAnimationState = new AnimationState();
     public final AnimationState attackAnimationState = new AnimationState();
     public final AnimationState sitAnimationState = new AnimationState();
+    public final AnimationState climbAnimationState = new AnimationState();
+    public final AnimationState climbidleAnimationState = new AnimationState();
 
     public WolverineEntity(EntityType<? extends TamableAnimal> entityType, Level level) {
         super(entityType, level);
     }
+    private static final EntityDataAccessor<Boolean> DATA_SHEARED = SynchedEntityData.defineId(WolverineEntity.class, EntityDataSerializers.BOOLEAN);
 
     @Override
     protected void defineSynchedData(SynchedEntityData.@NotNull Builder builder) {
         super.defineSynchedData(builder);
         builder.define(DATA_FLAGS_ID, (byte) 0);
+        builder.define(DATA_SHEARED, false);
     }
 
     @Override
@@ -69,6 +77,12 @@ public class WolverineEntity extends MeanderingMobsTameableEntity {
 
     @Override public boolean onClimbable() { return isClimbing(); }
     public boolean isClimbing() { return (entityData.get(DATA_FLAGS_ID) & 1) != 0; }
+    public boolean isSheared() {
+        return this.entityData.get(DATA_SHEARED);
+    }
+    public void setSheared(boolean sheared) {
+        this.entityData.set(DATA_SHEARED, sheared);
+    }
 
     public void setClimbing(boolean climbing) {
         byte flags = entityData.get(DATA_FLAGS_ID);
@@ -76,22 +90,48 @@ public class WolverineEntity extends MeanderingMobsTameableEntity {
     }
 
     private void setupAnimationStates() {
-        // 2. Handle sitting animation state
+        // 1. Sitting Priority
         if (this.isSitting()) {
             this.sitAnimationState.startIfStopped(this.tickCount);
             this.idleAnimationState.stop();
             this.walkAnimationState.stop();
             this.runAnimationState.stop();
-            return; // Early return so walking/idle don't re-trigger while sitting
+            this.climbAnimationState.stop();
+            this.climbidleAnimationState.stop();
+            return;
         } else {
             this.sitAnimationState.stop();
         }
 
-        // 3. Normal movement animation state logic
+        // 2. Climbing Priority
+        if (this.isClimbing()) {
+            this.idleAnimationState.stop();
+            this.walkAnimationState.stop();
+            this.runAnimationState.stop();
+
+            boolean climbingUp = this.getDeltaMovement().y > 0.05D;
+
+            if (climbingUp) {
+                this.climbAnimationState.startIfStopped(this.tickCount);
+                this.climbidleAnimationState.stop();
+            } else {
+                this.climbidleAnimationState.startIfStopped(this.tickCount);
+                this.climbAnimationState.stop();
+            }
+            return; // Early return so ground logic doesn't override climbing
+        } else {
+            this.climbAnimationState.stop();
+            this.climbidleAnimationState.stop();
+        }
+
+        // 3. Ground Movement / Idle Logic
         boolean moving = getDeltaMovement().horizontalDistanceSqr() >= 1.0E-6D;
 
-        if (!isSprinting() && !moving) idleAnimationState.startIfStopped(tickCount);
-        else idleAnimationState.stop();
+        if (!isSprinting() && !moving) {
+            idleAnimationState.startIfStopped(tickCount);
+        } else {
+            idleAnimationState.stop();
+        }
 
         if (isSprinting()) {
             runAnimationState.startIfStopped(tickCount);
@@ -124,7 +164,7 @@ public class WolverineEntity extends MeanderingMobsTameableEntity {
     public static AttributeSupplier.Builder createAttributes() {
         return Animal.createMobAttributes()
                 .add(Attributes.MAX_HEALTH, 24.0D)
-                .add(Attributes.MOVEMENT_SPEED, 0.3D)
+                .add(Attributes.MOVEMENT_SPEED, 0.2D)
                 .add(Attributes.ATTACK_DAMAGE, 5.0D)
                 .add(Attributes.FOLLOW_RANGE, 16.0D);
     }
@@ -135,20 +175,45 @@ public class WolverineEntity extends MeanderingMobsTameableEntity {
     public @NotNull InteractionResult mobInteract(@NotNull Player player, @NotNull InteractionHand hand) {
         ItemStack heldStack = player.getItemInHand(hand);
 
+        // 1. Shearing Logic
+        if (heldStack.is(Items.SHEARS) && !isSheared() && isTamed()) {
+            if (!level().isClientSide()) {
+                setSheared(true);
+                heldStack.hurtAndBreak(1, player, getSlotForHand(hand));
+
+                level().playSound(null, this, SoundEvents.SHEEP_SHEAR, SoundSource.PLAYERS, 1.0F, 1.0F);
+                int dropCount = 1 + random.nextInt(2);
+                for (int i = 0; i < dropCount; i++) {
+                    spawnAtLocation(MeanderingMobsItemRegistry.WOLVERINE_FUR.get());
+                }
+            }
+            return InteractionResult.sidedSuccess(level().isClientSide());
+        }
+
+        // 2. Taming Logic
         if (!isTamed() && heldStack.is(WOLVERINE_TAMEABLE)) {
-            if (getHealth() <= getMaxHealth() * 0.25F) {
-                if (!player.getAbilities().instabuild) heldStack.shrink(1);
-                if (!level().isClientSide()) {
+            if (!level().isClientSide()) {
+                if (!player.getAbilities().instabuild) {
+                    heldStack.shrink(1);
+                }
+
+                if (getHealth() <= getMaxHealth() * 0.25F) {
                     if (random.nextInt(3) == 0) {
                         tame(player);
+                        this.heal(getMaxHealth()); // Full heal on tame!
                         level().broadcastEntityEvent(this, (byte) 7);
-                    } else level().broadcastEntityEvent(this, (byte) 6);
+                    } else {
+                        level().broadcastEntityEvent(this, (byte) 6);
+                    }
+                } else {
+                    level().broadcastEntityEvent(this, (byte) 6);
                 }
-            } else if (!level().isClientSide()) level().broadcastEntityEvent(this, (byte) 6);
+            }
 
             return InteractionResult.sidedSuccess(level().isClientSide());
         }
 
+        // 3. AI State Cycle Logic
         if (isTamed() && isOwner(player) && hand == InteractionHand.MAIN_HAND) {
             cycleAiState(player, "wolverine");
             return InteractionResult.sidedSuccess(level().isClientSide());
@@ -167,11 +232,23 @@ public class WolverineEntity extends MeanderingMobsTameableEntity {
     public void addAdditionalSaveData(@NotNull CompoundTag compound) {
         super.addAdditionalSaveData(compound);
         compound.putBoolean("IsClimbing", isClimbing());
+        compound.putBoolean("Sheared", isSheared());
     }
 
     @Override
     public void readAdditionalSaveData(@NotNull CompoundTag compound) {
         super.readAdditionalSaveData(compound);
         setClimbing(compound.getBoolean("IsClimbing"));
+        setSheared(compound.getBoolean("Sheared"));
+    }
+
+    @Override
+    protected int calculateFallDamage(float fallDistance, float damageMultiplier) {
+        return super.calculateFallDamage(fallDistance, damageMultiplier * 0.5F);
+    }
+
+    @Override
+    public int getMaxFallDistance() {
+        return 10;
     }
 }

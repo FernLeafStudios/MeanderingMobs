@@ -23,7 +23,7 @@ public class WhispPacifyGoal extends Goal {
 
     @Override
     public boolean canUse() {
-        return this.whisp.isTamed() && this.whisp.getAiState() != 1 && !this.whisp.isTagging();
+        return this.whisp.getAiState() != 1;
     }
 
     @Override
