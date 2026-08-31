@@ -34,9 +34,14 @@ public class RuffianPlayBehavior extends Behavior<RuffianEntity> {
     }
 
     @Override
-    protected boolean checkExtraStartConditions(@NotNull ServerLevel level, RuffianEntity ruffian) {
+    protected boolean checkExtraStartConditions(@NotNull ServerLevel level, @NotNull RuffianEntity ruffian) {
         if (this.cooldownTicks > 0) {
             this.cooldownTicks--;
+            return false;
+        }
+
+        // BLOCK PLAYING IF RUFFIAN IS BUSY OR WORKING ON A JOB
+        if (ruffian.isWorking() || !ruffian.getInventory().getItem(0).isEmpty() || ruffian.isNapping() || ruffian.isCrouchingAnxious()) {
             return false;
         }
 
@@ -67,6 +72,11 @@ public class RuffianPlayBehavior extends Behavior<RuffianEntity> {
 
     @Override
     protected boolean canStillUse(@NotNull ServerLevel level, @NotNull RuffianEntity ruffian, long gameTime) {
+        // Abort playing immediately if the ruffian suddenly gets assigned a work state
+        if (ruffian.isWorking()) {
+            return false;
+        }
+
         // Immediately abort if the playmate pet sits down or dies mid-game
         if (this.playmate instanceof TamableAnimal pet && (pet.isOrderedToSit() || !pet.isAlive())) {
             return false;
@@ -87,7 +97,7 @@ public class RuffianPlayBehavior extends Behavior<RuffianEntity> {
     }
 
     @Override
-    protected void tick(@NotNull ServerLevel level, RuffianEntity ruffian, long gameTime) {
+    protected void tick(@NotNull ServerLevel level, @NotNull RuffianEntity ruffian, long gameTime) {
         this.playTicks--;
 
         if (this.playmate instanceof TamableAnimal pet) {

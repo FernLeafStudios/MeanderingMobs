@@ -9,6 +9,7 @@ import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 
 public class AukvultureModel<T extends AukvultureEntity> extends HierarchicalModel<T> {
 
@@ -129,6 +130,7 @@ public class AukvultureModel<T extends AukvultureEntity> extends HierarchicalMod
 
 	@Override
 	public void setupAnim(T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
+		// 1. Reset all poses from keyframe animations
 		this.root().getAllParts().forEach(ModelPart::resetPose);
 
 		// 2. Exclusive State Evaluation
@@ -155,6 +157,14 @@ public class AukvultureModel<T extends AukvultureEntity> extends HierarchicalMod
 		}
 		else if (entity.idleAnimationState.isStarted()) {
 			this.animate(entity.idleAnimationState, AukvultureAnimations.Idel, ageInTicks, 1.0f);
+		}
+
+		// 3. Apply Local Model Roll
+		if (entity.isFlying()) {
+			float partialTick = net.minecraft.client.Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true);
+			float lerpedRoll = Mth.lerp(partialTick, entity.prevRollAngle, entity.rollAngle);
+
+			this.aukvulture.zRot += lerpedRoll * Mth.DEG_TO_RAD;
 		}
 	}
 }

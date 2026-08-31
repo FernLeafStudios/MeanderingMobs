@@ -7,11 +7,13 @@ import com.fernleaf.meanderingmobs.server.entity.tameable.RuffianEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BrewingStandBlockEntity;
 import org.jetbrains.annotations.NotNull;
 
@@ -29,9 +31,12 @@ public class RuffianBrewBehavior extends RuffianStationBehavior {
         if (!isRuffianAvailable(ruffian) || !locateStorage(level, ruffian, 6, 2)) {
             return false;
         }
-
         this.stationPos = BlockPosUtil.findBlockInRadius(level, ruffian.blockPosition(), Blocks.BREWING_STAND, 6, 2);
-        return this.stationPos != null;
+        if (this.stationPos == null) {
+            return false;
+        }
+
+        return hasBrewingWork(ruffian, this.chestPos, this.stationPos);
     }
 
     @Override
@@ -77,9 +82,41 @@ public class RuffianBrewBehavior extends RuffianStationBehavior {
 
             if (!getActiveItem(ruffian).isEmpty()) {
                 insertIntoBrewingStand(ruffian, this.stationPos);
-                stop(level, ruffian, gameTime);
+                advanceStep(ruffian);
             }
         }
+    }
+
+    @Override
+    protected boolean shouldRepeatFetchCycle(RuffianEntity ruffian) {
+        return hasBrewingWork(ruffian, this.chestPos, this.stationPos);
+    }
+
+    private boolean hasBrewingWork(RuffianEntity ruffian, BlockPos cPos, BlockPos sPos) {
+        if (cPos == null || sPos == null) {
+            return false;
+        }
+
+        BrewingStandBlockEntity stand = getBrewingStand(ruffian, sPos);
+        if (stand == null || stand.brewTime > 0) {
+            return false;
+        }
+
+        if (checkCompletedPotions(ruffian, sPos)) {
+            return true;
+        }
+
+        BlockEntity be = ruffian.level().getBlockEntity(cPos);
+        if (be instanceof Container container) {
+            boolean needsFuel = stand.getItem(4).isEmpty() && WorkstationRecipeUtil.findSlotMatching(container, stack -> stack.is(Items.BLAZE_POWDER)) != -1;
+            boolean needsBottle = (stand.getItem(0).isEmpty() || stand.getItem(1).isEmpty() || stand.getItem(2).isEmpty()) &&
+                    WorkstationRecipeUtil.findSlotMatching(container, stack -> stack.is(Items.POTION) && stack.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY).is(Potions.WATER)) != -1;
+            boolean needsIngredient = stand.getItem(3).isEmpty() && WorkstationRecipeUtil.findSlotMatching(container, stack -> isValidIngredientForStand((ServerLevel) ruffian.level(), stand, stack)) != -1;
+
+            return needsFuel || needsBottle || needsIngredient;
+        }
+
+        return false;
     }
 
     @Override
@@ -91,7 +128,9 @@ public class RuffianBrewBehavior extends RuffianStationBehavior {
 
     private boolean grabBrewingMaterialsFromChest(ServerLevel level, RuffianEntity ruffian, BlockPos pos) {
         BrewingStandBlockEntity stand = getBrewingStand(ruffian, this.stationPos);
-        if (stand == null || stand.brewTime > 0) return false;
+        if (stand == null || stand.brewTime > 0) {
+            return false;
+        }
 
         if (stand.getItem(4).isEmpty()) {
             ItemStack blazePowder = WorkstationRecipeUtil.tryExtractFromContainer(level, pos, stack -> stack.is(Items.BLAZE_POWDER), 8);
@@ -155,7 +194,7 @@ public class RuffianBrewBehavior extends RuffianStationBehavior {
 
         if (stand != null && !held.isEmpty()) {
             if (this.carryingBlazePowder) {
-                insertOrMerge(stand, 4, held);
+                insertOrMerge(ruffian, stand, 4, held);
                 return;
             }
 
@@ -171,20 +210,22 @@ public class RuffianBrewBehavior extends RuffianStationBehavior {
             }
 
             if (stand.canPlaceItem(3, held)) {
-                insertOrMerge(stand, 3, held);
+                insertOrMerge(ruffian, stand, 3, held);
             }
         }
     }
 
-    private void insertOrMerge(BrewingStandBlockEntity stand, int slot, ItemStack held) {
+    private void insertOrMerge(RuffianEntity ruffian, BrewingStandBlockEntity stand, int slot, ItemStack held) {
         ItemStack slotStack = stand.getItem(slot);
         if (slotStack.isEmpty()) {
             stand.setItem(slot, held.copy());
             held.setCount(0);
+            setActiveItem(ruffian, held.isEmpty() ? ItemStack.EMPTY : held);
             stand.setChanged();
         } else if (ItemStack.isSameItemSameComponents(slotStack, held) && slotStack.getCount() + held.getCount() <= slotStack.getMaxStackSize()) {
             slotStack.grow(held.getCount());
             held.setCount(0);
+            setActiveItem(ruffian, ItemStack.EMPTY);
             stand.setChanged();
         }
     }
@@ -221,7 +262,9 @@ public class RuffianBrewBehavior extends RuffianStationBehavior {
         }
 
         boolean hasBottles = !stand.getItem(0).isEmpty() || !stand.getItem(1).isEmpty() || !stand.getItem(2).isEmpty();
-        if (!hasBottles) return false;
+        if (!hasBottles) {
+            return false;
+        }
 
         return level.potionBrewing().isIngredient(ingredient);
     }

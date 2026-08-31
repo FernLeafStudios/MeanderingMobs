@@ -205,6 +205,19 @@ public class WorkstationRecipeUtil {
         return -1;
     }
 
+    /**
+     * Finds the first slot index in a container matching a given predicate.
+     */
+    public static int findSlotMatching(Container container, Predicate<ItemStack> filter) {
+        for (int i = 0; i < container.getContainerSize(); i++) {
+            ItemStack stack = container.getItem(i);
+            if (!stack.isEmpty() && filter.test(stack)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     // --- DYE UTILS ---
 
     /**

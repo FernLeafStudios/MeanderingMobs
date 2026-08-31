@@ -12,7 +12,6 @@ public class AnchovyModelAdapter {
         root.xRot += ik.pitch;
         root.zRot += ik.roll;
 
-        // Apply tail whip oscillation to the caudal fin part relative to the center body
         if (caudalFin != null) {
             caudalFin.yRot += ik.tailYaw;
         }

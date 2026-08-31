@@ -177,6 +177,14 @@ public class MeanderingMobsItemRegistry {
             "soul_hound", MeanderingMobsEntityRegistry.SOUL_HOUND
     );
 
+    public static final DeferredHolder<Item, Item> DEERFOX_SPAWN_EGG = registerSpawnEgg(
+            "deerfox", MeanderingMobsEntityRegistry.DEERFOX
+    );
+
+    public static final DeferredHolder<Item, Item> ANCHOVY = registerSpawnEgg(
+            "anchovy", MeanderingMobsEntityRegistry.ANCHOVY
+    );
+
     public static final DeferredHolder<Item, Item> MUSIC_DISC_DIGITAL_DUSTS = ITEMS.register("music_disc_digital_dusts",
             () -> new Item(new Item.Properties()
                     .stacksTo(1)

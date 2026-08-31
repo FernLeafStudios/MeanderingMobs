@@ -9,9 +9,11 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jetbrains.annotations.NotNull;
 
 public class RuffianSmeltBehavior extends RuffianStationBehavior {
@@ -31,9 +33,12 @@ public class RuffianSmeltBehavior extends RuffianStationBehavior {
         if (!isRuffianAvailable(ruffian) || !locateStorage(level, ruffian, 6, 2)) {
             return false;
         }
-
         this.stationPos = BlockPosUtil.findBlockInRadius(level, ruffian.blockPosition(), RUFFIAN_WORKSTATION, 6, 2);
-        return this.stationPos != null;
+        if (this.stationPos == null) {
+            return false;
+        }
+
+        return hasSmeltWork(ruffian, this.chestPos, this.stationPos);
     }
 
     @Override
@@ -66,9 +71,39 @@ public class RuffianSmeltBehavior extends RuffianStationBehavior {
 
             if (!getActiveItem(ruffian).isEmpty()) {
                 insertIntoFurnace(ruffian, this.stationPos);
-                stop(level, ruffian, gameTime);
+                advanceStep(ruffian);
             }
         }
+    }
+
+    @Override
+    protected boolean shouldRepeatFetchCycle(RuffianEntity ruffian) {
+        return hasSmeltWork(ruffian, this.chestPos, this.stationPos);
+    }
+
+    private boolean hasSmeltWork(RuffianEntity ruffian, BlockPos cPos, BlockPos sPos) {
+        if (cPos == null || sPos == null) {
+            return false;
+        }
+
+        if (checkFurnaceOutput(ruffian, sPos)) {
+            return true;
+        }
+
+        AbstractFurnaceBlockEntity furnace = getFurnace(ruffian, sPos);
+        if (furnace == null) {
+            return false;
+        }
+
+        BlockEntity be = ruffian.level().getBlockEntity(cPos);
+        if (be instanceof Container container) {
+            boolean needsFuel = furnace.getItem(1).isEmpty() && WorkstationRecipeUtil.findSlotMatching(container, AbstractFurnaceBlockEntity::isFuel) != -1;
+            boolean needsItem = WorkstationRecipeUtil.findSlotMatching(container, stack -> WorkstationRecipeUtil.isProcessable(ruffian.level(), stack)) != -1;
+
+            return needsFuel || needsItem;
+        }
+
+        return false;
     }
 
     @Override

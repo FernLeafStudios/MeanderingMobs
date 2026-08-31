@@ -5,8 +5,13 @@ import com.fernleaf.meanderingmobs.client.instance.SoulHoundIKInstance;
 import com.fernleaf.meanderingmobs.client.model.soul_hound.SoulHoundModel;
 import net.minecraft.world.entity.LivingEntity;
 
+
 public class SoulHoundModelAdapter {
 
+    @Deprecated
+    /*
+     Soul Hound is possible to receive new and better animations in the future
+    */
     public static void applyToModel(LivingEntity entity, SoulHoundModel<?> model, SoulHoundIKInstance ik) {
         // Torso pitch & bounce
         model.body.xRot += ik.bodyXRot;

@@ -74,6 +74,20 @@ public class RuffianRepairBehavior extends RuffianStationBehavior {
     }
 
     @Override
+    protected boolean shouldRepeatFetchCycle(RuffianEntity ruffian) {
+        if (this.chestPos == null) return false;
+        BlockEntity be = ruffian.level().getBlockEntity(this.chestPos);
+        if (be instanceof Container container) {
+            int toolSlot = WorkstationRecipeUtil.findDamagedToolSlot(container);
+            if (toolSlot != -1) {
+                ItemStack toolStack = container.getItem(toolSlot);
+                return WorkstationRecipeUtil.findRepairMaterialSlot(container, toolStack) != -1;
+            }
+        }
+        return false;
+    }
+
+    @Override
     protected void stop(@NotNull ServerLevel level, @NotNull RuffianEntity ruffian, long gameTime) {
         this.repairCooldown = 0;
         super.stop(level, ruffian, gameTime);

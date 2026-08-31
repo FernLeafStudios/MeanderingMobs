@@ -22,9 +22,7 @@ public class MeanderingMobsArmorMaterials {
 
     public static final Holder<ArmorMaterial> AUKVULTURE_MASK_MATERIAL = ARMOR_MATERIALS.register("aukvulture_mask",
             () -> new ArmorMaterial(
-                    Util.make(new EnumMap<>(ArmorItem.Type.class), map -> {
-                        map.put(ArmorItem.Type.HELMET, 2);
-                    }),
+                    Util.make(new EnumMap<>(ArmorItem.Type.class), map -> map.put(ArmorItem.Type.HELMET, 2)),
                     15,
                     SoundEvents.ARMOR_EQUIP_LEATHER,
                     () -> Ingredient.EMPTY,
@@ -41,12 +39,12 @@ public class MeanderingMobsArmorMaterials {
                         map.put(ArmorItem.Type.CHESTPLATE, 6);
                         map.put(ArmorItem.Type.HELMET, 2);
                     }),
-                    15, // Enchantability
+                    15,
                     SoundEvents.ARMOR_EQUIP_IRON,
                     () -> Ingredient.of(MeanderingMobsItemRegistry.REDSTONE_PLATE.get()),
                     List.of(new ArmorMaterial.Layer(ResourceLocation.fromNamespaceAndPath(MeanderingMobs.MODID, "juggernaut_armor"))),
-                    0.0F, // Toughness
-                    0.1F  // Knockback Resistance per piece (+0.4 total set bonus)
+                    0.0F,
+                    0.1F
             ));
 
     public static void register(IEventBus eventBus) {

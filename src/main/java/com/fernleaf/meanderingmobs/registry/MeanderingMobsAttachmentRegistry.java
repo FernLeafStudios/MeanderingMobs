@@ -38,7 +38,6 @@ public class MeanderingMobsAttachmentRegistry {
             "orca_input", () -> AttachmentType.builder(VecToInput::new).serialize(VecToInput.CODEC).build()
     );
 
-    // Tracks which hand is queued up for dual-wield attacks
     public static final Supplier<AttachmentType<Boolean>> ALTERNATE_HAND = ATTACHMENT_TYPES.register(
             "alternate_hand", () -> AttachmentType.builder(() -> false).serialize(Codec.BOOL).build()
     );

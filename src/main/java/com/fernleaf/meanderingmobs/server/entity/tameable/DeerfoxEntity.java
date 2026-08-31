@@ -10,6 +10,7 @@ import com.fernleaf.meanderingmobs.server.entity.ai.deerfox.DeerfoxHowlGoal;
 import com.fernleaf.meanderingmobs.server.entity.ai.deerfox.DeerfoxSkySprintGoal;
 import com.fernleaf.meanderingmobs.server.entity.util.MeanderingMobsTameableEntity;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
@@ -60,6 +61,10 @@ public class DeerfoxEntity extends MeanderingMobsTameableEntity implements Playe
     private boolean canDoubleJump = false;
     private float playerJumpPendingScale = 0.0F;
 
+    // Coyote time tracking: ticks spent airborne since leaving the ground
+    private int ticksInAir = 0;
+    private static final int COYOTE_TICKS = 8; // ~0.4-second grace period
+
     public DeerfoxEntity(EntityType<? extends MeanderingMobsTameableEntity> entityType, Level level) {
         super(entityType, level);
     }
@@ -100,10 +105,12 @@ public class DeerfoxEntity extends MeanderingMobsTameableEntity implements Playe
     public void tick() {
         super.tick();
 
-        // Safely reset airtime states on ground touch to avoid jump locks
         if (this.onGround()) {
             this.canDoubleJump = true;
             this.setBounding(false);
+            this.ticksInAir = 0;
+        } else {
+            this.ticksInAir++;
         }
 
         if (!this.level().isClientSide()) {
@@ -134,17 +141,25 @@ public class DeerfoxEntity extends MeanderingMobsTameableEntity implements Playe
     protected void tickRidden(@NotNull Player player, @NotNull Vec3 travelVector) {
         super.tickRidden(player, travelVector);
 
-        if (!this.onGround() && !this.hasEffect(MobEffects.SLOW_FALLING)) {
+        // Apply Slow Falling ONLY after an intentional jump/double jump (when canDoubleJump is consumed or bounding is active)
+        boolean holdsActiveJumpState = !this.canDoubleJump() || this.isBounding();
+
+        if (!this.onGround() && holdsActiveJumpState && !this.hasEffect(MobEffects.SLOW_FALLING)) {
             this.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 20, 0, false, false, false));
+        } else if (this.onGround() && this.hasEffect(MobEffects.SLOW_FALLING)) {
+            // Immediately remove slow falling as soon as feet touch ground
+            this.removeEffect(MobEffects.SLOW_FALLING);
         }
 
         if (this.playerJumpPendingScale > 0.0F) {
-            if (this.onGround()) {
-                double jumpStrength = 1.15D * (double) this.playerJumpPendingScale;
+            // First Jump: On ground OR within coyote time window after walking off a ledge
+            if (this.onGround() || this.ticksInAir <= COYOTE_TICKS) {
+                double jumpStrength = 1.25D * (double) this.playerJumpPendingScale;
                 Vec3 currentVel = this.getDeltaMovement();
                 this.setDeltaMovement(currentVel.x, jumpStrength, currentVel.z);
                 this.hasImpulse = true;
                 this.canDoubleJump = true;
+                this.ticksInAir = COYOTE_TICKS + 1; // Expire coyote window so 2nd press air jumps
             } else if (this.canDoubleJump) {
                 this.triggerDoubleJump();
             }
@@ -215,6 +230,7 @@ public class DeerfoxEntity extends MeanderingMobsTameableEntity implements Playe
     public @NotNull InteractionResult mobInteract(@NotNull Player player, @NotNull InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
 
+        // Handle Taming
         if (stack.is(MeanderingMobsTagRegistry.Items.DEERFOX_TAME_ITEMS) && !this.isTame()) {
             if (!this.level().isClientSide) {
                 this.usePlayerItem(player, hand, stack);
@@ -229,8 +245,9 @@ public class DeerfoxEntity extends MeanderingMobsTameableEntity implements Playe
             return InteractionResult.sidedSuccess(this.level().isClientSide);
         }
 
+        // Tamed Interaction Logic
         if (this.isTame() && this.isOwner(player)) {
-            // Shift + Right Click allows state cycling (Follow / Sit / Wander)
+            // Shift + Right Click allows setting Lodestone or cycling state
             if (player.isSecondaryUseActive()) {
                 if (stack.is(Items.COMPASS) && stack.has(DataComponents.LODESTONE_TRACKER)) {
                     var tracker = stack.get(DataComponents.LODESTONE_TRACKER);
@@ -254,8 +271,11 @@ public class DeerfoxEntity extends MeanderingMobsTameableEntity implements Playe
                 }
             }
 
-            if (!player.isSecondaryUseActive() && !this.isVehicle()) {
+            // Normal Right-Click to Mount (Only if hand is MAIN_HAND to prevent double-triggering)
+            if (hand == InteractionHand.MAIN_HAND && !this.isVehicle()) {
                 if (!this.level().isClientSide) {
+                    player.setYRot(this.getYRot());
+                    player.setXRot(this.getXRot());
                     player.startRiding(this);
                 }
                 return InteractionResult.sidedSuccess(this.level().isClientSide);
@@ -265,15 +285,11 @@ public class DeerfoxEntity extends MeanderingMobsTameableEntity implements Playe
         return super.mobInteract(player, hand);
     }
 
-    @Override
-    public boolean isNoAi() {
-        return super.isNoAi() || this.isVehicle();
-    }
-
     public void triggerDoubleJump() {
         if (!this.onGround() && this.canDoubleJump) {
             Vec3 currentVel = this.getDeltaMovement();
-            this.setDeltaMovement(currentVel.x, 0.85D, currentVel.z);
+            // Second leap launch Y boost
+            this.setDeltaMovement(currentVel.x, 1.15D, currentVel.z);
             this.canDoubleJump = false;
             this.hasImpulse = true;
             this.setBounding(true);
@@ -293,42 +309,75 @@ public class DeerfoxEntity extends MeanderingMobsTameableEntity implements Playe
     public void teleportToLodestone() {
         if (this.level().isClientSide()) return;
 
-        this.getLodestonePos().ifPresent(pos -> {
-            BlockPos destination = pos.above();
+        this.getLodestonePos().ifPresent(lodestonePos -> {
             ServerLevel serverLevel = (ServerLevel) this.level();
 
-            ChunkPos chunkPos = new ChunkPos(destination);
+            ChunkPos chunkPos = new ChunkPos(lodestonePos);
             serverLevel.setChunkForced(chunkPos.x, chunkPos.z, true);
 
             try {
-                Vec3 targetVec = Vec3.atBottomCenterOf(destination);
+                // Find safe surrounding positions in a 3-block radius around the lodestone
+                List<BlockPos> safePositions = findSafeTeleportPositions(serverLevel, lodestonePos);
+                BlockPos mainDest = safePositions.isEmpty() ? lodestonePos.above() : safePositions.getFirst();
+                Vec3 mainVec = Vec3.atBottomCenterOf(mainDest);
 
                 serverLevel.sendParticles(ParticleTypes.REVERSE_PORTAL, this.getX(), this.getY() + 0.5D, this.getZ(), 30, 0.5D, 0.5D, 0.5D, 0.1D);
 
+                // Teleport the Deerfox & Rider
+                Entity rider = this.getFirstPassenger();
+                this.teleportTo(serverLevel, mainVec.x, mainVec.y, mainVec.z, java.util.Set.of(), this.getYRot(), this.getXRot());
+
+                if (rider instanceof ServerPlayer player) {
+                    player.teleportTo(serverLevel, mainVec.x, mainVec.y, mainVec.z, java.util.Set.of(), player.getYRot(), player.getXRot());
+                    player.connection.teleport(mainVec.x, mainVec.y, mainVec.z, player.getYRot(), player.getXRot());
+                }
+
+                // Scatter nearby accompanying pets in a ring around the lodestone
                 List<TamableAnimal> nearbyPets = serverLevel.getEntitiesOfClass(
                         TamableAnimal.class,
                         this.getBoundingBox().inflate(12.0D),
-                        pet -> pet.isTame() && pet.getOwnerUUID() != null && pet.getOwnerUUID().equals(this.getOwnerUUID())
+                        pet -> pet.isTame() && pet.getOwnerUUID() != null && pet.getOwnerUUID().equals(this.getOwnerUUID()) && pet != this
                 );
 
+                int posIndex = 1;
                 for (TamableAnimal pet : nearbyPets) {
-                    pet.teleportTo(serverLevel, targetVec.x, targetVec.y, targetVec.z, java.util.Set.of(), pet.getYRot(), pet.getXRot());
+                    BlockPos petDest = (posIndex < safePositions.size()) ? safePositions.get(posIndex) : mainDest;
+                    Vec3 petVec = Vec3.atBottomCenterOf(petDest);
+                    pet.teleportTo(serverLevel, petVec.x, petVec.y, petVec.z, java.util.Set.of(), pet.getYRot(), pet.getXRot());
+                    posIndex++;
                 }
 
-                Entity rider = this.getFirstPassenger();
-                this.teleportTo(serverLevel, targetVec.x, targetVec.y, targetVec.z, java.util.Set.of(), this.getYRot(), this.getXRot());
-
-                if (rider instanceof ServerPlayer player) {
-                    player.teleportTo(serverLevel, targetVec.x, targetVec.y, targetVec.z, java.util.Set.of(), player.getYRot(), player.getXRot());
-                    player.connection.teleport(targetVec.x, targetVec.y, targetVec.z, player.getYRot(), player.getXRot());
-                }
-
-                serverLevel.sendParticles(ParticleTypes.END_ROD, targetVec.x, targetVec.y + 0.5D, targetVec.z, 40, 0.8D, 0.8D, 0.8D, 0.05D);
+                serverLevel.sendParticles(ParticleTypes.END_ROD, mainVec.x, mainVec.y + 0.5D, mainVec.z, 40, 0.8D, 0.8D, 0.8D, 0.05D);
 
             } finally {
                 serverLevel.setChunkForced(chunkPos.x, chunkPos.z, false);
             }
         });
+    }
+
+    /**
+     * Finds air spaces around the target lodestone where entities can safely land without suffocating.
+     */
+    private List<BlockPos> findSafeTeleportPositions(ServerLevel level, BlockPos origin) {
+        List<BlockPos> safe = new java.util.ArrayList<>();
+        for (int x = -3; x <= 3; x++) {
+            for (int z = -3; z <= 3; z++) {
+                if (x == 0 && z == 0) continue; // Skip the lodestone block itself
+                BlockPos checkPos = origin.offset(x, 0, z);
+
+                // Search vertically for floor + 2 air blocks
+                for (int y = -2; y <= 2; y++) {
+                    BlockPos candidate = checkPos.offset(0, y, 0);
+                    if (level.getBlockState(candidate.below()).isFaceSturdy(level, candidate.below(), Direction.UP)
+                            && level.isEmptyBlock(candidate)
+                            && level.isEmptyBlock(candidate.above())) {
+                        safe.add(candidate);
+                        break;
+                    }
+                }
+            }
+        }
+        return safe;
     }
 
     @Override

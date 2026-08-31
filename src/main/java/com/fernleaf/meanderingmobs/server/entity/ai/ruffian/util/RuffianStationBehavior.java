@@ -25,16 +25,20 @@ public abstract class RuffianStationBehavior extends Behavior<RuffianEntity> {
             Registries.BLOCK, ResourceLocation.fromNamespaceAndPath("meanderingmobs", "ruffian_storage")
     );
 
-    protected int currentStep = 0; // 0: Fetch from Storage, 1: Process at Workstation, 2: Deposit to Storage
+    protected int currentStep = 0; // 0: Fetch, 1: Process, 2: Deposit
     protected BlockPos chestPos;
     protected BlockPos stationPos;
-    protected double interactionRadiusSq = 9.0D; // Default interaction distance squared
+    protected double interactionRadiusSq = 9.0D;
+
+    private long lastRunTime = 0;
+    private int stuckTicks = 0;
+    private BlockPos lastPos = null;
 
     public RuffianStationBehavior() {
         super(ImmutableMap.of(
                 MemoryModuleType.WALK_TARGET, MemoryStatus.REGISTERED,
                 MemoryModuleType.LOOK_TARGET, MemoryStatus.REGISTERED
-        ), 600);
+        ), 300);
     }
 
     public RuffianStationBehavior(double interactionRadiusSq) {
@@ -42,17 +46,11 @@ public abstract class RuffianStationBehavior extends Behavior<RuffianEntity> {
         this.interactionRadiusSq = interactionRadiusSq;
     }
 
-    /**
-     * Checks baseline conditions (Tamed/AI state, Napping, Anxious).
-     */
     protected boolean isRuffianAvailable(RuffianEntity ruffian) {
-        boolean isValidState = !ruffian.isTamed() || ruffian.getAiState() == 3;
+        boolean isValidState = ruffian.isTamed() && ruffian.getAiState() == 3;
         return isValidState && !ruffian.isNapping() && !ruffian.isCrouchingAnxious();
     }
 
-    /**
-     * Finds and assigns the nearest Ruffian storage chest within radius.
-     */
     protected boolean locateStorage(ServerLevel level, RuffianEntity ruffian, int radiusXZ, int radiusY) {
         this.chestPos = BlockPosUtil.findBlockInRadius(level, ruffian.blockPosition(), RUFFIAN_STORAGE, radiusXZ, radiusY);
         return this.chestPos != null;
@@ -71,19 +69,41 @@ public abstract class RuffianStationBehavior extends Behavior<RuffianEntity> {
         return (this.currentStep == 0 || this.currentStep == 2) ? this.chestPos : this.stationPos;
     }
 
+    /**
+     * Advances step or loops back to Fetch (0) if more work remains at the station.
+     */
     protected void advanceStep(RuffianEntity ruffian) {
-        this.currentStep++;
+        // If finishing step 1 (Process) and hand is empty, check if the station needs another trip
+        if (this.currentStep == 1 && getActiveItem(ruffian).isEmpty() && shouldRepeatFetchCycle(ruffian)) {
+            this.currentStep = 0; // Loop back to Chest Fetch step
+        } else {
+            this.currentStep++;
+        }
+
+        this.stuckTicks = 0;
         if (this.currentStep < 3) {
             navigateToStepTarget(ruffian);
         }
     }
 
+    /**
+     * Override in subclasses to allow multi-trip looping back to the storage chest.
+     */
+    protected boolean shouldRepeatFetchCycle(RuffianEntity ruffian) {
+        return false;
+    }
+
     protected void navigateToStepTarget(RuffianEntity ruffian) {
         BlockPos target = getTargetPosForCurrentStep();
         if (target != null) {
-            ruffian.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(target, 1.0F, 1));
+            ruffian.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(target, 1.0F, 2));
             ruffian.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new BlockPosTracker(target));
         }
+    }
+
+    @Override
+    protected boolean checkExtraStartConditions(@NotNull ServerLevel level, @NotNull RuffianEntity ruffian) {
+        return isRuffianAvailable(ruffian) && locateStorage(level, ruffian, 8, 3);
     }
 
     @Override
@@ -91,12 +111,14 @@ public abstract class RuffianStationBehavior extends Behavior<RuffianEntity> {
         if (this.currentStep == 2 && !getActiveItem(ruffian).isEmpty()) {
             return true;
         }
-        return this.currentStep < 3 && checkExtraStartConditions(level, ruffian);
+        return this.currentStep < 3;
     }
 
     @Override
     protected void start(@NotNull ServerLevel level, @NotNull RuffianEntity ruffian, long gameTime) {
         this.currentStep = 0;
+        this.stuckTicks = 0;
+        this.lastPos = ruffian.blockPosition();
         ruffian.setWorking(true);
         navigateToStepTarget(ruffian);
     }
@@ -104,7 +126,21 @@ public abstract class RuffianStationBehavior extends Behavior<RuffianEntity> {
     @Override
     protected void tick(@NotNull ServerLevel level, @NotNull RuffianEntity ruffian, long gameTime) {
         BlockPos target = getTargetPosForCurrentStep();
-        if (target == null) return;
+        if (target == null) {
+            stop(level, ruffian, gameTime);
+            return;
+        }
+
+        if (ruffian.blockPosition().equals(this.lastPos)) {
+            this.stuckTicks++;
+            if (this.stuckTicks > 80) {
+                stop(level, ruffian, gameTime);
+                return;
+            }
+        } else {
+            this.stuckTicks = 0;
+            this.lastPos = ruffian.blockPosition();
+        }
 
         double distSq = ruffian.distanceToSqr(target.getX() + 0.5D, target.getY() + 0.5D, target.getZ() + 0.5D);
 
@@ -125,7 +161,7 @@ public abstract class RuffianStationBehavior extends Behavior<RuffianEntity> {
     protected void tickDepositStep(ServerLevel level, RuffianEntity ruffian, long gameTime, double distSq) {
         if (distSq <= this.interactionRadiusSq) {
             ItemStack held = getActiveItem(ruffian);
-            if (WorkstationRecipeUtil.tryDepositToContainer(level, this.chestPos, held)) {
+            if (held.isEmpty() || WorkstationRecipeUtil.tryDepositToContainer(level, this.chestPos, held)) {
                 setActiveItem(ruffian, ItemStack.EMPTY);
                 stop(level, ruffian, gameTime);
             } else {
@@ -136,6 +172,7 @@ public abstract class RuffianStationBehavior extends Behavior<RuffianEntity> {
 
     @Override
     protected void stop(@NotNull ServerLevel level, @NotNull RuffianEntity ruffian, long gameTime) {
+        this.lastRunTime = gameTime;
         ItemStack held = getActiveItem(ruffian);
         if (!held.isEmpty()) {
             if (this.chestPos == null || !WorkstationRecipeUtil.tryDepositToContainer(level, this.chestPos, held)) {
@@ -145,8 +182,11 @@ public abstract class RuffianStationBehavior extends Behavior<RuffianEntity> {
         }
 
         ruffian.setWorking(false);
+        ruffian.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
+        ruffian.getBrain().eraseMemory(MemoryModuleType.LOOK_TARGET);
         this.chestPos = null;
         this.stationPos = null;
         this.currentStep = 0;
+        this.stuckTicks = 0;
     }
 }

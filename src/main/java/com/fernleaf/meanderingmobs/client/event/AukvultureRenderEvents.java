@@ -36,20 +36,23 @@ public class AukvultureRenderEvents {
         if (player != null && player.getVehicle() instanceof AukvultureEntity aukvulture && aukvulture.isFlying()) {
             boolean allowRoll = MeanderingMobsConfig.getSafe(MeanderingMobsConfig.ENABLE_AUKVULTURE_CAMERA_ROLL);
 
+            // Apply global screen camera roll whenever flying and enabled
             if (allowRoll) {
                 float partialTicks = (float) event.getPartialTick();
                 float smoothedRoll = Mth.lerp(partialTicks, aukvulture.prevRollAngle, aukvulture.rollAngle);
                 smoothedRoll = Mth.clamp(smoothedRoll, -45.0F, 45.0F);
+
+                // Set camera tilt on screen matrix
                 event.setRoll(smoothedRoll);
             }
 
             Camera camera = event.getCamera();
 
+            // First Person Offset Handling
             if (mc.options.getCameraType().isFirstPerson()) {
                 if (allowRoll) {
                     float pitchRad = camera.getXRot() * Mth.DEG_TO_RAD;
-                    float pitchFactor = Mth.cos(pitchRad); // 1.0 at horizon, 0.0 at straight up/down
-
+                    float pitchFactor = Mth.cos(pitchRad);
                     camera.move(0.5F * pitchFactor, 0.25F * pitchFactor, 0.0F);
                 } else {
                     float safePitch = Mth.clamp(camera.getXRot(), -89.9F, 89.9F);

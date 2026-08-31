@@ -25,26 +25,17 @@ public class RuffianArmorStandBehavior extends RuffianStationBehavior {
     }
 
     @Override
-    protected boolean checkExtraStartConditions(@NotNull ServerLevel level, RuffianEntity ruffian) {
-        // Prevent starting a new fetch cycle if already carrying an item
-        if (!getActiveItem(ruffian).isEmpty()) {
+    protected boolean checkExtraStartConditions(@NotNull ServerLevel level, @NotNull RuffianEntity ruffian) {
+        if (!getActiveItem(ruffian).isEmpty() || !isRuffianAvailable(ruffian) || !locateStorage(level, ruffian, 8, 3)) {
             return false;
         }
 
-        if (!ruffian.isTamed() || ruffian.getAiState() != 3 || ruffian.isNapping() || ruffian.isCrouchingAnxious()) {
-            return false;
-        }
-
-        List<ArmorStand> stands = level.getEntitiesOfClass(ArmorStand.class, ruffian.getBoundingBox().inflate(8.0));
-        if (stands.isEmpty()) return false;
-
-        if (!locateStorage(level, ruffian, 8, 3)) return false;
-
+        List<ArmorStand> stands = level.getEntitiesOfClass(ArmorStand.class, ruffian.getBoundingBox().inflate(8.0D));
         BlockEntity be = level.getBlockEntity(this.chestPos);
+
         if (be instanceof Container container) {
             for (ArmorStand stand : stands) {
-                int slot = WorkstationRecipeUtil.findArmorForStand(container, stand);
-                if (slot != -1) {
+                if (WorkstationRecipeUtil.findArmorForStand(container, stand) != -1) {
                     this.targetStand = stand;
                     return true;
                 }
@@ -56,16 +47,18 @@ public class RuffianArmorStandBehavior extends RuffianStationBehavior {
 
     @Override
     protected boolean canStillUse(@NotNull ServerLevel level, @NotNull RuffianEntity ruffian, long gameTime) {
-        // Force completion of active step if holding an item
-        if (!getActiveItem(ruffian).isEmpty()) {
-            return this.targetStand != null && this.targetStand.isAlive();
+        if (this.targetStand == null || !this.targetStand.isAlive()) {
+            return false;
         }
-        return checkExtraStartConditions(level, ruffian) && super.canStillUse(level, ruffian, gameTime);
+        if (!getActiveItem(ruffian).isEmpty()) {
+            return true;
+        }
+        return super.canStillUse(level, ruffian, gameTime);
     }
 
     @Override
     protected void tickFetchStep(ServerLevel level, RuffianEntity ruffian, long gameTime, double distSq) {
-        if (targetStand == null || !targetStand.isAlive()) {
+        if (this.targetStand == null || !this.targetStand.isAlive()) {
             stop(level, ruffian, gameTime);
             return;
         }
@@ -79,7 +72,6 @@ public class RuffianArmorStandBehavior extends RuffianStationBehavior {
                     setActiveItem(ruffian, armor);
                     container.setChanged();
 
-                    // Lock target position to the Armor Stand
                     this.stationPos = this.targetStand.blockPosition();
                     advanceStep(ruffian);
                     return;
@@ -91,29 +83,38 @@ public class RuffianArmorStandBehavior extends RuffianStationBehavior {
 
     @Override
     protected void tickProcessStep(ServerLevel level, RuffianEntity ruffian, long gameTime, double distSq) {
-        if (targetStand == null || !targetStand.isAlive() || getActiveItem(ruffian).isEmpty()) {
+        if (this.targetStand == null || !this.targetStand.isAlive() || getActiveItem(ruffian).isEmpty()) {
             stop(level, ruffian, gameTime);
             return;
         }
 
-        this.stationPos = targetStand.blockPosition();
-        double actualDistSq = ruffian.distanceToSqr(targetStand);
+        this.stationPos = this.targetStand.blockPosition();
+        double actualDistSq = ruffian.distanceToSqr(this.targetStand);
 
-        ruffian.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new EntityTracker(targetStand, true));
+        ruffian.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new EntityTracker(this.targetStand, true));
 
         if (actualDistSq <= this.interactionRadiusSq) {
             this.workTicks++;
             if (this.workTicks >= 20) {
                 ItemStack heldArmor = getActiveItem(ruffian);
-                EquipmentSlot slot = targetStand.getEquipmentSlotForItem(heldArmor);
+                EquipmentSlot slot = this.targetStand.getEquipmentSlotForItem(heldArmor);
 
-                targetStand.setItemSlot(slot, heldArmor.copy());
+                this.targetStand.setItemSlot(slot, heldArmor.copy());
                 setActiveItem(ruffian, ItemStack.EMPTY);
+                this.workTicks = 0;
 
-                // End task execution immediately after placing armor
-                stop(level, ruffian, gameTime);
+                advanceStep(ruffian);
             }
         }
+    }
+
+    @Override
+    protected boolean shouldRepeatFetchCycle(RuffianEntity ruffian) {
+        if (this.targetStand == null || !this.targetStand.isAlive() || this.chestPos == null) {
+            return false;
+        }
+        BlockEntity be = ruffian.level().getBlockEntity(this.chestPos);
+        return be instanceof Container container && WorkstationRecipeUtil.findArmorForStand(container, this.targetStand) != -1;
     }
 
     @Override

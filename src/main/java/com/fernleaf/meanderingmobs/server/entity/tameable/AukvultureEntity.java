@@ -7,6 +7,7 @@ import com.fernleaf.meanderingmobs.registry.MeanderingMobsTagRegistry;
 import com.fernleaf.meanderingmobs.server.data.VariantSpawnManager;
 import com.fernleaf.meanderingmobs.server.entity.ai.aukvulture.*;
 import com.fernleaf.meanderingmobs.server.entity.util.MeanderingMobsTameableEntity;
+import com.fernleaf.meanderingmobs.util.AukvultureFlightMath;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
@@ -17,6 +18,7 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -29,6 +31,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
@@ -36,6 +39,7 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 
@@ -57,9 +61,11 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
     public static final byte EVENT_LANDING = 61;
 
     public boolean clientFlapping, clientDiving, wasFlying;
+    private boolean initializedFlyingState = false;
     private int crashCooldown = 0, transitionTicks = 0, attackAnimationTicks = 0;
     public float takeoffCharge = 0.0F, rollAngle = 0.0F, prevRollAngle = 0.0F;
     public int takeoffTimer = 0;
+    public int groundedTimer = 0; // Ticks remaining where takeoff is blocked after getting shot down
 
     public final AnimationState idleAnimationState = new AnimationState();
     public final AnimationState walkAnimationState = new AnimationState();
@@ -77,7 +83,7 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
 
     public static AttributeSupplier.Builder createAttributes() {
         return PathfinderMob.createMobAttributes()
-                .add(Attributes.MAX_HEALTH, 30.0D)
+                .add(Attributes.MAX_HEALTH, 100.0D)
                 .add(Attributes.MOVEMENT_SPEED, 0.25D)
                 .add(Attributes.ATTACK_DAMAGE, 6.0D)
                 .add(Attributes.FOLLOW_RANGE, 20.0D)
@@ -115,6 +121,7 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
         compound.putBoolean("LoneWanderer", isLoneWanderer());
         compound.putBoolean("IsFlying", isFlying());
         compound.putBoolean("Saddled", isSaddled());
+        compound.putInt("GroundedTimer", groundedTimer);
         if (getNavigationOwner() != null) compound.putUUID("NavigationOwner", getNavigationOwner());
     }
 
@@ -124,6 +131,7 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
         setLoneWanderer(!compound.contains("LoneWanderer") || compound.getBoolean("LoneWanderer"));
         setFlying(compound.getBoolean("IsFlying"));
         setSaddled(compound.getBoolean("Saddled"));
+        if (compound.contains("GroundedTimer")) this.groundedTimer = compound.getInt("GroundedTimer");
         if (compound.hasUUID("NavigationOwner")) setNavigationOwner(compound.getUUID("NavigationOwner"));
     }
 
@@ -133,14 +141,19 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
     }
 
     public boolean isFlying() { return this.entityData.get(IS_FLYING); }
+
     public void setFlying(boolean flying) {
+        if (flying && this.groundedTimer > 0) return; // Block flying if grounded by arrow
+
         boolean wasFlyingCurrently = isFlying();
         this.entityData.set(IS_FLYING, flying);
         this.setNoGravity(flying);
         this.refreshDimensions();
 
-        if (!wasFlyingCurrently && flying) triggerTakeoff();
-        else if (wasFlyingCurrently && !flying) triggerLanding();
+        if (this.initializedFlyingState) {
+            if (!wasFlyingCurrently && flying) triggerTakeoff();
+            else if (wasFlyingCurrently && !flying) triggerLanding();
+        }
     }
 
     public boolean isAttacking() { return this.entityData.get(IS_ATTACKING); }
@@ -180,10 +193,44 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
     }
 
     @Override
+    protected void removePassenger(@NotNull Entity passenger) {
+        super.removePassenger(passenger);
+
+        this.setFlying(false);
+        this.rollAngle = 0.0F;
+        this.prevRollAngle = 0.0F;
+        this.setXRot(0.0F);
+
+        if (this.level().isClientSide()) {
+            this.flyAnimationState.stop();
+            this.walk2FlyAnimationState.stop();
+        }
+    }
+
+    @Override
+    public boolean hurt(@NotNull DamageSource source, float amount) {
+        if (isFlying() && (source.is(DamageTypeTags.IS_PROJECTILE) || source.getDirectEntity() instanceof AbstractArrow)) {
+            if (!level().isClientSide()) {
+                setFlying(false);
+                this.groundedTimer = 200; // Grounded for 10 seconds
+                this.setDeltaMovement(this.getDeltaMovement().multiply(0.2D, -0.5D, 0.2D));
+                this.hasImpulse = true;
+                level().broadcastEntityEvent(this, EVENT_LANDING);
+            }
+        }
+        return super.hurt(source, amount);
+    }
+
+    @Override
     public void tame(Player player) {
         super.tame(player);
         setNavigationOwner(player.getUUID());
         navigation.stop();
+    }
+
+    @Override
+    public @NotNull HitResult pick(double hitDistance, float partialTicks, boolean hitFluids) {
+        return super.pick(hitDistance, partialTicks, hitFluids);
     }
 
     public boolean isLoneWanderer() { return this.entityData.get(DATA_LONE_WANDERER); }
@@ -243,7 +290,7 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
                 return InteractionResult.sidedSuccess(level().isClientSide());
             }
 
-            if (isSaddled() && !player.isShiftKeyDown() && !isVehicle()) {
+            if (isSaddled() && !player.isShiftKeyDown() && !isVehicle() && !this.isSitting()) {
                 if (!level().isClientSide()) player.startRiding(this);
                 return InteractionResult.sidedSuccess(level().isClientSide());
             }
@@ -265,7 +312,11 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
     @Override
     public void tick() {
         super.tick();
-        prevRollAngle = rollAngle;
+        this.prevRollAngle = this.rollAngle;
+
+        if (this.groundedTimer > 0) {
+            this.groundedTimer--;
+        }
 
         if (attackAnimationTicks > 0 && --attackAnimationTicks == 0) {
             attackAnimationState.stop();
@@ -284,20 +335,30 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
 
     private void updateRotations() {
         if (isVehicle() && getControllingPassenger() instanceof Player player) {
-            yRotO = getYRot();
-            setYRot(Mth.rotLerp(0.15F, getYRot(), player.getYRot()));
-            yBodyRot = yHeadRot = getYRot();
-            player.setYBodyRot(getYRot());
-
             if (isFlying()) {
-                float targetPitch = (float) Mth.clamp(-getDeltaMovement().y * 40.0D, -50.0D, 50.0D);
-                if (clientDiving) targetPitch = 40.0F;
-                else if (clientFlapping) targetPitch = -30.0F;
+                AukvultureFlightMath.RotationResult rot = AukvultureFlightMath.calculateRiderRotations(
+                        this, player, clientDiving, clientFlapping
+                );
 
-                setXRot(Mth.rotLerp(0.18F, getXRot(), targetPitch));
-                rollAngle = calculateRollAngle(player.xxa, Mth.wrapDegrees(player.getYRot() - getYRot()));
-            } else decayRotations();
-        } else if (!isFlying()) decayRotations();
+                setYRot(rot.yaw);
+                this.yBodyRot = rot.yaw;
+                this.yHeadRot = rot.yaw;
+
+                // 3. Set Pitch (Nose up/down)
+                setXRot(rot.pitch);
+
+                // 4. Update Roll (Model wing bank)
+                this.prevRollAngle = this.rollAngle; // Always update prev for rendering interpolation
+                this.rollAngle = rot.roll;
+            } else {
+                decayRotations();
+            }
+        } else if (isFlying()) {
+            this.prevRollAngle = this.rollAngle;
+            this.rollAngle = AukvultureFlightMath.calculateWildRoll(getYRot(), yRotO, this.rollAngle);
+        } else {
+            decayRotations();
+        }
     }
 
     public float calculateRollAngle(float strafeInput, float yawDelta) {
@@ -430,6 +491,18 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
     private void setupAnimationStates() {
         boolean isCurrentlyFlying = isFlying();
 
+        // FIX RENDERER RESET ON CHUNK LOAD
+        if (!this.initializedFlyingState) {
+            this.wasFlying = isCurrentlyFlying;
+            this.initializedFlyingState = true;
+            if (isCurrentlyFlying) {
+                flyAnimationState.startIfStopped(tickCount);
+            } else {
+                idleAnimationState.startIfStopped(tickCount);
+            }
+            return;
+        }
+
         if (isCurrentlyFlying && !wasFlying) {
             stopGroundAnimations();
             walk2FlyAnimationState.start(tickCount);
@@ -455,7 +528,6 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
         } else {
             landingAnimationState.stop();
 
-            // Handle Sitting Pose Priority
             if (isSitting()) {
                 idleAnimationState.stop();
                 idle2AnimationState.stop();

@@ -9,24 +9,19 @@ import net.minecraft.world.entity.LivingEntity;
 public class ParrotfishModelAdapter {
 
     public static void applyToModel(LivingEntity entity, ParrotfishModel<?> model, ParrotfishIKInstance ik) {
-        // Base root pitch & roll
         model.root().xRot += ik.pitch;
         model.root().zRot += ik.roll;
 
-        // Accordion telescoping offset (shifts parts inward by up to 3.5 pixels when scrunched)
         float zCompress = ik.bodyScrunch * 3.5f;
 
-        // Head & Beak
         model.head.z += zCompress * 0.6f;
         model.lBeak.xRot = ik.beakOpen;
 
-        // Body scales
         model.body.zScale = ik.bodyScaleZ;
         float squishBulge = 1.0f + (1.0f - ik.bodyScaleZ) * 0.65f;
         model.body.xScale = squishBulge;
         model.body.yScale = squishBulge;
 
-        // Torso, Back & Tail spine chain
         model.torso.yRot += ik.torsoYaw;
 
         model.back.yRot += (ik.backYaw - ik.torsoYaw);
@@ -36,7 +31,6 @@ public class ParrotfishModelAdapter {
         model.tail.yRot += relativeTailYaw;
         model.tail.z -= zCompress;
 
-        // Pectoral fins
         model.lFin.yRot += ik.pectoralFinFlap;
         model.rFin.yRot -= ik.pectoralFinFlap;
     }

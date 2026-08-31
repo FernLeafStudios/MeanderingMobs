@@ -54,6 +54,7 @@ public class MeanderingMobsEntityRegistry {
     public static final DeferredHolder<EntityType<?>, EntityType<AukvultureEntity>> AUKVULTURE = ENTITIES.register("aukvulture",
             () -> EntityType.Builder.of(AukvultureEntity::new, MobCategory.CREATURE)
                     .sized(1.5F, 2.0F)
+                    .clientTrackingRange(18)
                     .build("aukvulture")
     );
 
@@ -173,7 +174,7 @@ public class MeanderingMobsEntityRegistry {
     public static final DeferredHolder<EntityType<?>, EntityType<WolverineEntity>> WOLVERINE =
             ENTITIES.register("wolverine", () ->
                     EntityType.Builder.of(WolverineEntity::new, MobCategory.CREATURE)
-                            .sized(0.6F, 0.6F)
+                            .sized(1.0F, 1.0F)
                             .clientTrackingRange(8)
                             .build("wolverine")
             );

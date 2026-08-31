@@ -47,7 +47,6 @@ public class RuffianDyeBehavior extends RuffianStationBehavior {
         ItemStack targetItem = container.getItem(dSlot);
 
         BlockPos station;
-        // Banners & Carpets prioritize Loom first; fallback to Cauldron
         if (targetItem.is(ItemTags.BANNERS) || targetItem.is(ItemTags.WOOL_CARPETS)) {
             station = BlockPosUtil.findBlockInRadius(level, ruffian.blockPosition(), Blocks.LOOM, 8, 3);
             if (station == null) {
@@ -74,7 +73,7 @@ public class RuffianDyeBehavior extends RuffianStationBehavior {
         if (this.currentStep > 0 && (!getActiveItem(ruffian).isEmpty() || !this.heldDye.isEmpty())) {
             return true;
         }
-        return this.currentStep < 3 && checkExtraStartConditions(level, ruffian);
+        return super.canStillUse(level, ruffian, gameTime);
     }
 
     @Override
@@ -107,6 +106,7 @@ public class RuffianDyeBehavior extends RuffianStationBehavior {
                     setActiveItem(ruffian, dyedItem);
                     ruffian.setItemInHand(InteractionHand.OFF_HAND, ItemStack.EMPTY);
                     this.heldDye = ItemStack.EMPTY;
+                    this.processTicks = 0;
 
                     level.playSound(null, this.stationPos, SoundEvents.DYE_USE, SoundSource.BLOCKS, 0.8F, 1.0F);
                     level.sendParticles(ParticleTypes.HAPPY_VILLAGER, this.stationPos.getX() + 0.5D, this.stationPos.getY() + 1.0D, this.stationPos.getZ() + 0.5D, 5, 0.2D, 0.2D, 0.2D, 0.0D);
@@ -117,6 +117,17 @@ public class RuffianDyeBehavior extends RuffianStationBehavior {
                 }
             }
         }
+    }
+
+    @Override
+    protected boolean shouldRepeatFetchCycle(RuffianEntity ruffian) {
+        if (this.chestPos == null) return false;
+        BlockEntity be = ruffian.level().getBlockEntity(this.chestPos);
+        if (be instanceof Container container) {
+            return WorkstationRecipeUtil.findDyeableItemSlot(ruffian.level(), container) != -1 &&
+                    WorkstationRecipeUtil.findDyeSlot(container) != -1;
+        }
+        return false;
     }
 
     @Override

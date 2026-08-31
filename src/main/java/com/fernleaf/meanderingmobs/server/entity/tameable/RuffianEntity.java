@@ -9,6 +9,7 @@ import com.fernleaf.meanderingmobs.server.entity.ai.ruffian.brain.RuffianActivit
 import com.fernleaf.meanderingmobs.server.entity.ai.ruffian.brain.RuffianMemoryModuleTypes;
 import com.fernleaf.meanderingmobs.server.entity.util.MeanderingMobsTameableEntity;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
@@ -125,11 +126,14 @@ public class RuffianEntity extends MeanderingMobsTameableEntity {
         ));
 
         brain.addActivity(RuffianActivities.CHORES.get(), 5, ImmutableList.of(
-                new RuffianRepairBehavior(),
-                new RuffianArmorStandBehavior(),
-                new RuffianDyeBehavior(),
-                new RuffianBrewBehavior(),
-                new RuffianSmeltBehavior()
+                new RunOne<>(ImmutableList.of(
+                        Pair.of(new RuffianBrewBehavior(), 1),
+                        Pair.of(new RuffianSmeltBehavior(), 1),
+                        Pair.of(new RuffianRepairBehavior(), 1),
+                        Pair.of(new RuffianDyeBehavior(), 1),
+                        Pair.of(new RuffianArmorStandBehavior(), 1)
+                )),
+                new RuffianWorkPacingBehavior(0.6F, 4)
         ));
 
         brain.addActivity(Activity.IDLE, 10, ImmutableList.of(

@@ -5,9 +5,12 @@ import com.fernleaf.meanderingmobs.client.instance.OkapiIKInstance;
 import net.minecraft.client.model.HierarchicalModel;
 import net.minecraft.world.entity.LivingEntity;
 
-@SuppressWarnings("unused")
 public class OkapiModelAdapter {
 
+    @Deprecated
+    /*
+     Okapi is receiving new frame by frame animation
+    */
     public static void applyToModel(LivingEntity entity, HierarchicalModel<?> model, OkapiIKInstance ik) {
         ModelPartUtils.ifPresent(model.root(), okapiRoot -> {
             ModelPartUtils.ifPresent(okapiRoot, torso -> {
