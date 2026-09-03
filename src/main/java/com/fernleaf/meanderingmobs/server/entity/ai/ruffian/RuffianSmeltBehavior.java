@@ -1,8 +1,8 @@
 package com.fernleaf.meanderingmobs.server.entity.ai.ruffian;
 
+import com.fernleaf.fernframe.mathbath.item.WorkstationRecipe;
+import com.fernleaf.fernframe.mathbath.spatial.BlockPosition;
 import com.fernleaf.meanderingmobs.server.entity.ai.ruffian.util.RuffianStationBehavior;
-import com.fernleaf.meanderingmobs.util.BlockPosUtil;
-import com.fernleaf.meanderingmobs.util.WorkstationRecipeUtil;
 import com.fernleaf.meanderingmobs.server.entity.tameable.RuffianEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
@@ -33,7 +33,7 @@ public class RuffianSmeltBehavior extends RuffianStationBehavior {
         if (!isRuffianAvailable(ruffian) || !locateStorage(level, ruffian, 6, 2)) {
             return false;
         }
-        this.stationPos = BlockPosUtil.findBlockInRadius(level, ruffian.blockPosition(), RUFFIAN_WORKSTATION, 6, 2);
+        this.stationPos = BlockPosition.findBlockInRadius(level, ruffian.blockPosition(), RUFFIAN_WORKSTATION, 6, 2);
         if (this.stationPos == null) {
             return false;
         }
@@ -97,8 +97,8 @@ public class RuffianSmeltBehavior extends RuffianStationBehavior {
 
         BlockEntity be = ruffian.level().getBlockEntity(cPos);
         if (be instanceof Container container) {
-            boolean needsFuel = furnace.getItem(1).isEmpty() && WorkstationRecipeUtil.findSlotMatching(container, AbstractFurnaceBlockEntity::isFuel) != -1;
-            boolean needsItem = WorkstationRecipeUtil.findSlotMatching(container, stack -> WorkstationRecipeUtil.isProcessable(ruffian.level(), stack)) != -1;
+            boolean needsFuel = furnace.getItem(1).isEmpty() && WorkstationRecipe.findSlotMatching(container, AbstractFurnaceBlockEntity::isFuel) != -1;
+            boolean needsItem = WorkstationRecipe.findSlotMatching(container, stack -> WorkstationRecipe.isProcessable(ruffian.level(), stack)) != -1;
 
             return needsFuel || needsItem;
         }
@@ -116,7 +116,7 @@ public class RuffianSmeltBehavior extends RuffianStationBehavior {
         AbstractFurnaceBlockEntity furnace = getFurnace(ruffian, this.stationPos);
 
         if (furnace != null && furnace.getItem(1).isEmpty()) {
-            ItemStack fuel = WorkstationRecipeUtil.tryExtractFromContainer(level, pos, AbstractFurnaceBlockEntity::isFuel, 8);
+            ItemStack fuel = WorkstationRecipe.tryExtractFromContainer(level, pos, AbstractFurnaceBlockEntity::isFuel, 8);
             if (!fuel.isEmpty()) {
                 setActiveItem(ruffian, fuel);
                 this.carryingFuel = true;
@@ -124,7 +124,7 @@ public class RuffianSmeltBehavior extends RuffianStationBehavior {
             }
         }
 
-        ItemStack processable = WorkstationRecipeUtil.tryExtractFromContainer(level, pos, stack -> WorkstationRecipeUtil.isProcessable(level, stack), 8);
+        ItemStack processable = WorkstationRecipe.tryExtractFromContainer(level, pos, stack -> WorkstationRecipe.isProcessable(level, stack), 8);
         if (!processable.isEmpty()) {
             setActiveItem(ruffian, processable);
             this.carryingFuel = false;

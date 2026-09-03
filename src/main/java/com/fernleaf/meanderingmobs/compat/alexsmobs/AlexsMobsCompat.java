@@ -3,9 +3,13 @@ package com.fernleaf.meanderingmobs.compat.alexsmobs;
 import net.neoforged.fml.ModList;
 
 public class AlexsMobsCompat {
-    public static final String MODID = "alexsmobs";
+    private static final String MOD_ID = "alexsmobs";
+    private static Boolean loaded = null;
 
     public static boolean isLoaded() {
-        return ModList.get().isLoaded(MODID);
+        if (loaded == null) {
+            loaded = ModList.get().isLoaded(MOD_ID);
+        }
+        return loaded;
     }
 }

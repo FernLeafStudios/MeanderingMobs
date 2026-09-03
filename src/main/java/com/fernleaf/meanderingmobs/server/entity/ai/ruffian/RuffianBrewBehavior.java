@@ -1,8 +1,8 @@
 package com.fernleaf.meanderingmobs.server.entity.ai.ruffian;
 
+import com.fernleaf.fernframe.mathbath.item.WorkstationRecipe;
+import com.fernleaf.fernframe.mathbath.spatial.BlockPosition;
 import com.fernleaf.meanderingmobs.server.entity.ai.ruffian.util.RuffianStationBehavior;
-import com.fernleaf.meanderingmobs.util.BlockPosUtil;
-import com.fernleaf.meanderingmobs.util.WorkstationRecipeUtil;
 import com.fernleaf.meanderingmobs.server.entity.tameable.RuffianEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
@@ -31,7 +31,7 @@ public class RuffianBrewBehavior extends RuffianStationBehavior {
         if (!isRuffianAvailable(ruffian) || !locateStorage(level, ruffian, 6, 2)) {
             return false;
         }
-        this.stationPos = BlockPosUtil.findBlockInRadius(level, ruffian.blockPosition(), Blocks.BREWING_STAND, 6, 2);
+        this.stationPos = BlockPosition.findBlockInRadius(level, ruffian.blockPosition(), Blocks.BREWING_STAND, 6, 2);
         if (this.stationPos == null) {
             return false;
         }
@@ -108,10 +108,10 @@ public class RuffianBrewBehavior extends RuffianStationBehavior {
 
         BlockEntity be = ruffian.level().getBlockEntity(cPos);
         if (be instanceof Container container) {
-            boolean needsFuel = stand.getItem(4).isEmpty() && WorkstationRecipeUtil.findSlotMatching(container, stack -> stack.is(Items.BLAZE_POWDER)) != -1;
+            boolean needsFuel = stand.getItem(4).isEmpty() && WorkstationRecipe.findSlotMatching(container, stack -> stack.is(Items.BLAZE_POWDER)) != -1;
             boolean needsBottle = (stand.getItem(0).isEmpty() || stand.getItem(1).isEmpty() || stand.getItem(2).isEmpty()) &&
-                    WorkstationRecipeUtil.findSlotMatching(container, stack -> stack.is(Items.POTION) && stack.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY).is(Potions.WATER)) != -1;
-            boolean needsIngredient = stand.getItem(3).isEmpty() && WorkstationRecipeUtil.findSlotMatching(container, stack -> isValidIngredientForStand((ServerLevel) ruffian.level(), stand, stack)) != -1;
+                    WorkstationRecipe.findSlotMatching(container, stack -> stack.is(Items.POTION) && stack.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY).is(Potions.WATER)) != -1;
+            boolean needsIngredient = stand.getItem(3).isEmpty() && WorkstationRecipe.findSlotMatching(container, stack -> isValidIngredientForStand((ServerLevel) ruffian.level(), stand, stack)) != -1;
 
             return needsFuel || needsBottle || needsIngredient;
         }
@@ -133,7 +133,7 @@ public class RuffianBrewBehavior extends RuffianStationBehavior {
         }
 
         if (stand.getItem(4).isEmpty()) {
-            ItemStack blazePowder = WorkstationRecipeUtil.tryExtractFromContainer(level, pos, stack -> stack.is(Items.BLAZE_POWDER), 8);
+            ItemStack blazePowder = WorkstationRecipe.tryExtractFromContainer(level, pos, stack -> stack.is(Items.BLAZE_POWDER), 8);
             if (!blazePowder.isEmpty()) {
                 setActiveItem(ruffian, blazePowder);
                 this.carryingBlazePowder = true;
@@ -143,7 +143,7 @@ public class RuffianBrewBehavior extends RuffianStationBehavior {
 
         boolean hasEmptyBottleSlot = stand.getItem(0).isEmpty() || stand.getItem(1).isEmpty() || stand.getItem(2).isEmpty();
         if (hasEmptyBottleSlot) {
-            ItemStack waterBottle = WorkstationRecipeUtil.tryExtractFromContainer(level, pos, stack -> {
+            ItemStack waterBottle = WorkstationRecipe.tryExtractFromContainer(level, pos, stack -> {
                 if (stack.is(Items.POTION)) {
                     PotionContents contents = stack.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
                     return contents.is(Potions.WATER);
@@ -159,7 +159,7 @@ public class RuffianBrewBehavior extends RuffianStationBehavior {
         }
 
         if (stand.getItem(3).isEmpty()) {
-            ItemStack validIngredient = WorkstationRecipeUtil.tryExtractFromContainer(level, pos,
+            ItemStack validIngredient = WorkstationRecipe.tryExtractFromContainer(level, pos,
                     stack -> isValidIngredientForStand(level, stand, stack), 1
             );
 

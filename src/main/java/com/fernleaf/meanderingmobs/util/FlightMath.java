@@ -4,7 +4,7 @@ import com.fernleaf.meanderingmobs.server.entity.tameable.AukvultureEntity;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 
-public class AukvultureFlightMath {
+public class FlightMath {
 
     public static class RotationResult {
         public final float yaw;

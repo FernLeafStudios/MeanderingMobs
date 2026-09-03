@@ -1,9 +1,9 @@
 package com.fernleaf.meanderingmobs.server.entity.ai.ruffian;
 
+import com.fernleaf.fernframe.mathbath.item.WorkstationRecipe;
+import com.fernleaf.fernframe.mathbath.spatial.BlockPosition;
 import com.fernleaf.meanderingmobs.server.entity.ai.ruffian.util.RuffianStationBehavior;
 import com.fernleaf.meanderingmobs.server.entity.tameable.RuffianEntity;
-import com.fernleaf.meanderingmobs.util.BlockPosUtil;
-import com.fernleaf.meanderingmobs.util.WorkstationRecipeUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
@@ -40,22 +40,22 @@ public class RuffianDyeBehavior extends RuffianStationBehavior {
         BlockEntity be = level.getBlockEntity(this.chestPos);
         if (!(be instanceof Container container)) return false;
 
-        int dSlot = WorkstationRecipeUtil.findDyeableItemSlot(level, container);
-        int dyeS = WorkstationRecipeUtil.findDyeSlot(container);
+        int dSlot = WorkstationRecipe.findDyeableItemSlot(level, container);
+        int dyeS = WorkstationRecipe.findDyeSlot(container);
         if (dSlot == -1 || dyeS == -1) return false;
 
         ItemStack targetItem = container.getItem(dSlot);
 
         BlockPos station;
         if (targetItem.is(ItemTags.BANNERS) || targetItem.is(ItemTags.WOOL_CARPETS)) {
-            station = BlockPosUtil.findBlockInRadius(level, ruffian.blockPosition(), Blocks.LOOM, 8, 3);
+            station = BlockPosition.findBlockInRadius(level, ruffian.blockPosition(), Blocks.LOOM, 8, 3);
             if (station == null) {
-                station = BlockPosUtil.findBlockInRadius(level, ruffian.blockPosition(), BlockTags.CAULDRONS, 8, 3);
+                station = BlockPosition.findBlockInRadius(level, ruffian.blockPosition(), BlockTags.CAULDRONS, 8, 3);
             }
         } else {
-            station = BlockPosUtil.findBlockInRadius(level, ruffian.blockPosition(), BlockTags.CAULDRONS, 8, 3);
+            station = BlockPosition.findBlockInRadius(level, ruffian.blockPosition(), BlockTags.CAULDRONS, 8, 3);
             if (station == null) {
-                station = BlockPosUtil.findBlockInRadius(level, ruffian.blockPosition(), Blocks.LOOM, 8, 3);
+                station = BlockPosition.findBlockInRadius(level, ruffian.blockPosition(), Blocks.LOOM, 8, 3);
             }
         }
 
@@ -100,7 +100,7 @@ public class RuffianDyeBehavior extends RuffianStationBehavior {
             ruffian.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new BlockPosTracker(this.stationPos));
 
             if (this.processTicks >= 30) {
-                ItemStack dyedItem = WorkstationRecipeUtil.applyDye(level, getActiveItem(ruffian), this.heldDye);
+                ItemStack dyedItem = WorkstationRecipe.applyDye(level, getActiveItem(ruffian), this.heldDye);
 
                 if (!dyedItem.isEmpty()) {
                     setActiveItem(ruffian, dyedItem);
@@ -124,8 +124,8 @@ public class RuffianDyeBehavior extends RuffianStationBehavior {
         if (this.chestPos == null) return false;
         BlockEntity be = ruffian.level().getBlockEntity(this.chestPos);
         if (be instanceof Container container) {
-            return WorkstationRecipeUtil.findDyeableItemSlot(ruffian.level(), container) != -1 &&
-                    WorkstationRecipeUtil.findDyeSlot(container) != -1;
+            return WorkstationRecipe.findDyeableItemSlot(ruffian.level(), container) != -1 &&
+                    WorkstationRecipe.findDyeSlot(container) != -1;
         }
         return false;
     }
@@ -133,7 +133,7 @@ public class RuffianDyeBehavior extends RuffianStationBehavior {
     @Override
     protected void stop(@NotNull ServerLevel level, @NotNull RuffianEntity ruffian, long gameTime) {
         if (!this.heldDye.isEmpty()) {
-            if (this.chestPos == null || !WorkstationRecipeUtil.tryDepositToContainer(level, this.chestPos, this.heldDye)) {
+            if (this.chestPos == null || !WorkstationRecipe.tryDepositToContainer(level, this.chestPos, this.heldDye)) {
                 ruffian.spawnAtLocation(this.heldDye.copy());
             }
             ruffian.setItemInHand(InteractionHand.OFF_HAND, ItemStack.EMPTY);

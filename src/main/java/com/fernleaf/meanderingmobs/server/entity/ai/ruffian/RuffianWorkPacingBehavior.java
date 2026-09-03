@@ -1,8 +1,8 @@
 package com.fernleaf.meanderingmobs.server.entity.ai.ruffian;
 
+import com.fernleaf.fernframe.mathbath.spatial.BlockPosition;
 import com.fernleaf.meanderingmobs.server.entity.ai.ruffian.util.RuffianStationBehavior;
 import com.fernleaf.meanderingmobs.server.entity.tameable.RuffianEntity;
-import com.fernleaf.meanderingmobs.util.BlockPosUtil;
 import com.google.common.collect.ImmutableMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -43,7 +43,7 @@ public class RuffianWorkPacingBehavior extends Behavior<RuffianEntity> {
         }
 
         // Locate storage chest to pace around
-        this.storagePos = BlockPosUtil.findBlockInRadius(level, ruffian.blockPosition(), RuffianStationBehavior.RUFFIAN_STORAGE, 8, 3);
+        this.storagePos = BlockPosition.findBlockInRadius(level, ruffian.blockPosition(), RuffianStationBehavior.RUFFIAN_STORAGE, 8, 3);
         return this.storagePos != null;
     }
 

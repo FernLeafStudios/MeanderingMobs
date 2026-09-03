@@ -1,7 +1,7 @@
 package com.fernleaf.meanderingmobs.registry;
 
+import com.fernleaf.fernframe.mathbath.entity.VecToInput;
 import com.fernleaf.meanderingmobs.MeanderingMobs;
-import com.fernleaf.meanderingmobs.util.VecToInput;
 import com.mojang.serialization.Codec;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.attachment.AttachmentType;

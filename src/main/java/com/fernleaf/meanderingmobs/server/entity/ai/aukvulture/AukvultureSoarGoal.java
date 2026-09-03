@@ -1,7 +1,7 @@
 package com.fernleaf.meanderingmobs.server.entity.ai.aukvulture;
 
+import com.fernleaf.fernframe.mathbath.spatial.SolidRadius;
 import com.fernleaf.meanderingmobs.server.entity.tameable.AukvultureEntity;
-import com.fernleaf.meanderingmobs.util.SolidRadiusUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.level.ClipContext;
@@ -82,8 +82,8 @@ public class AukvultureSoarGoal extends Goal {
 
         // Bounding box inflation check to catch solid leaf/block clipping
         AABB checkBounds = this.auk.getBoundingBox().inflate(0.1D);
-        boolean insideSolidBlock = SolidRadiusUtil.isInsideSolid(this.auk.level(), checkBounds);
-        boolean wedgedInCorner = SolidRadiusUtil.isCornerStuck(this.auk.level(), this.auk.blockPosition(), 1);
+        boolean insideSolidBlock = SolidRadius.isInsideSolid(this.auk.level(), checkBounds);
+        boolean wedgedInCorner = SolidRadius.isCornerStuck(this.auk.level(), this.auk.blockPosition(), 1);
 
         if (xzDistanceSqr < 0.01D || wedgedInCorner || insideSolidBlock) {
             this.stuckTicks++;
@@ -176,8 +176,8 @@ public class AukvultureSoarGoal extends Goal {
             Vec3 candidatePos = new Vec3(rx, targetY, rz);
 
             // Path & Ceiling Checks via SolidRadiusUtil
-            boolean clearPath = SolidRadiusUtil.hasLineOfSight(this.auk.level(), this.auk, this.auk.position(), candidatePos);
-            boolean clearCeiling = SolidRadiusUtil.hasLineOfSight(this.auk.level(), this.auk, this.auk.position(), this.auk.position().add(0, 6.0D, 0));
+            boolean clearPath = SolidRadius.hasLineOfSight(this.auk.level(), this.auk, this.auk.position(), candidatePos);
+            boolean clearCeiling = SolidRadius.hasLineOfSight(this.auk.level(), this.auk, this.auk.position(), this.auk.position().add(0, 6.0D, 0));
 
             if (clearPath && clearCeiling) {
                 this.targetPos = candidatePos;

@@ -1,15 +1,14 @@
 package com.fernleaf.meanderingmobs.server.entity.tameable;
 
+import com.fernleaf.fernframe.mathbath.spatial.BlockPosition;
 import com.fernleaf.fernframe.umweltlite.goals.engine.PersonalityEngine;
 import com.fernleaf.meanderingmobs.client.model.ruffian.RuffianVariant;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsTagRegistry;
-import com.fernleaf.meanderingmobs.util.BlockPosUtil;
 import com.fernleaf.meanderingmobs.server.entity.ai.ruffian.*;
 import com.fernleaf.meanderingmobs.server.entity.ai.ruffian.brain.RuffianActivities;
 import com.fernleaf.meanderingmobs.server.entity.ai.ruffian.brain.RuffianMemoryModuleTypes;
 import com.fernleaf.meanderingmobs.server.entity.util.MeanderingMobsTameableEntity;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
@@ -159,7 +158,7 @@ public class RuffianEntity extends MeanderingMobsTameableEntity {
         Brain<RuffianEntity> brain = getBrain();
 
         if (!brain.hasMemoryValue(RuffianMemoryModuleTypes.HOME_POS.get())) {
-            BlockPos bedPos = BlockPosUtil.findBlockInRadius(level, blockPosition(), BlockTags.BEDS, 12, 3);
+            BlockPos bedPos = BlockPosition.findBlockInRadius(level, blockPosition(), BlockTags.BEDS, 12, 3);
             if (bedPos != null) {
                 brain.setMemory(RuffianMemoryModuleTypes.HOME_POS.get(), GlobalPos.of(level.dimension(), bedPos));
             }

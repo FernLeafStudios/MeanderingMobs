@@ -1,7 +1,7 @@
 package com.fernleaf.meanderingmobs.server.entity.ai.ruffian;
 
+import com.fernleaf.fernframe.mathbath.item.WorkstationRecipe;
 import com.fernleaf.meanderingmobs.server.entity.ai.ruffian.util.RuffianStationBehavior;
-import com.fernleaf.meanderingmobs.util.WorkstationRecipeUtil;
 import com.fernleaf.meanderingmobs.server.entity.tameable.RuffianEntity;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Container;
@@ -35,7 +35,7 @@ public class RuffianArmorStandBehavior extends RuffianStationBehavior {
 
         if (be instanceof Container container) {
             for (ArmorStand stand : stands) {
-                if (WorkstationRecipeUtil.findArmorForStand(container, stand) != -1) {
+                if (WorkstationRecipe.findArmorForStand(container, stand) != -1) {
                     this.targetStand = stand;
                     return true;
                 }
@@ -66,7 +66,7 @@ public class RuffianArmorStandBehavior extends RuffianStationBehavior {
         if (distSq <= this.interactionRadiusSq) {
             BlockEntity be = level.getBlockEntity(this.chestPos);
             if (be instanceof Container container) {
-                int slot = WorkstationRecipeUtil.findArmorForStand(container, this.targetStand);
+                int slot = WorkstationRecipe.findArmorForStand(container, this.targetStand);
                 if (slot != -1) {
                     ItemStack armor = container.removeItem(slot, 1);
                     setActiveItem(ruffian, armor);
@@ -114,7 +114,7 @@ public class RuffianArmorStandBehavior extends RuffianStationBehavior {
             return false;
         }
         BlockEntity be = ruffian.level().getBlockEntity(this.chestPos);
-        return be instanceof Container container && WorkstationRecipeUtil.findArmorForStand(container, this.targetStand) != -1;
+        return be instanceof Container container && WorkstationRecipe.findArmorForStand(container, this.targetStand) != -1;
     }
 
     @Override

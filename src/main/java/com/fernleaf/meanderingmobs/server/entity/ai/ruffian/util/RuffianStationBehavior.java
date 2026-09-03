@@ -1,8 +1,8 @@
 package com.fernleaf.meanderingmobs.server.entity.ai.ruffian.util;
 
+import com.fernleaf.fernframe.mathbath.item.WorkstationRecipe;
+import com.fernleaf.fernframe.mathbath.spatial.BlockPosition;
 import com.fernleaf.meanderingmobs.server.entity.tameable.RuffianEntity;
-import com.fernleaf.meanderingmobs.util.BlockPosUtil;
-import com.fernleaf.meanderingmobs.util.WorkstationRecipeUtil;
 import com.google.common.collect.ImmutableMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
@@ -52,7 +52,7 @@ public abstract class RuffianStationBehavior extends Behavior<RuffianEntity> {
     }
 
     protected boolean locateStorage(ServerLevel level, RuffianEntity ruffian, int radiusXZ, int radiusY) {
-        this.chestPos = BlockPosUtil.findBlockInRadius(level, ruffian.blockPosition(), RUFFIAN_STORAGE, radiusXZ, radiusY);
+        this.chestPos = BlockPosition.findBlockInRadius(level, ruffian.blockPosition(), RUFFIAN_STORAGE, radiusXZ, radiusY);
         return this.chestPos != null;
     }
 
@@ -161,7 +161,7 @@ public abstract class RuffianStationBehavior extends Behavior<RuffianEntity> {
     protected void tickDepositStep(ServerLevel level, RuffianEntity ruffian, long gameTime, double distSq) {
         if (distSq <= this.interactionRadiusSq) {
             ItemStack held = getActiveItem(ruffian);
-            if (held.isEmpty() || WorkstationRecipeUtil.tryDepositToContainer(level, this.chestPos, held)) {
+            if (held.isEmpty() || WorkstationRecipe.tryDepositToContainer(level, this.chestPos, held)) {
                 setActiveItem(ruffian, ItemStack.EMPTY);
                 stop(level, ruffian, gameTime);
             } else {
@@ -175,7 +175,7 @@ public abstract class RuffianStationBehavior extends Behavior<RuffianEntity> {
         this.lastRunTime = gameTime;
         ItemStack held = getActiveItem(ruffian);
         if (!held.isEmpty()) {
-            if (this.chestPos == null || !WorkstationRecipeUtil.tryDepositToContainer(level, this.chestPos, held)) {
+            if (this.chestPos == null || !WorkstationRecipe.tryDepositToContainer(level, this.chestPos, held)) {
                 ruffian.spawnAtLocation(held.copy());
             }
             setActiveItem(ruffian, ItemStack.EMPTY);

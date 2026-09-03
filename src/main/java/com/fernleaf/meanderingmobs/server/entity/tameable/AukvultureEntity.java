@@ -7,7 +7,7 @@ import com.fernleaf.meanderingmobs.registry.MeanderingMobsTagRegistry;
 import com.fernleaf.meanderingmobs.server.data.VariantSpawnManager;
 import com.fernleaf.meanderingmobs.server.entity.ai.aukvulture.*;
 import com.fernleaf.meanderingmobs.server.entity.util.MeanderingMobsTameableEntity;
-import com.fernleaf.meanderingmobs.util.AukvultureFlightMath;
+import com.fernleaf.meanderingmobs.util.FlightMath;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
@@ -336,7 +336,7 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
     private void updateRotations() {
         if (isVehicle() && getControllingPassenger() instanceof Player player) {
             if (isFlying()) {
-                AukvultureFlightMath.RotationResult rot = AukvultureFlightMath.calculateRiderRotations(
+                FlightMath.RotationResult rot = FlightMath.calculateRiderRotations(
                         this, player, clientDiving, clientFlapping
                 );
 
@@ -355,7 +355,7 @@ public class AukvultureEntity extends MeanderingMobsTameableEntity {
             }
         } else if (isFlying()) {
             this.prevRollAngle = this.rollAngle;
-            this.rollAngle = AukvultureFlightMath.calculateWildRoll(getYRot(), yRotO, this.rollAngle);
+            this.rollAngle = FlightMath.calculateWildRoll(getYRot(), yRotO, this.rollAngle);
         } else {
             decayRotations();
         }

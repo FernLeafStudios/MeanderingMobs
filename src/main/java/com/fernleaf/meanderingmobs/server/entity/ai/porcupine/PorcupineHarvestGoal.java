@@ -7,9 +7,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootParams;
@@ -78,7 +78,7 @@ public class PorcupineHarvestGoal extends AbstractBlockInteractionGoal<Porcupine
                 // Duplicate non-seed produce (e.g., carrots, potatoes, wheat)
                 ItemStack extraDrop = drop.copy();
                 extraDrop.setCount(drop.getCount() * multiplier);
-                cropBlock.popResource(serverLevel, pos, extraDrop);
+                Block.popResource(serverLevel, pos, extraDrop);
             }
 
             // Set cooldown so the porcupine doesn't instantly wipe out an entire farm

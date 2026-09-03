@@ -1,10 +1,10 @@
 package com.fernleaf.meanderingmobs.server.entity.ai.whisp;
 
+import com.fernleaf.fernframe.mathbath.spatial.SolidRadius;
 import com.fernleaf.meanderingmobs.config.MeanderingMobsConfig;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsSoundsRegistry;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsTagRegistry;
 import com.fernleaf.meanderingmobs.server.entity.tameable.WhispEntity;
-import com.fernleaf.meanderingmobs.util.SolidRadiusUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
@@ -104,14 +104,14 @@ public class WhispPlayTagGoal extends Goal {
         fleeDir = fleeDir.normalize();
 
         Vec3 forwardCheck = whispPos.add(fleeDir.scale(1.5D));
-        boolean hasClearPath = SolidRadiusUtil.hasLineOfSight(this.whisp.level(), this.whisp, whispPos, forwardCheck);
+        boolean hasClearPath = SolidRadius.hasLineOfSight(this.whisp.level(), this.whisp, whispPos, forwardCheck);
 
         if (!hasClearPath) {
             fleeDir = fleeDir.yRot((float) Math.toRadians(60.0D));
         }
 
         // Corner backup check
-        if (SolidRadiusUtil.isCornerStuck(this.whisp.level(), this.whisp.blockPosition(), 1)) {
+        if (SolidRadius.isCornerStuck(this.whisp.level(), this.whisp.blockPosition(), 1)) {
             fleeDir = fleeDir.yRot((float) Math.toRadians(45.0D));
         }
 
@@ -124,7 +124,7 @@ public class WhispPlayTagGoal extends Goal {
 
         // Bounding box phase check via SolidRadiusUtil
         AABB checkBounds = this.whisp.getBoundingBox().inflate(0.3D);
-        this.whisp.noPhysics = SolidRadiusUtil.isInsideMatchingTag(
+        this.whisp.noPhysics = SolidRadius.isInsideMatchingTag(
         this.whisp.level(),
                 checkBounds,
                 MeanderingMobsTagRegistry.Blocks.WHISP_PHASE_THROUGH

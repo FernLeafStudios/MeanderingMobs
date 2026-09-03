@@ -39,7 +39,7 @@ public class AnchovyFleeGoal extends Goal {
         );
 
         if (!scaryMobs.isEmpty()) {
-            this.currentThreat = scaryMobs.get(0);
+            this.currentThreat = scaryMobs.getFirst();
             return true;
         }
         return false;

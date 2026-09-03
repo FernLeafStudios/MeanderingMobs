@@ -1,7 +1,7 @@
 package com.fernleaf.meanderingmobs.server.entity.ai.deerfox;
 
+import com.fernleaf.fernframe.mathbath.entity.OrbitMath;
 import com.fernleaf.meanderingmobs.server.entity.tameable.DeerfoxEntity;
-import com.fernleaf.meanderingmobs.util.OrbitMathUtil;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.phys.Vec3;
@@ -54,7 +54,7 @@ public class DeerfoxChargeGoal extends Goal {
             this.circleAngle += 0.16F * this.orbitDirection;
             Vec3 targetPos = target.position();
 
-            OrbitMathUtil.applyOrbitMotion(
+            OrbitMath.applyOrbitMotion(
                     this.deerfox, targetPos, this.circleAngle,
                     this.circleRadius, this.orbitDirection, 0.90D, 0.2D, 0.25F, Double.NaN
             );

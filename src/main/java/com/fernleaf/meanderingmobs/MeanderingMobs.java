@@ -1,25 +1,24 @@
 package com.fernleaf.meanderingmobs;
 
+import com.fernleaf.meanderingmobs.compat.alexsmobs.AlexsMobsCompat;
+import com.fernleaf.meanderingmobs.compat.alexsmobs.event.OrcaClientInputHandler;
+import com.fernleaf.meanderingmobs.compat.alexsmobs.event.OrcaCompatEvents;
 import com.fernleaf.meanderingmobs.config.MeanderingMobsConfig;
 import com.fernleaf.meanderingmobs.registry.*;
 import com.fernleaf.meanderingmobs.server.command.RuffianInspectCommand;
 import com.fernleaf.meanderingmobs.server.entity.ai.ruffian.brain.RuffianActivities;
 import com.fernleaf.meanderingmobs.server.entity.ai.ruffian.brain.RuffianMemoryModuleTypes;
 import com.mojang.logging.LogUtils;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.data.PackOutput;
+import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.common.data.ExistingFileHelper;
-import net.neoforged.neoforge.data.event.GatherDataEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import org.slf4j.Logger;
-
-import java.util.concurrent.CompletableFuture;
 
 @Mod(MeanderingMobs.MODID)
 public class MeanderingMobs {
@@ -46,6 +45,14 @@ public class MeanderingMobs {
         RuffianActivities.register(modEventBus);
 
         NeoForge.EVENT_BUS.addListener(MeanderingMobs::onRegisterCommands);
+
+        // Safely register Alex's Mobs events ONLY if installed
+        if (AlexsMobsCompat.isLoaded()) {
+            OrcaCompatEvents.register();
+            if (FMLEnvironment.dist == Dist.CLIENT) {
+                OrcaClientInputHandler.register();
+            }
+        }
 
         LOGGER.info("Meandering Mobs initialized with FernFrame!");
     }

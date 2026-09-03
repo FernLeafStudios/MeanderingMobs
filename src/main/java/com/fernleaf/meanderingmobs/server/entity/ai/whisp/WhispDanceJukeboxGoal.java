@@ -1,14 +1,13 @@
 package com.fernleaf.meanderingmobs.server.entity.ai.whisp;
 
+import com.fernleaf.fernframe.mathbath.entity.OrbitMath;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsItemRegistry;
 import com.fernleaf.meanderingmobs.server.block.entity.QueueboxBlockEntity;
 import com.fernleaf.meanderingmobs.server.entity.ai.util.AbstractBlockInteractionGoal;
 import com.fernleaf.meanderingmobs.server.entity.tameable.WhispEntity;
-import com.fernleaf.meanderingmobs.util.OrbitMathUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.JukeboxBlock;
@@ -80,7 +79,7 @@ public class WhispDanceJukeboxGoal extends AbstractBlockInteractionGoal<WhispEnt
 
             Vec3 center = new Vec3(this.targetPos.getX() + 0.5D, this.targetPos.getY() + 1.2D, this.targetPos.getZ() + 0.5D);
 
-            OrbitMathUtil.applyOrbitMotion(
+            OrbitMath.applyOrbitMotion(
                     this.entity, center, this.circleAngle,
                     2.2D, 1.0F, 0.25D, 0.25D, 0.2F, center.y
             );

@@ -8,6 +8,7 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.EnumSet;
 
+@SuppressWarnings("deprecation")
 public class WolverineClimbGoal extends Goal {
     private final WolverineEntity wolverine;
     private int climbTicks = 0;

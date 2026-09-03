@@ -1,8 +1,8 @@
 package com.fernleaf.meanderingmobs.server.entity.ai.ruffian;
 
+import com.fernleaf.fernframe.mathbath.item.WorkstationRecipe;
+import com.fernleaf.fernframe.mathbath.spatial.BlockPosition;
 import com.fernleaf.meanderingmobs.server.entity.ai.ruffian.util.RuffianStationBehavior;
-import com.fernleaf.meanderingmobs.util.BlockPosUtil;
-import com.fernleaf.meanderingmobs.util.WorkstationRecipeUtil;
 import com.fernleaf.meanderingmobs.server.entity.tameable.RuffianEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -29,7 +29,7 @@ public class RuffianRepairBehavior extends RuffianStationBehavior {
             return false;
         }
 
-        this.stationPos = BlockPosUtil.findBlockInRadius(level, ruffian.blockPosition(), BlockTags.ANVIL, 6, 2);
+        this.stationPos = BlockPosition.findBlockInRadius(level, ruffian.blockPosition(), BlockTags.ANVIL, 6, 2);
         return this.stationPos != null;
     }
 
@@ -78,10 +78,10 @@ public class RuffianRepairBehavior extends RuffianStationBehavior {
         if (this.chestPos == null) return false;
         BlockEntity be = ruffian.level().getBlockEntity(this.chestPos);
         if (be instanceof Container container) {
-            int toolSlot = WorkstationRecipeUtil.findDamagedToolSlot(container);
+            int toolSlot = WorkstationRecipe.findDamagedToolSlot(container);
             if (toolSlot != -1) {
                 ItemStack toolStack = container.getItem(toolSlot);
-                return WorkstationRecipeUtil.findRepairMaterialSlot(container, toolStack) != -1;
+                return WorkstationRecipe.findRepairMaterialSlot(container, toolStack) != -1;
             }
         }
         return false;
@@ -96,10 +96,10 @@ public class RuffianRepairBehavior extends RuffianStationBehavior {
     private boolean grabDamagedToolFromChest(RuffianEntity ruffian, BlockPos pos) {
         BlockEntity be = ruffian.level().getBlockEntity(pos);
         if (be instanceof Container container) {
-            int toolSlot = WorkstationRecipeUtil.findDamagedToolSlot(container);
+            int toolSlot = WorkstationRecipe.findDamagedToolSlot(container);
             if (toolSlot != -1) {
                 ItemStack toolStack = container.getItem(toolSlot);
-                int matSlot = WorkstationRecipeUtil.findRepairMaterialSlot(container, toolStack);
+                int matSlot = WorkstationRecipe.findRepairMaterialSlot(container, toolStack);
 
                 if (matSlot != -1) {
                     ItemStack extractedTool = container.removeItem(toolSlot, 1);
@@ -117,7 +117,7 @@ public class RuffianRepairBehavior extends RuffianStationBehavior {
         ItemStack held = getActiveItem(ruffian);
 
         if (be instanceof Container container && !held.isEmpty() && held.isDamaged()) {
-            int matSlot = WorkstationRecipeUtil.findRepairMaterialSlot(container, held);
+            int matSlot = WorkstationRecipe.findRepairMaterialSlot(container, held);
             if (matSlot != -1) {
                 container.removeItem(matSlot, 1);
                 container.setChanged();

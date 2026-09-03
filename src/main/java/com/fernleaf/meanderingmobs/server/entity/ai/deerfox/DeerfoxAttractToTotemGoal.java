@@ -1,12 +1,12 @@
 package com.fernleaf.meanderingmobs.server.entity.ai.deerfox;
 
+import com.fernleaf.fernframe.mathbath.entity.OrbitMath;
 import com.fernleaf.meanderingmobs.registry.MeanderingMobsBlockRegistry;
 import com.fernleaf.meanderingmobs.server.block.CarvedStrippedSpruceLogBlock;
 import com.fernleaf.meanderingmobs.server.block.pattern.DeerfoxTotemPattern;
 import com.fernleaf.meanderingmobs.server.block.rune.RuneType;
 import com.fernleaf.meanderingmobs.server.entity.ai.util.AbstractBlockInteractionGoal;
 import com.fernleaf.meanderingmobs.server.entity.tameable.DeerfoxEntity;
-import com.fernleaf.meanderingmobs.util.OrbitMathUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
@@ -71,7 +71,7 @@ public class DeerfoxAttractToTotemGoal extends AbstractBlockInteractionGoal<Deer
             Vec3 center = new Vec3(this.targetPos.getX() + 0.5D, this.targetPos.getY() - 3.0D, this.targetPos.getZ() + 0.5D);
 
             // Orbit at 3.0 block radius, smooth height anchoring
-            OrbitMathUtil.applyOrbitMotion(
+            OrbitMath.applyOrbitMotion(
                     this.entity, center, this.circleAngle,
                     3.0D, 1.0F, 0.25D, 0.25D, 0.2F, center.y
             );

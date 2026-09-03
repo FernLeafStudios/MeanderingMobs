@@ -1,6 +1,5 @@
 package com.fernleaf.meanderingmobs.server.entity.aquatic;
 
-import com.fernleaf.meanderingmobs.client.model.deerfox.DeerfoxVariant;
 import com.fernleaf.meanderingmobs.client.model.parrotfish.ParrotfishVariant;
 import com.fernleaf.meanderingmobs.server.data.VariantSpawnManager;
 import com.fernleaf.meanderingmobs.server.entity.ai.parrotfish.*;
@@ -205,7 +204,7 @@ public class ParrotfishEntity extends MeanderingMobsAquaticEntity {
 
     @SuppressWarnings("deprecation")
     @Override
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType spawnType, @Nullable SpawnGroupData spawnData) {
+    public SpawnGroupData finalizeSpawn(@NotNull ServerLevelAccessor level, @NotNull DifficultyInstance difficulty, @NotNull MobSpawnType spawnType, @Nullable SpawnGroupData spawnData) {
         SpawnGroupData data = super.finalizeSpawn(level, difficulty, spawnType, spawnData);
 
         Holder<Biome> biome = level.getBiome(this.blockPosition());

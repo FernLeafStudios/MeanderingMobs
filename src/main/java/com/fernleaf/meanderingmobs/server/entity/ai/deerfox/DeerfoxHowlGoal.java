@@ -45,9 +45,7 @@ public class DeerfoxHowlGoal extends Goal {
         // Apply Speed II to nearby living entities at the peak of the howl
         if (this.howlTicks == 40 && this.deerfox.level() instanceof ServerLevel serverLevel) {
             AABB bounds = this.deerfox.getBoundingBox().inflate(16.0D);
-            serverLevel.getEntitiesOfClass(LivingEntity.class, bounds).forEach(entity -> {
-                entity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 200, 1));
-            });
+            serverLevel.getEntitiesOfClass(LivingEntity.class, bounds).forEach(entity -> entity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 200, 1)));
         }
     }
 
